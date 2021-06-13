@@ -12,23 +12,24 @@
         "BOT_TOKEN": {
             "description": "The token of your bot discord.",
             "required": "true",
-            "value": "BOT_TOKEN"
+            "value": "YOUR BOT_TOKEN"
         },
         "USER_ID": {
             "description": "The id of the user you want to see when he logs out.",
             "required": "true",
-            "value": "USER_ID"
+            "value": "YOUR USER_ID"
         },
         "VOICE_CHANNEL_ID": {
             "description": "The id of the voice room you are checking.",
             "required": "true",
-            "value": "VOICE_CHANNEL_ID"
+            "value": "YOUR VOICE_CHANNEL_ID"
         },
         "CHANNEL_ID": {
             "description": "The id of the salon where you want to send the message.",
             "required": "true",
-            "value": "CHANNEL_ID"
+            "value": "YOUR CHANNEL_ID"
         }
     },
+    "success_url": "https://destroykeaum.alwaysdata.net/caard.html",
     "keywords": ["nodejs", "discord", "discordjs", "esm", "dotenv"]
 }
