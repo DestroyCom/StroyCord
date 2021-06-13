@@ -1,0 +1,13 @@
+{
+    "name": "Je reviens - DISCORD BOT",
+    "description": "A discord bot that sends the message I'll be back",
+    "repository": "https://github.com/DestroyCom/JE-REVIENS-OF-DEVILKING",
+    "logo": "https://bibitoshop.netlify.app/assets/img/bibito.svg",
+    "website": "https://destroykeaum.alwaysdata.net/",
+    "buildpacks": [
+        {
+          "url": "heroku/nodejs"
+        }
+      ],
+    "keywords": ["nodejs", "discord", "discordjs", "esm", "dotenv"]
+  }
