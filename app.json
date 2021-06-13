@@ -4,10 +4,31 @@
     "repository": "https://github.com/DestroyCom/JE-REVIENS-OF-DEVILKING",
     "logo": "https://bibitoshop.netlify.app/assets/img/bibito.svg",
     "website": "https://destroykeaum.alwaysdata.net/",
-    "buildpacks": [
-        {
-          "url": "heroku/nodejs"
+    "buildpacks": [{
+        "url": "heroku/nodejs"
+    }],
+
+    "env": {
+        "BOT_TOKEN": {
+            "description": "The token of your bot discord.",
+            "required": "true",
+            "value": "BOT_TOKEN"
+        },
+        "USER_ID": {
+            "description": "The id of the user you want to see when he logs out.",
+            "required": "true",
+            "value": "USER_ID"
+        },
+        "VOICE_CHANNEL_ID": {
+            "description": "The id of the voice room you are checking.",
+            "required": "true",
+            "value": "VOICE_CHANNEL_ID"
+        },
+        "CHANNEL_ID": {
+            "description": "The id of the salon where you want to send the message.",
+            "required": "true",
+            "value": "CHANNEL_ID"
         }
-      ],
+    },
     "keywords": ["nodejs", "discord", "discordjs", "esm", "dotenv"]
-  }
+}
