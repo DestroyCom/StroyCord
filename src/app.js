@@ -20,7 +20,7 @@ clientDiscord.on('voiceStateUpdate', (oldMember, newMember) => {
     if (newUserChannel === channelId) {
         return;
     } else if (leaversUsername === process.env.USER_ID) {
-        let msgToSend = "Je reviens :domdolisa:";
+        let msgToSend = "Je reviens :domsolisa:";
         channel.send(msgToSend);
     }
 });
