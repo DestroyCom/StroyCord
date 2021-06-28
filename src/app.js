@@ -4,9 +4,17 @@ const Discord = require('discord.js');
 
 const clientDiscord = new Discord.Client();
 
+const prefix = '&';
+
 clientDiscord.once('ready', () => {
     console.log(`Logged in as ${clientDiscord.user.tag}!`);
 });
+
+clientDiscord.on('message', message =>{
+    if(message.content.startsWith(prefix + "feur")){
+        message.channel.send("https://destroykeaum.alwaysdata.net/assets/other/feur.mp4");
+    }
+})
 
 clientDiscord.on('voiceStateUpdate', (oldMember, newMember) => {
     let newUserChannel = newMember.channelID;

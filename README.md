@@ -1,5 +1,6 @@
 # JE REVIENS OF DEVILKING
 A discord bot that sends the message "I'll be back" every time a specific user disconnects from a specific discord voice room.
+And can "feur" your friends.
 
 ## What does the bot use?
 The bot uses :
