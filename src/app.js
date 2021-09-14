@@ -10,10 +10,7 @@ const queue = new Map();
 const {
     google
 } = require('googleapis');
-const youtubeService = google.youtube({
-    version: 'v3',
-    auth: process.env.GOOGLE_YOUTUBE_API_KEY
-});
+
 
 clientDiscord.once('ready', () => {
     console.log(`Logged in as ${clientDiscord.user.tag}!`);
@@ -37,7 +34,7 @@ clientDiscord.on('message', message => {
     if (message.content.startsWith(prefix + "feur")) {
         message.channel.send("https://destroykeaum.alwaysdata.net/assets/other/feur.mp4");
     } else if ((message.content.startsWith(`${prefix}p`)) || (message.content.startsWith(`${prefix}play`))) {
-        execute(message, serverQueue);
+        getURL(message, serverQueue);
         return;
     } else if ((message.content.startsWith(`${prefix}s`)) || (message.content.startsWith(`${prefix}skip`))) {
         skip(message, serverQueue);
@@ -69,8 +66,9 @@ clientDiscord.on('voiceStateUpdate', (oldMember, newMember) => {
 });
 */
 
-async function execute(message, serverQueue) {
+function getURL(message, serverQueue){
     const arguments = message.content.split(" ");
+    const messageReceived = message.content;
 
     const voiceChannel = message.member.voice.channel;
     if (!voiceChannel) {
@@ -81,29 +79,40 @@ async function execute(message, serverQueue) {
         return message.channel.send("Le bot a besoin de la permission d'acceder et de parler dans le salon vocal !");
     }
 
-    var musicSearched = "";
+    if(!(messageReceived.includes('https://www.youtube.'))){
+        console.log('CA INCLUS PAS DE LIEN YOUTUBE');
 
-    if (!(arguments[1].includes('https://www.youtube.'))) {
-        let tmpQuery = message.content
-        if (arguments[1].includes('&play')) {
-            tmpQuery = tmpQuery.replace('&play', '')
+        let tmpQuery = ""
+        if (messageReceived.includes('&play ')) {
+            tmpQuery = messageReceived.replace('&play ', '')
         }
-        if (arguments[1].includes('&p')) {
-            tmpQuery = tmpQuery.replace('&p', '')
+        if (messageReceived.includes('&p ')) {
+            tmpQuery = messageReceived.replace('&p ', '')
         }
-        youtubeService.videos.list({
-            "part": tmpQuery
-        }, (err, res) => {
-            if (err) return console.log("L'api a renvoyer une erreur :" + err);
-            const videos = res.data.items;
-            console.log("la rechercher a donner :", videos)
-            musicSearched = "https://www.youtube.com/watch?v=" + videos[0].id;
-        })
-    } else {
-        musicSearched = arguments[1];
+
+        console.log("recherche yt pour", tmpQuery)
+
+        google.youtube('v3').search.list({
+            key: process.env.GOOGLE_YOUTUBE_API_KEY,
+            part: 'snippet',
+            q: tmpQuery
+        }).then((response) => {
+            console.log(response.data.items[0].id.videoId);
+            let urlTmp = "https://www.youtube.com/watch?v=" + response.data.items[0].id.videoId;
+            execute(urlTmp, message, serverQueue)
+        }).catch((err) => console.log(err))
+    }
+    else{
+        execute(arguments[1], message, serverQueue)
     }
 
-    const songInfo = await ytdl.getInfo(musicSearched);
+}
+
+async function execute(url, message, serverQueue) {
+
+    const voiceChannel = message.member.voice.channel;
+
+    const songInfo = await ytdl.getInfo(url);
     const song = {
         title: songInfo.videoDetails.title,
         url: songInfo.videoDetails.video_url,
