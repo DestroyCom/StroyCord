@@ -1,7 +1,7 @@
 {
-  "name": "je-reviens-of-devilking",
-  "version": "1.0.0",
-  "description": "La fameuse phrase \"je reviens\" de DevilKing a chaque depart de ce dernier de discord",
+  "name": "D-Key bot",
+  "version": "1.5.0",
+  "description": "La fameuse phrase \"je reviens\" de DevilKing a chaque depart de ce dernier de discord INCLUS MAINTENANT UN BOT MUSICAL",
   "main": "src/index.js",
   "scripts": {
     "start": "node .",
@@ -20,6 +20,9 @@
   "dependencies": {
     "discord.js": "^12.5.3",
     "dotenv": "^10.0.0",
-    "esm": "^3.2.25"
+    "esm": "^3.2.25",
+    "ffmpeg": "^0.0.4",
+    "fluent-ffmpeg": "^2.1.2",
+    "ytdl-core": "^4.9.1"
   }
 }
