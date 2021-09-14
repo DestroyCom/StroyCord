@@ -1,12 +1,16 @@
 {
-    "name": "Je reviens - DISCORD BOT",
-    "description": "A discord bot that sends the message I'll be back",
+    "name": "D-Key Bot - DISCORD BOT",
+    "description": "A discord bot to play music on voice channel",
     "repository": "https://github.com/DestroyCom/JE-REVIENS-OF-DEVILKING",
-    "logo": "https://bibitoshop.netlify.app/assets/img/bibito.svg",
+    "logo": "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png",
     "website": "https://destroykeaum.alwaysdata.net/",
     "buildpacks": [{
-        "url": "heroku/nodejs"
-    }],
+            "url": "heroku/nodejs"
+        },
+        {
+            "url": "https://github.com/jonathanong/heroku-buildpack-ffmpeg-latest"
+        }
+    ],
 
     "env": {
         "BOT_TOKEN": {
@@ -28,6 +32,11 @@
             "description": "The id of the salon where you want to send the message.",
             "required": "true",
             "value": "YOUR CHANNEL_ID"
+        },
+        "GOOGLE_YOUTUBE_API_KEY": {
+            "description": "The API Key from google API used for the music search.",
+            "required": "true",
+            "value": "YOUR GOOGLE_YOUTUBE_API_KEY"
         }
     },
     "success_url": "https://destroykeaum.alwaysdata.net/caard.html",

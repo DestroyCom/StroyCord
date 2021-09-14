@@ -1,14 +1,19 @@
 require('dotenv').config();
 
 const ytdl = require('ytdl-core');
-
 const Discord = require('discord.js');
-
 const clientDiscord = new Discord.Client();
 
 const prefix = '&';
-
 const queue = new Map();
+
+const {
+    google
+} = require('googleapis');
+const youtubeService = google.youtube({
+    version: 'v3',
+    auth: process.env.GOOGLE_YOUTUBE_API_KEY
+});
 
 clientDiscord.once('ready', () => {
     console.log(`Logged in as ${clientDiscord.user.tag}!`);
@@ -76,7 +81,29 @@ async function execute(message, serverQueue) {
         return message.channel.send("Le bot a besoin de la permission d'acceder et de parler dans le salon vocal !");
     }
 
-    const songInfo = await ytdl.getInfo(arguments[1]);
+    var musicSearched = "";
+
+    if (!(arguments[1].includes('https://www.youtube.'))) {
+        let tmpQuery = message.content
+        if (arguments[1].includes('&play')) {
+            tmpQuery = tmpQuery.replace('&play', '')
+        }
+        if (arguments[1].includes('&p')) {
+            tmpQuery = tmpQuery.replace('&p', '')
+        }
+        youtubeService.videos.list({
+            "part": tmpQuery
+        }, (err, res) => {
+            if (err) return console.log("L'api a renvoyer une erreur :" + err);
+            const videos = res.data.items;
+            console.log("la rechercher a donner :", videos)
+            musicSearched = "https://www.youtube.com/watch?v=" + videos[0].id;
+        })
+    } else {
+        musicSearched = arguments[1];
+    }
+
+    const songInfo = await ytdl.getInfo(musicSearched);
     const song = {
         title: songInfo.videoDetails.title,
         url: songInfo.videoDetails.video_url,
