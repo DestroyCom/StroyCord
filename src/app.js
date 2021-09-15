@@ -2,6 +2,11 @@ require('dotenv').config();
 
 const ytdl = require('ytdl-core');
 const Discord = require('discord.js');
+const {
+    MessageEmbed
+} = require('discord.js');
+
+
 const clientDiscord = new Discord.Client();
 
 const prefix = '&';
@@ -66,7 +71,7 @@ clientDiscord.on('voiceStateUpdate', (oldMember, newMember) => {
 });
 */
 
-function getURL(message, serverQueue){
+function getURL(message, serverQueue) {
     const arguments = message.content.split(" ");
     const messageReceived = message.content;
 
@@ -79,8 +84,7 @@ function getURL(message, serverQueue){
         return message.channel.send("Le bot a besoin de la permission d'acceder et de parler dans le salon vocal !");
     }
 
-    if(!(messageReceived.includes('https://www.youtube.'))){
-        console.log('CA INCLUS PAS DE LIEN YOUTUBE');
+    if (!(messageReceived.includes('https://www.youtube.'))) {
 
         let tmpQuery = ""
         if (messageReceived.includes('&play ')) {
@@ -90,19 +94,16 @@ function getURL(message, serverQueue){
             tmpQuery = messageReceived.replace('&p ', '')
         }
 
-        console.log("recherche yt pour", tmpQuery)
 
         google.youtube('v3').search.list({
             key: process.env.GOOGLE_YOUTUBE_API_KEY,
             part: 'snippet',
             q: tmpQuery
         }).then((response) => {
-            console.log(response.data.items[0].id.videoId);
             let urlTmp = "https://www.youtube.com/watch?v=" + response.data.items[0].id.videoId;
             execute(urlTmp, message, serverQueue)
         }).catch((err) => console.log(err))
-    }
-    else{
+    } else {
         execute(arguments[1], message, serverQueue)
     }
 
@@ -113,9 +114,11 @@ async function execute(url, message, serverQueue) {
     const voiceChannel = message.member.voice.channel;
 
     const songInfo = await ytdl.getInfo(url);
+
     const song = {
         title: songInfo.videoDetails.title,
         url: songInfo.videoDetails.video_url,
+        thumbnail: songInfo.videoDetails.thumbnails[4].url
     };
 
     if (!serverQueue) {
@@ -135,7 +138,7 @@ async function execute(url, message, serverQueue) {
         try {
             var connection = await voiceChannel.join();
             queueContruct.connection = connection;
-            play(message.guild, queueContruct.songs[0])
+            play(message.guild, queueContruct.songs[0], message.author)
         } catch (error) {
             console.log(error);
             queue.delete(message.guild.id)
@@ -149,7 +152,7 @@ async function execute(url, message, serverQueue) {
     }
 }
 
-function play(guild, song) {
+function play(guild, song, author) {
     const serverQueue = queue.get(guild.id);
     if (!song) {
         serverQueue.voiceChannel.leave();
@@ -162,8 +165,22 @@ function play(guild, song) {
         play(guild, serverQueue.songs[0]);
     }).on("error", error => console.log(error));
 
+    const embed = new Discord.MessageEmbed()
+        .setTitle(song.title)
+        .setAuthor(author.username, author.avatarURL())
+        .setColor("#C4302B")
+        .setFooter("StroyBot/D-Key Bot", "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png")
+        .setThumbnail(song.thumbnail)
+        .setTimestamp()
+        .setURL(song.url)
+        .addFields({
+            name: author.username + " a lancer/ajouté une musique !",
+            value: song.title
+        });
+
     dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
-    serverQueue.textChannel.send(`Joue : **${song.title}**`);
+
+    serverQueue.textChannel.send(embed);
 }
 
 function skip(message, serverQueue) {

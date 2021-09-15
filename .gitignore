@@ -15,3 +15,7 @@ docs
 .nyc_output
 cassettes
 keys
+embeds
+ffmpeg.exe
+ffplay.exe
+ffprobe.exe
