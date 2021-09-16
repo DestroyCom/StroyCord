@@ -16,43 +16,54 @@ const {
     google
 } = require('googleapis');
 
-
+//When the bot connect for the first time
 clientDiscord.once('ready', () => {
     console.log(`Logged in as ${clientDiscord.user.tag}!`);
 });
 
+//When the bot reconnect
 clientDiscord.once("reconnecting", () => {
     console.log("Reconnecting!");
 });
 
+//When the bot disconnect
 clientDiscord.once("disconnect", () => {
     console.log("Disconnect!");
 });
 
-clientDiscord.on('message', message => {
-    if (message.author.bot) return;
+//Error handler - ex : ECONNRESET 
+clientDiscord.on('uncaughtException', function (err) {
+    console.log(err);
+})
 
+//Main chat listener
+clientDiscord.on('message', message => {
+    //If the bot speaks or word dosent start with triggerd command, ignore the message
+    if (message.author.bot) return;
     if (!message.content.startsWith(prefix)) return;
 
     const serverQueue = queue.get(message.guild.id);
 
-    if (message.content.startsWith(prefix + "feur")) {
+    if (message.content.startsWith(prefix + "feur")) { //Feur case
         message.channel.send("https://destroykeaum.alwaysdata.net/assets/other/feur.mp4");
-    } else if ((message.content.startsWith(`${prefix}p`)) || (message.content.startsWith(`${prefix}play`))) {
+    } else if ((message.content.startsWith(`${prefix}p`)) || (message.content.startsWith(`${prefix}play`))) { //play case
         getURL(message, serverQueue);
         return;
-    } else if ((message.content.startsWith(`${prefix}s`)) || (message.content.startsWith(`${prefix}skip`))) {
+    } else if ((message.content.startsWith(`${prefix}s`)) || (message.content.startsWith(`${prefix}skip`))) { //skip case
         skip(message, serverQueue);
         return;
-    } else if ((message.content.startsWith(`${prefix}fo`)) || (message.content.startsWith(`${prefix}fuckoff`))) {
+    } else if ((message.content.startsWith(`${prefix}fo`)) || (message.content.startsWith(`${prefix}fuckoff`))) { //disconnect case
         stop(message, serverQueue);
         return;
     } else {
-        message.channel.send("La commande n'existe pas !")
+        message.channel.send("La commande n'existe pas !") //error case
     }
 })
 
 /*
+
+JE Reviens case
+
 clientDiscord.on('voiceStateUpdate', (oldMember, newMember) => {
     let newUserChannel = newMember.channelID;
     let oldUserChannel = oldMember.channelID;
@@ -118,7 +129,8 @@ async function execute(url, message, serverQueue) {
     const song = {
         title: songInfo.videoDetails.title,
         url: songInfo.videoDetails.video_url,
-        thumbnail: songInfo.videoDetails.thumbnails[4].url
+        thumbnail: songInfo.videoDetails.thumbnails[songInfo.videoDetails.thumbnails.length - 1].url,
+        requestAuthor: message.author
     };
 
     if (!serverQueue) {
@@ -138,7 +150,7 @@ async function execute(url, message, serverQueue) {
         try {
             var connection = await voiceChannel.join();
             queueContruct.connection = connection;
-            play(message.guild, queueContruct.songs[0], message.author)
+            play(message.guild, queueContruct.songs[0], queueContruct.songs[0].requestAuthor)
         } catch (error) {
             console.log(error);
             queue.delete(message.guild.id)
@@ -147,8 +159,19 @@ async function execute(url, message, serverQueue) {
 
     } else {
         serverQueue.songs.push(song);
-        console.log(serverQueue.songs);
-        return message.channel.send(`${song.title} a été ajouté sur la file d'attente !`)
+        const embedAdded = new Discord.MessageEmbed()
+        .setTitle(message.author.username + " a ajouté une musique sur la file d'attente !")
+        .setAuthor(message.author.username, message.author.avatarURL())
+        .setColor("#C4302B")
+        .setFooter("StroyBot/D-Key Bot", "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png")
+        .setTimestamp()
+        .setURL(song.url)
+        .addFields({
+            name: song.title,
+            value: "🎵 🎵 🎵 🎵 🎵"
+        });
+
+        return message.channel.send(embedAdded)
     }
 }
 
@@ -162,10 +185,10 @@ function play(guild, song, author) {
 
     const dispatcher = serverQueue.connection.play(ytdl(song.url)).on("finish", () => {
         serverQueue.songs.shift();
-        play(guild, serverQueue.songs[0]);
+        play(guild, serverQueue.songs[0], author);
     }).on("error", error => console.log(error));
 
-    const embed = new Discord.MessageEmbed()
+    const embedPlayed = new Discord.MessageEmbed()
         .setTitle(song.title)
         .setAuthor(author.username, author.avatarURL())
         .setColor("#C4302B")
@@ -174,13 +197,13 @@ function play(guild, song, author) {
         .setTimestamp()
         .setURL(song.url)
         .addFields({
-            name: author.username + " a lancer/ajouté une musique !",
+            name: author.username + " a lancé une musique !",
             value: song.title
         });
 
     dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
 
-    serverQueue.textChannel.send(embed);
+    serverQueue.textChannel.send(embedPlayed);
 }
 
 function skip(message, serverQueue) {
