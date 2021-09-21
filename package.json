@@ -1,6 +1,6 @@
 {
   "name": "D-Key bot",
-  "version": "1.6.0",
+  "version": "0.7.0",
   "engines": {
     "node": "16.4.0"
   },

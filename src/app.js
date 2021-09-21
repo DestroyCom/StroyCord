@@ -36,6 +36,10 @@ clientDiscord.on('uncaughtException', function (err) {
     console.log(err);
 })
 
+clientDiscord.on('error', error => {
+    console.log('Error occured :', error)
+});
+
 //Main chat listener
 clientDiscord.on('message', message => {
     //If the bot speaks or word dosent start with triggerd command, ignore the message
@@ -85,6 +89,7 @@ clientDiscord.on('voiceStateUpdate', (oldMember, newMember) => {
 function getURL(message, serverQueue) {
     const arguments = message.content.split(" ");
     const messageReceived = message.content;
+    const youtubeUrlPattern = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$/;
 
     const voiceChannel = message.member.voice.channel;
     if (!voiceChannel) {
@@ -94,9 +99,13 @@ function getURL(message, serverQueue) {
     if (!permissions.has("CONNECT") || !permissions.has("SPEAK")) {
         return message.channel.send("Le bot a besoin de la permission d'acceder et de parler dans le salon vocal !");
     }
+    if (arguments[1] === undefined) {
+        return message.channel.send("Erreur dans la commande !");
+    }
 
-    if (!(messageReceived.includes('https://www.youtube.'))) {
+    const playlistUrlValid = youtubeUrlPattern.test(arguments[1]);
 
+    if (!playlistUrlValid) {
         let tmpQuery = ""
         if (messageReceived.includes('&play ')) {
             tmpQuery = messageReceived.replace('&play ', '')
@@ -115,63 +124,168 @@ function getURL(message, serverQueue) {
             execute(urlTmp, message, serverQueue)
         }).catch((err) => console.log(err))
     } else {
-        execute(arguments[1], message, serverQueue)
+        let playlistPattern = new RegExp("[&?]list=([a-z0-9_-]+)", "i");
+        if (playlistPattern.test(arguments[1])) {
+            executePlaylist(arguments[1], message)
+        } else {
+            execute(arguments[1], message, serverQueue)
+        }
     }
 
 }
 
-async function execute(url, message, serverQueue) {
+async function executePlaylist(playlistURL, message) {
 
+    var responsePlaylistSearch = "";
+    let playlistUrlId = "";
+    let extractIdPattern = new RegExp("[&?]list=([a-z0-9_-]+)", "i");
+    let extractedID = extractIdPattern.exec(playlistURL);
+    playlistUrlId = extractedID[1];
+
+
+    responsePlaylistSearch = await google.youtube('v3').playlistItems.list({
+        key: process.env.GOOGLE_YOUTUBE_API_KEY,
+        part: 'snippet',
+        maxResults: 49,
+        playlistId: playlistUrlId
+    }).then((response) => {
+        return response.data.items;
+    }).catch((err) => console.log(err));
+
+    var videoIdPlaylist = [];
+    for (let i = 0; i < responsePlaylistSearch.length; i++) {
+        videoIdPlaylist.push(responsePlaylistSearch[i].snippet.resourceId.videoId)
+    }
+
+    const playlistID = videoIdPlaylist;
+
+    for (const [index, id] of playlistID.entries()) {
+        const serverQueue = queue.get(message.guild.id);
+        let urlTmp = "https://www.youtube.com/watch?v=" + id;
+
+        const voiceChannel = message.member.voice.channel;
+
+        var songInfo = {};
+        try {
+            songInfo = await ytdl.getInfo(urlTmp);
+
+            const song = {
+                title: songInfo.videoDetails.title,
+                url: songInfo.videoDetails.video_url,
+                thumbnail: songInfo.videoDetails.thumbnails[songInfo.videoDetails.thumbnails.length - 1].url,
+                requestAuthor: message.author
+            };
+
+            if (index == 0) {
+
+                const queueContruct = {
+                    textChannel: message.channel,
+                    voiceChannel: voiceChannel,
+                    connection: null,
+                    songs: [],
+                    volume: 5,
+                    playing: true
+                }
+
+                queue.set(message.guild.id, queueContruct);
+
+                queueContruct.songs.push(song);
+
+                try {
+                    var connection = await voiceChannel.join();
+                    queueContruct.connection = connection;
+
+                    const serverQueue = queue.get(message.guild.id);
+
+                    play(message.guild, queueContruct.songs[0], queueContruct.songs[0].requestAuthor);
+                } catch (error) {
+                    console.log(error);
+                    queue.delete(message.guild.id)
+                    return message.channel.send(error);
+                }
+            } else {
+                serverQueue.songs.push(song);
+            }
+        } catch (err) {
+            errors(err.statusCode, message);
+            return;
+        }
+    }
+}
+
+async function execute(url, message, serverQueue) {
     const voiceChannel = message.member.voice.channel;
 
-    const songInfo = await ytdl.getInfo(url);
+    try {
+        var songInfo = await ytdl.getInfo(url);
 
-    const song = {
-        title: songInfo.videoDetails.title,
-        url: songInfo.videoDetails.video_url,
-        thumbnail: songInfo.videoDetails.thumbnails[songInfo.videoDetails.thumbnails.length - 1].url,
-        requestAuthor: message.author
-    };
+        const song = {
+            title: songInfo.videoDetails.title,
+            url: songInfo.videoDetails.video_url,
+            thumbnail: songInfo.videoDetails.thumbnails[songInfo.videoDetails.thumbnails.length - 1].url,
+            requestAuthor: message.author
+        };
 
-    if (!serverQueue) {
-        const queueContruct = {
-            textChannel: message.channel,
-            voiceChannel: voiceChannel,
-            connection: null,
-            songs: [],
-            volume: 5,
-            playing: true
+        if (!serverQueue) {
+            const queueContruct = {
+                textChannel: message.channel,
+                voiceChannel: voiceChannel,
+                connection: null,
+                songs: [],
+                volume: 5,
+                playing: true
+            }
+
+            queue.set(message.guild.id, queueContruct);
+
+            queueContruct.songs.push(song);
+
+            try {
+                const embedPlayed = new Discord.MessageEmbed()
+                    .setTitle(song.title)
+                    .setAuthor(message.author.username, message.author.avatarURL())
+                    .setColor("#C4302B")
+                    .setFooter("StroyCord/D-Key Bot", "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png")
+                    .setThumbnail(song.thumbnail)
+                    .setTimestamp()
+                    .setURL(song.url)
+                    .addFields({
+                        name: message.author.username + " a demandé cette musique !",
+                        value: song.title
+                    });
+                message.channel.send(embedPlayed)
+
+                var connection = await voiceChannel.join();
+                queueContruct.connection = connection;
+
+                play(message.guild, queueContruct.songs[0], queueContruct.songs[0].requestAuthor);
+                return;
+
+            } catch (error) {
+                console.log(error);
+                queue.delete(message.guild.id)
+                return message.channel.send(error);
+            }
+        } else {
+            serverQueue.songs.push(song);
+            const embedAdded = new Discord.MessageEmbed()
+                .setTitle(message.author.username + " a ajouté une musique sur la file d'attente !")
+                .setAuthor(message.author.username, message.author.avatarURL())
+                .setColor("#C4302B")
+                .setFooter("StroyCord/D-Key Bot", "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png")
+                .setThumbnail(song.thumbnail)
+                .setTimestamp()
+                .setURL(song.url)
+                .addFields({
+                    name: song.title,
+                    value: "\u200B"
+                });
+
+            return message.channel.send(embedAdded)
         }
-
-        queue.set(message.guild.id, queueContruct);
-
-        queueContruct.songs.push(song);
-
-        try {
-            var connection = await voiceChannel.join();
-            queueContruct.connection = connection;
-            play(message.guild, queueContruct.songs[0], queueContruct.songs[0].requestAuthor)
-        } catch (error) {
-            console.log(error);
-            queue.delete(message.guild.id)
-            return message.channel.send(error);
-        }
-
-    } else {
-        serverQueue.songs.push(song);
-        const embedAdded = new Discord.MessageEmbed()
-        .setTitle(message.author.username + " a ajouté une musique sur la file d'attente !")
-        .setAuthor(message.author.username, message.author.avatarURL())
-        .setColor("#C4302B")
-        .setFooter("StroyBot/D-Key Bot", "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png")
-        .setTimestamp()
-        .setURL(song.url)
-        .addFields({
-            name: song.title,
-            value: "🎵 🎵 🎵 🎵 🎵"
-        });
-
-        return message.channel.send(embedAdded)
+    } catch (err) {
+        errors(err.statusCode, message);
+        return;
     }
 }
 
@@ -188,22 +302,7 @@ function play(guild, song, author) {
         play(guild, serverQueue.songs[0], author);
     }).on("error", error => console.log(error));
 
-    const embedPlayed = new Discord.MessageEmbed()
-        .setTitle(song.title)
-        .setAuthor(author.username, author.avatarURL())
-        .setColor("#C4302B")
-        .setFooter("StroyBot/D-Key Bot", "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png")
-        .setThumbnail(song.thumbnail)
-        .setTimestamp()
-        .setURL(song.url)
-        .addFields({
-            name: author.username + " a lancé une musique !",
-            value: song.title
-        });
-
     dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
-
-    serverQueue.textChannel.send(embedPlayed);
 }
 
 function skip(message, serverQueue) {
@@ -214,7 +313,12 @@ function skip(message, serverQueue) {
     if (!serverQueue) {
         return message.channel.send("Aucune musique n'est jouée actuellement !")
     }
-    serverQueue.connection.dispatcher.end();
+    try {
+        serverQueue.connection.dispatcher.end();
+    } catch {
+        serverQueue.connection.dispatcher.destroy();
+    }
+
 }
 
 function stop(message, serverQueue) {
@@ -228,6 +332,24 @@ function stop(message, serverQueue) {
 
     serverQueue.songs = [];
     serverQueue.connection.dispatcher.end();
+}
+
+function errors(errorCode, message) {
+    switch (errorCode) {
+        case 410:
+            let errorEmbed = new Discord.MessageEmbed()
+                .setTitle("⚠️ ERREUR : Impossible d'acceder à la musique demandée !")
+                .setAuthor("StroyCord/D-Key Bot", "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png")
+                .setColor("#181818")
+                .setTimestamp()
+                .addFields({
+                    name: "Les raisons peuvent etre diverses (vidéo soumise a une limite d'âge, privée, bloquée par les ayants droits)",
+                    value: "Error code : 410"
+                });
+            return message.channel.send(errorEmbed);
+        default:
+            return;
+    }
 }
 
 clientDiscord.login(process.env.BOT_TOKEN);
