@@ -1,6 +1,6 @@
 {
-  "name": "D-Key bot",
-  "version": "0.7.0",
+  "name": "StroyCord/D-Key bot",
+  "version": "0.7.1",
   "engines": {
     "node": "16.4.0"
   },
