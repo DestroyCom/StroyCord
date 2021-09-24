@@ -59,6 +59,10 @@ clientDiscord.on('message', message => {
     } else if ((message.content.startsWith(`${prefix}fo`)) || (message.content.startsWith(`${prefix}fuckoff`))) { //disconnect case
         stop(message, serverQueue);
         return;
+    } else if (message.content.startsWith(`${prefix}w`)) { //pause case
+        pause(message, serverQueue);
+    } else if (message.content.startsWith(`${prefix}r`)) { //pause case
+        resume(message, serverQueue);
     } else {
         message.channel.send("La commande n'existe pas !") //error case
     }
@@ -126,7 +130,7 @@ function getURL(message, serverQueue) {
     } else {
         let playlistPattern = new RegExp("[&?]list=([a-z0-9_-]+)", "i");
         if (playlistPattern.test(arguments[1])) {
-            executePlaylist(arguments[1], message)
+            executePlaylist(arguments[1], message, serverQueue)
         } else {
             execute(arguments[1], message, serverQueue)
         }
@@ -134,14 +138,23 @@ function getURL(message, serverQueue) {
 
 }
 
-async function executePlaylist(playlistURL, message) {
+async function executePlaylist(playlistURL, message, serverQueue) {
 
     var responsePlaylistSearch = "";
+    var responsePlaylistInfo = "";
     let playlistUrlId = "";
     let extractIdPattern = new RegExp("[&?]list=([a-z0-9_-]+)", "i");
     let extractedID = extractIdPattern.exec(playlistURL);
     playlistUrlId = extractedID[1];
 
+    responsePlaylistInfo = await google.youtube('v3').playlists.list({
+        key: process.env.GOOGLE_YOUTUBE_API_KEY,
+        part: 'snippet',
+        maxResults: 49,
+        id: playlistUrlId
+    }).then((response) => {
+        return response.data.items;
+    }).catch((err) => console.log(err))
 
     responsePlaylistSearch = await google.youtube('v3').playlistItems.list({
         key: process.env.GOOGLE_YOUTUBE_API_KEY,
@@ -153,11 +166,35 @@ async function executePlaylist(playlistURL, message) {
     }).catch((err) => console.log(err));
 
     var videoIdPlaylist = [];
+
     for (let i = 0; i < responsePlaylistSearch.length; i++) {
         videoIdPlaylist.push(responsePlaylistSearch[i].snippet.resourceId.videoId)
     }
 
     const playlistID = videoIdPlaylist;
+
+    const embedPlayedPlaylist = new Discord.MessageEmbed()
+        .setTitle(message.author.username + " a ajouté une playlist !")
+        .setAuthor(message.author.username, message.author.avatarURL())
+        .setColor("#C4302B")
+        .setFooter("StroyCord/D-Key Bot", "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png")
+        .setThumbnail(responsePlaylistInfo[0].snippet.thumbnails[Object.keys(responsePlaylistInfo[0].snippet.thumbnails)[Object.keys(responsePlaylistInfo[0].snippet.thumbnails).length - 1]].url)
+        .setTimestamp()
+        .setURL("https://youtube.com/playlist?list=" + responsePlaylistInfo[0].id)
+        .addFields({
+            name: 'Nom de la playlist :',
+            value: responsePlaylistInfo[0].snippet.title,
+            inline: true
+        }, {
+            name: 'Playlist crée par :',
+            value: responsePlaylistInfo[0].snippet.channelTitle,
+            inline: true
+        }, {
+            name: "Mis en file d'attente :",
+            value: responsePlaylistSearch.length - 1 + " musiques"
+        });
+
+    message.channel.send(embedPlayedPlaylist)
 
     for (const [index, id] of playlistID.entries()) {
         const serverQueue = queue.get(message.guild.id);
@@ -176,7 +213,7 @@ async function executePlaylist(playlistURL, message) {
                 requestAuthor: message.author
             };
 
-            if (index == 0) {
+            if (index == 0 && !serverQueue) {
 
                 const queueContruct = {
                     textChannel: message.channel,
@@ -201,6 +238,7 @@ async function executePlaylist(playlistURL, message) {
                 } catch (error) {
                     console.log(error);
                     queue.delete(message.guild.id)
+
                     return message.channel.send(error);
                 }
             } else {
@@ -211,6 +249,22 @@ async function executePlaylist(playlistURL, message) {
             return;
         }
     }
+
+    /*
+    const playlistEmbeds = new Discord.MessageEmbed()
+    .setTitle(song.title)
+    .setAuthor(message.author.username, message.author.avatarURL())
+    .setColor("#C4302B")
+    .setFooter("StroyCord/D-Key Bot", "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png")
+    .setThumbnail(song.thumbnail)
+    .setTimestamp()
+    .setURL(song.url)
+    .addFields({
+        name: message.author.username + " a demandé cette musique !",
+        value: song.title
+    });
+    message.channel.send(embedPlayed)  
+    */
 }
 
 async function execute(url, message, serverQueue) {
@@ -331,11 +385,53 @@ function stop(message, serverQueue) {
         return message.channel.send("Aucune musique n'est jouée actuellement !");
 
     serverQueue.songs = [];
-    serverQueue.connection.dispatcher.end();
+    try {
+        serverQueue.connection.dispatcher.end();
+    } catch {
+        serverQueue.connection.dispatcher.destroy();
+    }
+}
+
+function pause(message, serverQueue) {
+    if (!message.member.voice.channel)
+        return message.channel.send(
+            "Vous avez besoin d'etre dans un salon vocal pour controler le bot !"
+        );
+
+    if (!serverQueue)
+        return message.channel.send("Aucune musique n'est jouée actuellement !");
+
+    if (serverQueue.playing) {
+        serverQueue.playing = false;
+        serverQueue.connection.dispatcher.pause();
+        return message.channel.send(`⏸ ${message.author} a mis en pause la musique !`).catch(console.error);
+    }
+
+}
+
+function resume(message, serverQueue) {
+    if (!message.member.voice.channel)
+        return message.channel.send(
+            "Vous avez besoin d'etre dans un salon vocal pour controler le bot !"
+        );
+
+    if (!serverQueue)
+        return message.channel.send("Aucune musique n'est jouée actuellement !");
+
+
+    if (!serverQueue.playing) {
+        serverQueue.playing = true;
+        serverQueue.connection.dispatcher.resume();
+        serverQueue.connection.dispatcher.pause(true);
+        serverQueue.connection.dispatcher.resume();
+        return message.channel.send(`▶ ${message.author} a repris la musique !`).catch(console.error);
+    }
+
 }
 
 function errors(errorCode, message) {
     switch (errorCode) {
+        case 403:
         case 410:
             let errorEmbed = new Discord.MessageEmbed()
                 .setTitle("⚠️ ERREUR : Impossible d'acceder à la musique demandée !")

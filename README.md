@@ -12,7 +12,6 @@ The bot has 4 commands:
 - ``&fo`` / ``&fuckoff`` disconnects the bot and stops the music playing
 - ``&feur`` is used to be able to "feur" your friends
 
-
 ## Deploys
 
 **You will need a *Youtube API Key* and a *Discord Developper Application* !!**
@@ -63,8 +62,9 @@ The bot uses :
 - [x] Add first discord embeds
 - [x] Update Readme (How to deploy)
 - [x] Handle playlist request - [Planned for 0.7 realease]
-- [ ] Add "pause" feature [Planned for 0.8 realease]
+- [ ] Add "pause" feature [Planned for 0.8 realease] Seem had an issue
 - [ ] Display actual song queue [Planned for 0.8/0.9 realease]
+- [ ] Add customs prefix [Planned for 0.8/0.9 realease]
 - [ ] Add help for getting API Key [Planned for 0.9 realease]
 - [ ] Fix "I'll be back" features and creates a disabling method [Planned before 1.0 realease]
 - [ ] Add multi-language support (English/French to start) [Planned before 1.0 realease]
