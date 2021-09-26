@@ -1,5 +1,5 @@
 {
-  "name": "StroyCord/D-Key bot",
+  "name": "stroycord",
   "version": "0.7.1",
   "engines": {
     "node": "16.4.0"
