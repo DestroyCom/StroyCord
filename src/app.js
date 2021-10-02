@@ -63,6 +63,8 @@ clientDiscord.on('message', message => {
         pause(message, serverQueue);
     } else if (message.content.startsWith(`${prefix}r`)) { //pause case
         resume(message, serverQueue);
+    } else if (message.content.startsWith(`${prefix}ne`)) { //pause case
+        playXiaomi(message, './11LiteNE.mp3');
     } else {
         message.channel.send("La commande n'existe pas !") //error case
     }
@@ -357,6 +359,18 @@ function play(guild, song, author) {
     }).on("error", error => console.log(error));
 
     dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
+}
+
+function playXiaomi(message, song) {
+    var VC = message.member.voice.channel;
+        if (!VC)
+            return message.reply("MESSAGE IF NOT IN A VOICE CHANNEL")
+    VC.join()
+        .then(connection => {
+            const dispatcher = connection.play(song);
+            dispatcher.on("finish", end => {VC.leave()});
+        })
+        .catch(console.error);
 }
 
 function skip(message, serverQueue) {

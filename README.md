@@ -29,7 +29,7 @@ The bot has 4 commands:
 You can start this project in a few steps :
 
 1. Clone this directory,
-2. run the command npm install,
+2. run the command ``npm install``,
 3. download ffmpeg at [ffmpeg.org](https://www.ffmpeg.org/) and install *"ffmpeg.exe"*, *"ffplay.exe"* and *"ffprobe.exe"* in the root folder
 4. Then rename the file '.env.dist' into '.env',
 5. Once you have your accounts and the keys, replace the variables in the '.env' with your own.
