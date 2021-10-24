@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const ytdl = require('ytdl-core');
+const ytdl = require('ytdl-core-discord');
 const Discord = require('discord.js');
 const {
     MessageEmbed
@@ -351,7 +351,7 @@ function play(guild, song, author) {
         return;
     }
 
-    const dispatcher = serverQueue.connection.play(ytdl(song.url)).on("finish", () => {
+    const dispatcher = serverQueue.connection.play(await ytdl(song.url), {type: 'opus', filter: 'audioonly'}).on("finish", () => {
         serverQueue.songs.shift();
         play(guild, serverQueue.songs[0], author);
     }).on("error", error => console.log(error));
