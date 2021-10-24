@@ -343,7 +343,7 @@ async function execute(url, message, serverQueue) {
     }
 }
 
-function play(guild, song, author) {
+async function play(guild, song, author) {
     const serverQueue = queue.get(guild.id);
     if (!song) {
         serverQueue.voiceChannel.leave();
@@ -351,10 +351,10 @@ function play(guild, song, author) {
         return;
     }
 
-    const dispatcher = serverQueue.connection.play(ytdl(song.url)).on("finish", () => {
+    const dispatcher = serverQueue.connection.play(await ytdl(song.url), { type: 'opus', filter: 'audioonly' }).on('finish', () => {
         serverQueue.songs.shift();
         play(guild, serverQueue.songs[0], author);
-    }).on("error", error => console.log(error));
+    }).on('error', (error) => console.log(error));
 
     dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
 }
