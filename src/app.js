@@ -64,7 +64,7 @@ clientDiscord.on('message', message => {
     } else if (message.content.startsWith(`${prefix}r`)) { //pause case
         resume(message, serverQueue);
     } else if (message.content.startsWith(`${prefix}ne`)) { //pause case
-        playXiaomi(message, './11LiteNE.mp3');
+        playXiaomi(message.guild, './11LiteNE.mp3');
     } else {
         message.channel.send("La commande n'existe pas !") //error case
     }
@@ -361,16 +361,20 @@ async function play(guild, song, author) {
     dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
 }
 
-function playXiaomi(message, song) {
-    var VC = message.member.voice.channel;
-        if (!VC)
-            return message.reply("MESSAGE IF NOT IN A VOICE CHANNEL")
-    VC.join()
-        .then(connection => {
-            const dispatcher = connection.play(song);
-            dispatcher.on("finish", end => {VC.leave()});
-        })
-        .catch(console.error);
+function playXiaomi(guild, song) {
+    const serverQueue = queue.get(guild.id);
+    if (!song) {
+        serverQueue.voiceChannel.leave();
+        queue.delete(guild.id);
+        return;
+    }
+
+    const dispatcher = serverQueue.connection.play(song, { filter: 'audioonly' }).on("finish", () => {
+        serverQueue.songs.shift();
+        play(guild, serverQueue.songs[0], author);
+    }).on("error", error => console.log(error));
+
+    dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
 }
 
 function skip(message, serverQueue) {
