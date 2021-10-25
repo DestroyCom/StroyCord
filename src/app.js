@@ -352,8 +352,8 @@ async function play(guild, song, author) {
     }
 
     const dispatcher = serverQueue.connection.play(await ytdl(song.url), {
-        type: "opus",
-        filter: "audioonly"
+        type: 'opus',
+        filter: 'audioonly'
     }).on("finish", () => {
         serverQueue.songs.shift();
         play(guild, serverQueue.songs[0], author);
