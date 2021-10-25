@@ -282,7 +282,7 @@ async function execute(url, message, serverQueue, querySearch) {
             requestAuthor: message.author,
             querySearch: querySearch,
             videoAuthor: songInfo.videoDetails.author.name,
-            videoLength: Math.round((songInfo.videoDetails.lengthSeconds / 60)*100)/100 + ' minutes'
+            videoLength: Math.round((songInfo.videoDetails.lengthSeconds / 60) * 100) / 100 + ' minutes'
         };
 
         if (!serverQueue) {
@@ -350,6 +350,17 @@ async function execute(url, message, serverQueue, querySearch) {
                 .addFields({
                     name: song.title,
                     value: "\u200B"
+                }, {
+                    name: 'De :',
+                    value: song.videoAuthor,
+                    inline: true
+                }, {
+                    name: 'Trouvé avec :',
+                    value: '&p ' + song.querySearch,
+                    inline: true
+                }, {
+                    name: 'Durée :',
+                    value: song.videoLength
                 });
 
             return message.channel.send(embedAdded)
