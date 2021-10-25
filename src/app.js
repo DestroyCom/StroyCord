@@ -125,20 +125,20 @@ function getURL(message, serverQueue) {
             q: tmpQuery
         }).then((response) => {
             let urlTmp = "https://www.youtube.com/watch?v=" + response.data.items[0].id.videoId;
-            execute(urlTmp, message, serverQueue)
+            execute(urlTmp, message, serverQueue, tmpQuery)
         }).catch((err) => console.log(err))
     } else {
         let playlistPattern = new RegExp("[&?]list=([a-z0-9_-]+)", "i");
         if (playlistPattern.test(arguments[1])) {
-            executePlaylist(arguments[1], message, serverQueue)
+            executePlaylist(arguments[1], message, serverQueue, 'URL')
         } else {
-            execute(arguments[1], message, serverQueue)
+            execute(arguments[1], message, serverQueue, 'URL')
         }
     }
 
 }
 
-async function executePlaylist(playlistURL, message, serverQueue) {
+async function executePlaylist(playlistURL, message, serverQueue, querySearch) {
 
     var responsePlaylistSearch = "";
     var responsePlaylistInfo = "";
@@ -210,7 +210,8 @@ async function executePlaylist(playlistURL, message, serverQueue) {
                 title: songInfo.videoDetails.title,
                 url: songInfo.videoDetails.video_url,
                 thumbnail: songInfo.videoDetails.thumbnails[songInfo.videoDetails.thumbnails.length - 1].url,
-                requestAuthor: message.author
+                requestAuthor: message.author,
+                querySearch: querySearch
             };
 
             if (index == 0 && !serverQueue) {
@@ -234,6 +235,7 @@ async function executePlaylist(playlistURL, message, serverQueue) {
 
                     const serverQueue = queue.get(message.guild.id);
 
+                    message.delete();
                     play(message.guild, queueContruct.songs[0], queueContruct.songs[0].requestAuthor);
                 } catch (error) {
                     console.log(error);
@@ -267,7 +269,7 @@ async function executePlaylist(playlistURL, message, serverQueue) {
     */
 }
 
-async function execute(url, message, serverQueue) {
+async function execute(url, message, serverQueue, querySearch) {
     const voiceChannel = message.member.voice.channel;
 
     try {
@@ -277,7 +279,10 @@ async function execute(url, message, serverQueue) {
             title: songInfo.videoDetails.title,
             url: songInfo.videoDetails.video_url,
             thumbnail: songInfo.videoDetails.thumbnails[songInfo.videoDetails.thumbnails.length - 1].url,
-            requestAuthor: message.author
+            requestAuthor: message.author,
+            querySearch: querySearch,
+            videoAuthor: songInfo.videoDetails.author.name,
+            videoLength: Math.round((songInfo.videoDetails.lengthSeconds / 60)*100)/100 + ' minutes'
         };
 
         if (!serverQueue) {
@@ -306,12 +311,24 @@ async function execute(url, message, serverQueue) {
                     .addFields({
                         name: message.author.username + " a demandé cette musique !",
                         value: song.title
+                    }, {
+                        name: 'De :',
+                        value: song.videoAuthor,
+                        inline: true
+                    }, {
+                        name: 'Trouvé avec :',
+                        value: '&p ' + song.querySearch,
+                        inline: true
+                    }, {
+                        name: 'Durée :',
+                        value: song.videoLength
                     });
                 message.channel.send(embedPlayed)
 
                 var connection = await voiceChannel.join();
                 queueContruct.connection = connection;
 
+                message.delete();
                 play(message.guild, queueContruct.songs[0], queueContruct.songs[0].requestAuthor);
                 return;
 
@@ -351,7 +368,10 @@ async function play(guild, song, author) {
         return;
     }
 
-    const dispatcher = serverQueue.connection.play(await ytdl(song.url), { type: 'opus', filter: 'audioonly' }).on('finish', () => {
+    const dispatcher = serverQueue.connection.play(await ytdl(song.url), {
+        type: 'opus',
+        filter: 'audioonly'
+    }).on('finish', () => {
         serverQueue.songs.shift();
         play(guild, serverQueue.songs[0], author);
     }).on('error', (error) => console.log(error));

@@ -62,10 +62,11 @@ The bot uses :
 - [x] Add first discord embeds
 - [x] Update Readme (How to deploy)
 - [x] Handle playlist request - [Planned for 0.7 realease]
-- [ ] Add "pause" feature [Planned for 0.8 realease] Seem had an issue
+- [x] Add "pause" & "resume" feature [Planned for 0.8 realease]
+- [x] Delete request message [Planned for 0.8 realease]
 - [ ] Display actual song queue [Planned for 0.8/0.9 realease]
 - [ ] Add customs prefix [Planned for 0.8/0.9 realease]
 - [ ] Add help for getting API Key [Planned for 0.9 realease]
 - [ ] Fix "I'll be back" features and creates a disabling method [Planned before 1.0 realease]
 - [ ] Add multi-language support (English/French to start) [Planned before 1.0 realease]
-- [ ] Handle node majors crash errors
+- [x] Handle node majors crash errors
