@@ -351,7 +351,10 @@ async function play(guild, song, author) {
         return;
     }
 
-    const dispatcher = serverQueue.connection.play(await ytdl(song.url), { type: 'opus', filter: 'audioonly' }).on('finish', () => {
+    const dispatcher = serverQueue.connection.play(await ytdl(song.url), {
+        type: 'opus',
+        filter: 'audioonly'
+    }).on('finish', () => {
         serverQueue.songs.shift();
         play(guild, serverQueue.songs[0], author);
     }).on('error', (error) => console.log(error));
