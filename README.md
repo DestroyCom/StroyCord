@@ -10,6 +10,7 @@ The bot has 4 commands:
 - ``&p [music url or music name]`` / ``&play [music url or music name]`` is used to start playing music.
 - ``&s`` / ``&skip`` is used to skip the current music
 - ``&fo`` / ``&fuckoff`` disconnects the bot and stops the music playing
+- ``&ne` play the french Xiaomi 11 Lite NE Song.  
 - ``&feur`` is used to be able to "feur" your friends
 
 ## Deploys

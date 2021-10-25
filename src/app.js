@@ -63,8 +63,8 @@ clientDiscord.on('message', message => {
         pause(message, serverQueue);
     } else if (message.content.startsWith(`${prefix}r`)) { //pause case
         resume(message, serverQueue);
-    } else if (message.content.startsWith(`${prefix}ne`)) { //pause case
-        playXiaomi(message.guild, './11LiteNE.mp3');
+    } else if (message.content.startsWith(`${prefix}ne`) && process.env.XIAOMI_SONG) { //pause case
+        playXiaomi(message, message.guild);
     } else {
         message.channel.send("La commande n'existe pas !") //error case
     }
@@ -353,7 +353,10 @@ async function play(guild, song, author) {
         return;
     }
 
-    const dispatcher = serverQueue.connection.play(await ytdl(song.url), { type: 'opus', filter: 'audioonly' }).on("finish", () => {
+    const dispatcher = serverQueue.connection.play(await ytdl(song.url), {
+        type: 'opus',
+        filter: 'audioonly'
+    }).on("finish", () => {
         serverQueue.songs.shift();
         play(guild, serverQueue.songs[0], author);
     }).on("error", error => console.log(error));
@@ -361,20 +364,43 @@ async function play(guild, song, author) {
     dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
 }
 
-function playXiaomi(guild, song) {
+async function playXiaomi(message, guild) {
     const serverQueue = queue.get(guild.id);
-    if (!song) {
-        serverQueue.voiceChannel.leave();
-        queue.delete(guild.id);
-        return;
+    const voiceChannel = message.member.voice.channel;
+
+    var songInfo = await ytdl.getInfo("https://www.youtube.com/watch?v=E7RUThRTNHk");
+
+    const songXiaomi = {
+        title: songInfo.videoDetails.title,
+        url: songInfo.videoDetails.video_url,
+        thumbnail: songInfo.videoDetails.thumbnails[songInfo.videoDetails.thumbnails.length - 1].url,
+        requestAuthor: message.author
+    };
+
+    if (!serverQueue) {
+        const queueContruct = {
+            textChannel: message.channel,
+            voiceChannel: voiceChannel,
+            connection: null,
+            songs: [],
+            volume: 5,
+            playing: true
+        }
+
+        queue.set(message.guild.id, queueContruct);
+
+        queueContruct.songs.push(songXiaomi);
+
+        var connection = await voiceChannel.join();
+        queueContruct.connection = connection;
+        play(message.guild, queueContruct.songs[0], queueContruct.songs[0].requestAuthor);
+    } else {
+        serverQueue.songs.push(songXiaomi);
     }
 
-    const dispatcher = serverQueue.connection.play(song, { filter: 'audioonly' }).on("finish", () => {
-        serverQueue.songs.shift();
-        play(guild, serverQueue.songs[0], author);
-    }).on("error", error => console.log(error));
 
-    dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
+
+
 }
 
 function skip(message, serverQueue) {
