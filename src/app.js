@@ -352,12 +352,12 @@ async function play(guild, song, author) {
     }
 
     const dispatcher = serverQueue.connection.play(await ytdl(song.url), {
-        type: 'opus',
-        filter: 'audioonly'
-    }).on('finish', () => {
+        type: "opus",
+        filter: "audioonly"
+    }).on("finish", () => {
         serverQueue.songs.shift();
         play(guild, serverQueue.songs[0], author);
-    }).on('error', (error) => console.log(error));
+    }).on("error", (error) => console.log(error));
 
     dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
 }
