@@ -37,8 +37,13 @@
             "description": "The API Key from google API used for the music search.",
             "required": "true",
             "value": "YOUR GOOGLE_YOUTUBE_API_KEY"
+        },
+        "XIAOMI_SONG": {
+            "description": "Boolean. if True: Activate the NE command for playing Xiaomi 11 Lite NE Song.",
+            "required": "true",
+            "value": "false"
         }
     },
     "success_url": "https://destroykeaum.alwaysdata.net/caard.html",
-    "keywords": ["nodejs", "discord", "discordjs", "esm", "dotenv"]
+    "keywords": ["nodejs", "discord", "discordjs", "esm", "dotenv", "music", "youtube"]
 }
