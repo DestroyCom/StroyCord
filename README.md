@@ -27,7 +27,7 @@ The bot has 4 commands:
 
 ### Deploy on localhost
 
-*To see how to deploy it in the cloud, please see the section above*
+*To see how to deploy it in the cloud, please see the section above*  
 You can start this project in a few steps :
 
 1. Clone this directory,
