@@ -63,6 +63,8 @@ clientDiscord.on('message', message => {
         pause(message, serverQueue);
     } else if (message.content.startsWith(`${prefix}r`)) { //pause case
         resume(message, serverQueue);
+    } else if (message.content.startsWith(`${prefix}q`)) { //pause case
+        actualQueue(message);
     } else {
         message.channel.send("La commande n'existe pas !") //error case
     }
@@ -275,6 +277,9 @@ async function execute(url, message, serverQueue, querySearch) {
     try {
         var songInfo = await ytdl.getInfo(url);
 
+        let minutes = Math.floor(songInfo.videoDetails.lengthSeconds / 60);
+        let seconds = songInfo.videoDetails.lengthSeconds - minutes * 60;
+
         const song = {
             title: songInfo.videoDetails.title,
             url: songInfo.videoDetails.video_url,
@@ -282,7 +287,7 @@ async function execute(url, message, serverQueue, querySearch) {
             requestAuthor: message.author,
             querySearch: querySearch,
             videoAuthor: songInfo.videoDetails.author.name,
-            videoLength: Math.round((songInfo.videoDetails.lengthSeconds / 60) * 100) / 100 + ' minutes'
+            videoLength: minutes + ':' + seconds
         };
 
         if (!serverQueue) {
@@ -363,7 +368,7 @@ async function execute(url, message, serverQueue, querySearch) {
                     value: song.videoLength
                 });
 
-            return message.channel.send(embedAdded)
+            return message.channel.send(embedAdded);
         }
     } catch (err) {
         errors(err.statusCode, message);
@@ -458,6 +463,36 @@ function resume(message, serverQueue) {
         return message.channel.send(`▶ ${message.author} a repris la musique !`).catch(console.error);
     }
 
+}
+
+function actualQueue(message) {
+    const serverQueue = queue.get(message.guild.id);
+
+    if (!serverQueue)
+        return message.channel.send("Aucune musique n'est jouée actuellement !");
+
+    let songsList = serverQueue.songs;
+
+    if (songsList.length === 0) {
+        return message.channel.send("Aucune musique n'est jouée actuellement !");
+    }
+    let tabEmbeds = [];
+    songsList.forEach((song, index) => {
+        tabEmbeds.push({
+            name: index + '. ' + song.title,
+            value: song.videoAuthor + ', ' + song.videoLength + ' minutes.',
+        })
+    });
+
+    const embedQueue = new Discord.MessageEmbed()
+        .setTitle("Vous avez " + songsList.length + " musiques en liste d'attente !")
+        .setAuthor("Stroycord", "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png")
+        .setColor("#37123C")
+        .setFooter("StroyCord", "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png")
+        .setTimestamp()
+        .addFields(tabEmbeds);
+
+    return message.channel.send(embedQueue);
 }
 
 function errors(errorCode, message) {
