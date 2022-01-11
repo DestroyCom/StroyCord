@@ -67,6 +67,7 @@ The bot uses :
 - [x] Add "pause" & "resume" feature [Planned for 0.8 realease]
 - [x] Delete request message [Planned for 0.8 realease]
 - [x] Display actual song queue [Planned for 0.8 realease]
+- [ ] Transform current function into modules [Planned for 0.9 realease]
 - [ ] Add customs prefix [Planned for 0.8/0.9 realease]
 - [ ] Add help for getting API Key [Planned for 0.9 realease]
 - [ ] Fix "I'll be back" features and creates a disabling method [Planned before 1.0 realease]
