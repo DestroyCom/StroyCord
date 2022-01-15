@@ -1,12 +1,19 @@
 require("dotenv").config();
 
-const ytdl = require("ytdl-core-discord");
+//const ytdl = require("ytdl-core-discord");
+const playdl = require("play-dl");
+/* playdl.getFreeClientID().then((clientID) => {
+  playdl.setToken({
+    soundcloud: process.env.SOUNDCLOUD_CLIENT_ID,
+  });
+}); */
 const Discord = require("discord.js");
-const { MessageEmbed } = require("discord.js");
+//const { MessageEmbed } = require("discord.js");
+const { createAudioResource } = require("@discordjs/voice");
 
 const clientDiscord = new Discord.Client();
 
-const prefix = "&";
+const prefix = "#";
 const queue = new Map();
 
 const { google } = require("googleapis");
@@ -26,7 +33,9 @@ clientDiscord.on("disconnect", (message) => {
   const serverQueue = queue.get(message.guild.id);
 
   if (!serverQueue)
-    return message.channel.send("There is no song that I could stop!");
+    return message.channel.send({
+      content: "There is no song that I could stop!",
+    });
 
   serverQueue.songs = [];
   serverQueue.connection.dispatcher.end();
@@ -53,13 +62,14 @@ clientDiscord.on("message", (message) => {
 
   if (message.content.startsWith(prefix + "feur")) {
     //Feur case
-    message.channel.send(
-      "https://destroykeaum.alwaysdata.net/assets/other/feur.mp4"
-    );
+    message.channel.send({
+      content: "https://destroykeaum.alwaysdata.net/assets/other/feur.mp4",
+    });
   } else if (
     message.content.startsWith(`${prefix}p`) ||
     message.content.startsWith(`${prefix}play`)
   ) {
+    console.log("play");
     //play case
     getURL(message, serverQueue);
     return;
@@ -87,7 +97,7 @@ clientDiscord.on("message", (message) => {
     //pause case
     actualQueue(message);
   } else {
-    message.channel.send("La commande n'existe pas !"); //error case
+    message.channel.send({ content: "La commande n'existe pas !" }); //error case
   }
 });
 
@@ -121,18 +131,20 @@ function getURL(message, serverQueue) {
 
   const voiceChannel = message.member.voice.channel;
   if (!voiceChannel) {
-    return message.channel.send(
-      "Vous avez besoin d'etre dans un salon vocal pour jouer une musique !"
-    );
+    return message.channel.send({
+      content:
+        "Vous avez besoin d'etre dans un salon vocal pour jouer une musique !",
+    });
   }
   const permissions = voiceChannel.permissionsFor(message.client.user);
   if (!permissions.has("CONNECT") || !permissions.has("SPEAK")) {
-    return message.channel.send(
-      "Le bot a besoin de la permission d'acceder et de parler dans le salon vocal !"
-    );
+    return message.channel.send({
+      content:
+        "Le bot a besoin de la permission d'acceder et de parler dans le salon vocal !",
+    });
   }
   if (arguments[1] === undefined) {
-    return message.channel.send("Erreur dans la commande !");
+    return message.channel.send({ content: "Erreur dans la commande !" });
   }
 
   const playlistUrlValid = youtubeUrlPattern.test(arguments[1]);
@@ -246,7 +258,7 @@ async function executePlaylist(playlistURL, message, serverQueue, querySearch) {
       }
     );
 
-  message.channel.send(embedPlayedPlaylist);
+  message.channel.send({ embeds: [embedPlayedPlaylist] });
 
   for (const [index, id] of playlistID.entries()) {
     const serverQueue = queue.get(message.guild.id);
@@ -256,7 +268,8 @@ async function executePlaylist(playlistURL, message, serverQueue, querySearch) {
 
     var songInfo = {};
     try {
-      var songInfo = await ytdl.getInfo(urlTmp);
+      console.log("avant cideoinfo");
+      var songInfo = await playdl.video_info(url);
 
       let minutes = Math.floor(songInfo.videoDetails.lengthSeconds / 60);
       let seconds = songInfo.videoDetails.lengthSeconds - minutes * 60;
@@ -304,7 +317,7 @@ async function executePlaylist(playlistURL, message, serverQueue, querySearch) {
           console.log(error);
           queue.delete(message.guild.id);
 
-          return message.channel.send(error);
+          return message.channel.send({ content: error });
         }
       } else {
         serverQueue.songs.push(song);
@@ -336,9 +349,10 @@ async function execute(url, message, serverQueue, querySearch) {
   const voiceChannel = message.member.voice.channel;
 
   try {
-    var songInfo = await ytdl.getInfo(url);
+    console.log("avant cideoinfo");
+    //var songInfo = await ytdl.getInfo(url);
 
-    let minutes = Math.floor(songInfo.videoDetails.lengthSeconds / 60);
+    /* let minutes = Math.floor(songInfo.videoDetails.lengthSeconds / 60);
     let seconds = songInfo.videoDetails.lengthSeconds - minutes * 60;
 
     const song = {
@@ -351,6 +365,27 @@ async function execute(url, message, serverQueue, querySearch) {
       requestAuthor: message.author,
       querySearch: querySearch,
       videoAuthor: songInfo.videoDetails.author.name,
+      videoLength: minutes + ":" + seconds,
+    }; */
+
+    var songInfo = await playdl.video_info(url);
+
+    console.log("apres cideoinfo");
+    console.log(songInfo);
+
+    let minutes = Math.floor(songInfo.video_details.durationInSec / 60);
+    let seconds = songInfo.video_details.durationInSec - minutes * 60;
+
+    const song = {
+      title: songInfo.video_details.title,
+      url: songInfo.video_details.url,
+      thumbnail:
+        songInfo.video_details.thumbnails[
+          songInfo.video_details.thumbnails.length - 1
+        ].url,
+      requestAuthor: message.author,
+      querySearch: querySearch,
+      videoAuthor: songInfo.video_details.channel.name,
       videoLength: minutes + ":" + seconds,
     };
 
@@ -400,7 +435,7 @@ async function execute(url, message, serverQueue, querySearch) {
               value: song.videoLength,
             }
           );
-        message.channel.send(embedPlayed);
+        message.channel.send({ embeds: [embedPlayed] });
 
         var connection = await voiceChannel.join();
         queueContruct.connection = connection;
@@ -415,7 +450,7 @@ async function execute(url, message, serverQueue, querySearch) {
       } catch (error) {
         console.log(error);
         queue.delete(message.guild.id);
-        return message.channel.send(error);
+        return message.channel.send({ content: error });
       }
     } else {
       serverQueue.songs.push(song);
@@ -454,7 +489,7 @@ async function execute(url, message, serverQueue, querySearch) {
           }
         );
 
-      return message.channel.send(embedAdded);
+      return message.channel.send({ embeds: [embedAdded] });
     }
   } catch (err) {
     errors(err.statusCode, message);
@@ -470,11 +505,26 @@ async function play(guild, song, author) {
     return;
   }
 
-  const dispatcher = serverQueue.connection
+  /* const dispatcher = serverQueue.connection
     .play(await ytdl(song.url), {
       type: "opus",
       filter: "audioonly",
     })
+    .on("finish", () => {
+      serverQueue.songs.shift();
+      play(guild, serverQueue.songs[0], author);
+    })
+    .on("error", (error) => console.log(error)); */
+
+  console.log("avant envoi audio");
+
+  const source = await playdl.stream(song.url);
+  const stream = createAudioResource(source.stream, {
+    inputType: source.type,
+  });
+
+  const dispatcher = serverQueue.connection
+    .play(stream)
     .on("finish", () => {
       serverQueue.songs.shift();
       play(guild, serverQueue.songs[0], author);
@@ -487,11 +537,14 @@ async function play(guild, song, author) {
 function skip(message, serverQueue) {
   message.delete();
   if (!message.member.voice.channel)
-    return message.channel.send(
-      "Vous avez besoin d'etre dans un salon vocal pour arreter une musique !"
-    );
+    return message.channel.send({
+      content:
+        "Vous avez besoin d'etre dans un salon vocal pour arreter une musique !",
+    });
   if (!serverQueue) {
-    return message.channel.send("Aucune musique n'est jouée actuellement !");
+    return message.channel.send({
+      content: "Aucune musique n'est jouée actuellement !",
+    });
   }
 
   serverQueue.connection.dispatcher.end();
@@ -500,12 +553,15 @@ function skip(message, serverQueue) {
 function stop(message, serverQueue) {
   message.delete();
   if (!message.member.voice.channel)
-    return message.channel.send(
-      "Vous avez besoin d'etre dans un salon vocal pour arreter le bot !"
-    );
+    return message.channel.send({
+      content:
+        "Vous avez besoin d'etre dans un salon vocal pour arreter le bot !",
+    });
 
   if (!serverQueue)
-    return message.channel.send("Aucune musique n'est jouée actuellement !");
+    return message.channel.send({
+      content: "Aucune musique n'est jouée actuellement !",
+    });
 
   serverQueue.songs = [];
   serverQueue.connection.dispatcher.end();
@@ -514,18 +570,21 @@ function stop(message, serverQueue) {
 function pause(message, serverQueue) {
   message.delete();
   if (!message.member.voice.channel)
-    return message.channel.send(
-      "Vous avez besoin d'etre dans un salon vocal pour controler le bot !"
-    );
+    return message.channel.send({
+      content:
+        "Vous avez besoin d'etre dans un salon vocal pour controler le bot !",
+    });
 
   if (!serverQueue)
-    return message.channel.send("Aucune musique n'est jouée actuellement !");
+    return message.channel.send({
+      content: "Aucune musique n'est jouée actuellement !",
+    });
 
   if (serverQueue.playing) {
     serverQueue.playing = false;
     serverQueue.connection.dispatcher.pause();
     return message.channel
-      .send(`⏸ ${message.author} a mis en pause la musique !`)
+      .send({ content: `⏸ ${message.author} a mis en pause la musique !` })
       .catch(console.error);
   }
 }
@@ -533,12 +592,15 @@ function pause(message, serverQueue) {
 function resume(message, serverQueue) {
   message.delete();
   if (!message.member.voice.channel)
-    return message.channel.send(
-      "Vous avez besoin d'etre dans un salon vocal pour controler le bot !"
-    );
+    return message.channel.send({
+      content:
+        "Vous avez besoin d'etre dans un salon vocal pour controler le bot !",
+    });
 
   if (!serverQueue)
-    return message.channel.send("Aucune musique n'est jouée actuellement !");
+    return message.channel.send({
+      content: "Aucune musique n'est jouée actuellement !",
+    });
 
   if (!serverQueue.playing) {
     serverQueue.playing = true;
@@ -546,7 +608,7 @@ function resume(message, serverQueue) {
     serverQueue.connection.dispatcher.pause(true);
     serverQueue.connection.dispatcher.resume();
     return message.channel
-      .send(`▶ ${message.author} a repris la musique !`)
+      .send({ content: `▶ ${message.author} a repris la musique !` })
       .catch(console.error);
   }
 }
@@ -556,12 +618,16 @@ function actualQueue(message) {
   const serverQueue = queue.get(message.guild.id);
 
   if (!serverQueue)
-    return message.channel.send("Aucune musique n'est jouée actuellement !");
+    return message.channel.send({
+      content: "Aucune musique n'est jouée actuellement !",
+    });
 
   let songsList = serverQueue.songs;
 
   if (songsList.length === 0) {
-    return message.channel.send("Aucune musique n'est jouée actuellement !");
+    return message.channel.send({
+      content: "Aucune musique n'est jouée actuellement !",
+    });
   }
   let tabEmbeds = [];
   songsList.forEach((song, index) => {
@@ -596,7 +662,7 @@ function actualQueue(message) {
     .setTimestamp()
     .addFields(tabEmbeds);
 
-  return message.channel.send(embedQueue);
+  return message.channel.send({ embeds: [embedQueue] });
 }
 
 function errors(errorCode, message) {
@@ -615,7 +681,7 @@ function errors(errorCode, message) {
           name: "Les raisons peuvent etre diverses (vidéo soumise a une limite d'âge, privée, bloquée par les ayants droits)",
           value: "Error code : 410",
         });
-      return message.channel.send(errorEmbed);
+      return message.channel.send({ embeds: [errorEmbed] });
     default:
       return;
   }
