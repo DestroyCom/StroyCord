@@ -97,6 +97,7 @@ clientDiscord.on("messageCreate", (message) => {
     message.content.startsWith(`${PREFIX}p`) ||
     message.content.startsWith(`${PREFIX}play`)
   ) {
+    console.log("play");
     //play case
     getURL(message, serverQueue);
     return;
@@ -512,8 +513,8 @@ async function execute(url, message, serverQueue, querySearch) {
 async function play(guild, song) {
   const serverQueue = queue.get(guild.id);
   if (!song) {
-    serverQueue.connection.destroy();
     queue.delete(guild.id);
+    serverQueue.connection.destroy();
     return;
   }
 
@@ -537,6 +538,7 @@ async function play(guild, song) {
         serverQueue.songs.shift();
         play(guild, serverQueue.songs[0]);
       } else {
+        queue.delete(guild.id);
         serverQueue.connection.destroy();
       }
     }
