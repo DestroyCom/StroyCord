@@ -7,13 +7,39 @@ const playdl = require("play-dl");
     soundcloud: process.env.SOUNDCLOUD_CLIENT_ID,
   });
 }); */
-const Discord = require("discord.js");
-//const { MessageEmbed } = require("discord.js");
-const { createAudioResource } = require("@discordjs/voice");
+const { Client, Intents, MessageEmbed } = require("discord.js");
+const {
+  createAudioResource,
+  createAudioPlayer,
+  joinVoiceChannel,
+  generateDependencyReport,
+  NoSubscriberBehavior,
+} = require("@discordjs/voice");
 
-const clientDiscord = new Discord.Client();
+console.log(generateDependencyReport());
 
-const prefix = "#";
+const clientDiscord = new Client({
+  intents: [
+    Intents.FLAGS.GUILDS,
+    Intents.FLAGS.GUILD_MEMBERS,
+    Intents.FLAGS.GUILD_BANS,
+    Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS,
+    Intents.FLAGS.GUILD_INTEGRATIONS,
+    Intents.FLAGS.GUILD_WEBHOOKS,
+    Intents.FLAGS.GUILD_INVITES,
+    Intents.FLAGS.GUILD_VOICE_STATES,
+    Intents.FLAGS.GUILD_PRESENCES,
+    Intents.FLAGS.GUILD_MESSAGES,
+    Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+    Intents.FLAGS.GUILD_MESSAGE_TYPING,
+    Intents.FLAGS.DIRECT_MESSAGES,
+    Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,
+    Intents.FLAGS.DIRECT_MESSAGE_TYPING,
+    Intents.FLAGS.GUILD_SCHEDULED_EVENTS,
+  ],
+});
+
+const PREFIX = process.env.TRIGGER_PREFIX;
 const queue = new Map();
 
 const { google } = require("googleapis");
@@ -53,47 +79,48 @@ clientDiscord.on("error", (error) => {
 });
 
 //Main chat listener
-clientDiscord.on("message", (message) => {
+clientDiscord.on("messageCreate", (message) => {
   //If the bot speaks or word dosent start with triggerd command, ignore the message
   if (message.author.bot) return;
-  if (!message.content.startsWith(prefix)) return;
+  if (!message.content.startsWith(PREFIX)) return;
 
   const serverQueue = queue.get(message.guild.id);
 
-  if (message.content.startsWith(prefix + "feur")) {
+  message.delete();
+
+  if (message.content.startsWith(PREFIX + "feur")) {
     //Feur case
     message.channel.send({
       content: "https://destroykeaum.alwaysdata.net/assets/other/feur.mp4",
     });
   } else if (
-    message.content.startsWith(`${prefix}p`) ||
-    message.content.startsWith(`${prefix}play`)
+    message.content.startsWith(`${PREFIX}p`) ||
+    message.content.startsWith(`${PREFIX}play`)
   ) {
-    console.log("play");
     //play case
     getURL(message, serverQueue);
     return;
   } else if (
-    message.content.startsWith(`${prefix}s`) ||
-    message.content.startsWith(`${prefix}skip`)
+    message.content.startsWith(`${PREFIX}s`) ||
+    message.content.startsWith(`${PREFIX}skip`)
   ) {
     //skip case
     skip(message, serverQueue);
     return;
   } else if (
-    message.content.startsWith(`${prefix}fo`) ||
-    message.content.startsWith(`${prefix}fuckoff`)
+    message.content.startsWith(`${PREFIX}fo`) ||
+    message.content.startsWith(`${PREFIX}fuckoff`)
   ) {
     //disconnect case
     stop(message, serverQueue);
     return;
-  } else if (message.content.startsWith(`${prefix}w`)) {
+  } else if (message.content.startsWith(`${PREFIX}w`)) {
     //pause case
     pause(message, serverQueue);
-  } else if (message.content.startsWith(`${prefix}r`)) {
+  } else if (message.content.startsWith(`${PREFIX}r`)) {
     //pause case
     resume(message, serverQueue);
-  } else if (message.content.startsWith(`${prefix}q`)) {
+  } else if (message.content.startsWith(`${PREFIX}q`)) {
     //pause case
     actualQueue(message);
   } else {
@@ -124,7 +151,7 @@ clientDiscord.on('voiceStateUpdate', (oldMember, newMember) => {
 */
 
 function getURL(message, serverQueue) {
-  const arguments = message.content.split(" ");
+  const arg = message.content.split(" ");
   const messageReceived = message.content;
   const youtubeUrlPattern =
     /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$/;
@@ -143,19 +170,19 @@ function getURL(message, serverQueue) {
         "Le bot a besoin de la permission d'acceder et de parler dans le salon vocal !",
     });
   }
-  if (arguments[1] === undefined) {
+  if (arg[1] === undefined) {
     return message.channel.send({ content: "Erreur dans la commande !" });
   }
 
-  const playlistUrlValid = youtubeUrlPattern.test(arguments[1]);
+  const playlistUrlValid = youtubeUrlPattern.test(arg[1]);
 
   if (!playlistUrlValid) {
     let tmpQuery = "";
-    if (messageReceived.includes("&play ")) {
-      tmpQuery = messageReceived.replace("&play ", "");
+    if (messageReceived.includes(PREFIX + "play ")) {
+      tmpQuery = messageReceived.replace(PREFIX + "play ", "");
     }
-    if (messageReceived.includes("&p ")) {
-      tmpQuery = messageReceived.replace("&p ", "");
+    if (messageReceived.includes(PREFIX + "p ")) {
+      tmpQuery = messageReceived.replace(PREFIX + "p ", "");
     }
 
     google
@@ -174,10 +201,10 @@ function getURL(message, serverQueue) {
       .catch((err) => console.log(err));
   } else {
     let playlistPattern = new RegExp("[&?]list=([a-z0-9_-]+)", "i");
-    if (playlistPattern.test(arguments[1])) {
-      executePlaylist(arguments[1], message, serverQueue, arguments[1]);
+    if (playlistPattern.test(arg[1])) {
+      executePlaylist(arg[1], message, serverQueue, arg[1]);
     } else {
-      execute(arguments[1], message, serverQueue, arguments[1]);
+      execute(arg[1], message, serverQueue, arg[1]);
     }
   }
 }
@@ -224,14 +251,18 @@ async function executePlaylist(playlistURL, message, serverQueue, querySearch) {
 
   const playlistID = videoIdPlaylist;
 
-  const embedPlayedPlaylist = new Discord.MessageEmbed()
+  const embedPlayedPlaylist = new MessageEmbed()
     .setTitle(message.author.username + " a ajouté une playlist !")
-    .setAuthor(message.author.username, message.author.avatarURL())
+    .setAuthor({
+      name: message.author.username,
+      iconURL: message.author.avatarURL(),
+    })
     .setColor("#C4302B")
-    .setFooter(
-      "StroyCord/D-Key Bot",
-      "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png"
-    )
+    .setFooter({
+      text: "StroyCord/D-Key Bot",
+      iconURL:
+        "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png",
+    })
     .setThumbnail(
       responsePlaylistInfo[0].snippet.thumbnails[
         Object.keys(responsePlaylistInfo[0].snippet.thumbnails)[
@@ -268,7 +299,6 @@ async function executePlaylist(playlistURL, message, serverQueue, querySearch) {
 
     var songInfo = {};
     try {
-      console.log("avant cideoinfo");
       var songInfo = await playdl.video_info(url);
 
       let minutes = Math.floor(songInfo.videoDetails.lengthSeconds / 60);
@@ -307,12 +337,7 @@ async function executePlaylist(playlistURL, message, serverQueue, querySearch) {
 
           const serverQueue = queue.get(message.guild.id);
 
-          message.delete();
-          play(
-            message.guild,
-            queueContruct.songs[0],
-            queueContruct.songs[0].requestAuthor
-          );
+          play(message.guild, queueContruct.songs[0]);
         } catch (error) {
           console.log(error);
           queue.delete(message.guild.id);
@@ -349,7 +374,6 @@ async function execute(url, message, serverQueue, querySearch) {
   const voiceChannel = message.member.voice.channel;
 
   try {
-    console.log("avant cideoinfo");
     //var songInfo = await ytdl.getInfo(url);
 
     /* let minutes = Math.floor(songInfo.videoDetails.lengthSeconds / 60);
@@ -369,9 +393,6 @@ async function execute(url, message, serverQueue, querySearch) {
     }; */
 
     var songInfo = await playdl.video_info(url);
-
-    console.log("apres cideoinfo");
-    console.log(songInfo);
 
     let minutes = Math.floor(songInfo.video_details.durationInSec / 60);
     let seconds = songInfo.video_details.durationInSec - minutes * 60;
@@ -404,14 +425,18 @@ async function execute(url, message, serverQueue, querySearch) {
       queueContruct.songs.push(song);
 
       try {
-        const embedPlayed = new Discord.MessageEmbed()
+        const embedPlayed = new MessageEmbed()
           .setTitle(song.title)
-          .setAuthor(message.author.username, message.author.avatarURL())
+          .setAuthor({
+            name: message.author.username,
+            iconURL: message.author.avatarURL(),
+          })
           .setColor("#C4302B")
-          .setFooter(
-            "StroyCord/D-Key Bot",
-            "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png"
-          )
+          .setFooter({
+            text: "StroyCord/D-Key Bot",
+            iconURL:
+              "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png",
+          })
           .setThumbnail(song.thumbnail)
           .setTimestamp()
           .setURL(song.url)
@@ -427,7 +452,7 @@ async function execute(url, message, serverQueue, querySearch) {
             },
             {
               name: "Trouvé avec :",
-              value: "&p " + song.querySearch,
+              value: PREFIX + "p " + song.querySearch,
               inline: true,
             },
             {
@@ -437,15 +462,15 @@ async function execute(url, message, serverQueue, querySearch) {
           );
         message.channel.send({ embeds: [embedPlayed] });
 
-        var connection = await voiceChannel.join();
+        //var connection = await voiceChannel.join();
+        var connection = await joinVoiceChannel({
+          channelId: voiceChannel.id,
+          guildId: voiceChannel.guild.id,
+          adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+        });
         queueContruct.connection = connection;
 
-        message.delete();
-        play(
-          message.guild,
-          queueContruct.songs[0],
-          queueContruct.songs[0].requestAuthor
-        );
+        play(message.guild, queueContruct.songs[0]);
         return;
       } catch (error) {
         console.log(error);
@@ -454,17 +479,21 @@ async function execute(url, message, serverQueue, querySearch) {
       }
     } else {
       serverQueue.songs.push(song);
-      const embedAdded = new Discord.MessageEmbed()
+      const embedAdded = new MessageEmbed()
         .setTitle(
           message.author.username +
             " a ajouté une musique sur la file d'attente !"
         )
-        .setAuthor(message.author.username, message.author.avatarURL())
+        .setAuthor({
+          name: message.author.username,
+          iconURL: message.author.avatarURL(),
+        })
         .setColor("#C4302B")
-        .setFooter(
-          "StroyCord/D-Key Bot",
-          "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png"
-        )
+        .setFooter({
+          text: "StroyCord/D-Key Bot",
+          iconURL:
+            "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png",
+        })
         .setThumbnail(song.thumbnail)
         .setTimestamp()
         .setURL(song.url)
@@ -480,7 +509,7 @@ async function execute(url, message, serverQueue, querySearch) {
           },
           {
             name: "Trouvé avec :",
-            value: "&p " + song.querySearch,
+            value: PREFIX + "p " + song.querySearch,
             inline: true,
           },
           {
@@ -497,45 +526,41 @@ async function execute(url, message, serverQueue, querySearch) {
   }
 }
 
-async function play(guild, song, author) {
+async function play(guild, song) {
   const serverQueue = queue.get(guild.id);
   if (!song) {
-    serverQueue.voiceChannel.leave();
+    serverQueue.connection.destroy();
     queue.delete(guild.id);
     return;
   }
-
-  /* const dispatcher = serverQueue.connection
-    .play(await ytdl(song.url), {
-      type: "opus",
-      filter: "audioonly",
-    })
-    .on("finish", () => {
-      serverQueue.songs.shift();
-      play(guild, serverQueue.songs[0], author);
-    })
-    .on("error", (error) => console.log(error)); */
-
-  console.log("avant envoi audio");
 
   const source = await playdl.stream(song.url);
   const stream = createAudioResource(source.stream, {
     inputType: source.type,
   });
 
-  const dispatcher = serverQueue.connection
-    .play(stream)
-    .on("finish", () => {
-      serverQueue.songs.shift();
-      play(guild, serverQueue.songs[0], author);
-    })
-    .on("error", (error) => console.log(error));
+  let player = createAudioPlayer();
 
-  dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
+  player.play(stream);
+
+  serverQueue.connection.subscribe(player);
+
+  player.on("stateChange", (oldState, newState) => {
+    console.log(
+      `Audio player transitioned from ${oldState.status} to ${newState.status}`
+    );
+    if (newState.status === "idle") {
+      if (serverQueue.songs > 0) {
+        serverQueue.songs.shift();
+        play(guild, serverQueue.songs[0]);
+      } else {
+        serverQueue.connection.destroy();
+      }
+    }
+  });
 }
 
 function skip(message, serverQueue) {
-  message.delete();
   if (!message.member.voice.channel)
     return message.channel.send({
       content:
@@ -547,11 +572,15 @@ function skip(message, serverQueue) {
     });
   }
 
-  serverQueue.connection.dispatcher.end();
+  let tmpGuildObject = {
+    id: message.guildId,
+  };
+
+  serverQueue.songs.shift();
+  play(tmpGuildObject, serverQueue.songs[0]);
 }
 
 function stop(message, serverQueue) {
-  message.delete();
   if (!message.member.voice.channel)
     return message.channel.send({
       content:
@@ -563,12 +592,11 @@ function stop(message, serverQueue) {
       content: "Aucune musique n'est jouée actuellement !",
     });
 
-  serverQueue.songs = [];
-  serverQueue.connection.dispatcher.end();
+  serverQueue.connection.destroy();
+  queue.delete(message.guildId);
 }
 
 function pause(message, serverQueue) {
-  message.delete();
   if (!message.member.voice.channel)
     return message.channel.send({
       content:
@@ -590,7 +618,6 @@ function pause(message, serverQueue) {
 }
 
 function resume(message, serverQueue) {
-  message.delete();
   if (!message.member.voice.channel)
     return message.channel.send({
       content:
@@ -614,7 +641,6 @@ function resume(message, serverQueue) {
 }
 
 function actualQueue(message) {
-  message.delete();
   const serverQueue = queue.get(message.guild.id);
 
   if (!serverQueue)
@@ -646,19 +672,21 @@ function actualQueue(message) {
     }
   });
 
-  const embedQueue = new Discord.MessageEmbed()
+  const embedQueue = new MessageEmbed()
     .setTitle(
       "Vous avez " + songsList.length + " musiques en liste d'attente !"
     )
-    .setAuthor(
-      "Stroycord",
-      "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png"
-    )
+    .setAuthor({
+      name: "Stroycord",
+      iconURL:
+        "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png",
+    })
     .setColor("#37123C")
-    .setFooter(
-      "StroyCord",
-      "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png"
-    )
+    .setFooter({
+      text: "StroyCord/D-Key Bot",
+      iconURL:
+        "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png",
+    })
     .setTimestamp()
     .addFields(tabEmbeds);
 
@@ -669,12 +697,13 @@ function errors(errorCode, message) {
   switch (errorCode) {
     case 403:
     case 410:
-      let errorEmbed = new Discord.MessageEmbed()
+      let errorEmbed = new MessageEmbed()
         .setTitle("⚠️ ERREUR : Impossible d'acceder à la musique demandée !")
-        .setAuthor(
-          "StroyCord/D-Key Bot",
-          "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png"
-        )
+        .setAuthor({
+          name: "Stroycord",
+          iconURL:
+            "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png",
+        })
         .setColor("#181818")
         .setTimestamp()
         .addFields({
