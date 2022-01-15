@@ -299,21 +299,21 @@ async function executePlaylist(playlistURL, message, serverQueue, querySearch) {
 
     var songInfo = {};
     try {
-      var songInfo = await playdl.video_info(url);
+      var songInfo = await playdl.video_info(urlTmp);
 
-      let minutes = Math.floor(songInfo.videoDetails.lengthSeconds / 60);
-      let seconds = songInfo.videoDetails.lengthSeconds - minutes * 60;
+      let minutes = Math.floor(songInfo.video_details.durationInSec / 60);
+      let seconds = songInfo.video_details.durationInSec - minutes * 60;
 
       const song = {
-        title: songInfo.videoDetails.title,
-        url: songInfo.videoDetails.video_url,
+        title: songInfo.video_details.title,
+        url: songInfo.video_details.url,
         thumbnail:
-          songInfo.videoDetails.thumbnails[
-            songInfo.videoDetails.thumbnails.length - 1
+          songInfo.video_details.thumbnails[
+            songInfo.video_details.thumbnails.length - 1
           ].url,
         requestAuthor: message.author,
         querySearch: querySearch,
-        videoAuthor: songInfo.videoDetails.author.name,
+        videoAuthor: songInfo.video_details.channel.name,
         videoLength: minutes + ":" + seconds,
       };
 
@@ -332,10 +332,12 @@ async function executePlaylist(playlistURL, message, serverQueue, querySearch) {
         queueContruct.songs.push(song);
 
         try {
-          var connection = await voiceChannel.join();
+          var connection = await joinVoiceChannel({
+            channelId: voiceChannel.id,
+            guildId: voiceChannel.guild.id,
+            adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+          });
           queueContruct.connection = connection;
-
-          const serverQueue = queue.get(message.guild.id);
 
           play(message.guild, queueContruct.songs[0]);
         } catch (error) {
@@ -374,24 +376,6 @@ async function execute(url, message, serverQueue, querySearch) {
   const voiceChannel = message.member.voice.channel;
 
   try {
-    //var songInfo = await ytdl.getInfo(url);
-
-    /* let minutes = Math.floor(songInfo.videoDetails.lengthSeconds / 60);
-    let seconds = songInfo.videoDetails.lengthSeconds - minutes * 60;
-
-    const song = {
-      title: songInfo.videoDetails.title,
-      url: songInfo.videoDetails.video_url,
-      thumbnail:
-        songInfo.videoDetails.thumbnails[
-          songInfo.videoDetails.thumbnails.length - 1
-        ].url,
-      requestAuthor: message.author,
-      querySearch: querySearch,
-      videoAuthor: songInfo.videoDetails.author.name,
-      videoLength: minutes + ":" + seconds,
-    }; */
-
     var songInfo = await playdl.video_info(url);
 
     let minutes = Math.floor(songInfo.video_details.durationInSec / 60);
@@ -462,7 +446,6 @@ async function execute(url, message, serverQueue, querySearch) {
           );
         message.channel.send({ embeds: [embedPlayed] });
 
-        //var connection = await voiceChannel.join();
         var connection = await joinVoiceChannel({
           channelId: voiceChannel.id,
           guildId: voiceChannel.guild.id,
