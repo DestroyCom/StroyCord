@@ -533,8 +533,10 @@ async function play(guild, song) {
     console.log(
       `Audio player transitioned from ${oldState.status} to ${newState.status}`
     );
+
+    console.log(serverQueue);
     if (newState.status === "idle") {
-      if (serverQueue.songs > 0) {
+      if (serverQueue.songs.length != 0 && serverQueue.songs.length >= 0) {
         serverQueue.songs.shift();
         play(guild, serverQueue.songs[0]);
       } else {
