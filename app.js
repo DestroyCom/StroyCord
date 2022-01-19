@@ -93,25 +93,16 @@ clientDiscord.on("messageCreate", (message) => {
     message.channel.send({
       content: "https://destroykeaum.alwaysdata.net/assets/other/feur.mp4",
     });
-  } else if (
-    message.content.startsWith(`${PREFIX}p`) ||
-    message.content.startsWith(`${PREFIX}play`)
-  ) {
+  } else if (message.content.startsWith(`${PREFIX}p`)) {
     console.log("play");
     //play case
     getURL(message, serverQueue);
     return;
-  } else if (
-    message.content.startsWith(`${PREFIX}s`) ||
-    message.content.startsWith(`${PREFIX}skip`)
-  ) {
+  } else if (message.content.startsWith(`${PREFIX}s`)) {
     //skip case
     skip(message, serverQueue);
     return;
-  } else if (
-    message.content.startsWith(`${PREFIX}fo`) ||
-    message.content.startsWith(`${PREFIX}fuckoff`)
-  ) {
+  } else if (message.content.startsWith(`${PREFIX}fo`)) {
     //disconnect case
     stop(message, serverQueue);
     return;

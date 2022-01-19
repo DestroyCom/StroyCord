@@ -6,13 +6,16 @@ This project being at the beginning "Je Reviens Of DevilKing", so it can also se
 ## How to use it ?
 
 The bot has 4 commands:
+_You have to add the prefix before each command (e.g. `&p [music]`)_
 
-- `&p [music url or music name]` / `&play [music url or music name]` is used to start playing music.
-- `&s` / `&skip` is used to skip the current music
-- `&fo` / `&fuckoff` disconnects the bot and stops the music playing
-- `&ne` play the french Xiaomi 11 Lite NE Song.
-- `&q` display the current music queue.
-- `&feur` is used to be able to "feur" your friends
+- `p [music url or music name]` is used to start playing music.
+- `s` is used to skip the current music
+- `w` is used to pause the current music
+- `r` is used to resume the current music
+- `fo` disconnects the bot and stops the music playing
+- `ne` play the french Xiaomi 11 Lite NE Song.
+- `q` display the current music queue.
+- `feur` is used to be able to "feur" your friends
 
 ## Deploys
 
@@ -67,7 +70,7 @@ The bot uses :
 - [x] Delete request message [Planned for 0.8 realease]
 - [x] Display actual song queue [Planned for 0.8 realease]
 - [ ] Transform current function into modules [Planned for 0.9 realease]
-- [x] Add customs prefix [Planned for 0.8/0.9 realease]
+- [x] Add customs prefix [Planned for 0.8 realease]
 - [ ] Add help for getting API Key [Planned for 0.9 realease]
 - [ ] Change the "Xiaomi Song" into a custom song selection & add a disabling method [Planned before 0.9 realease]
 - [ ] Fix "I'll be back" features and creates a disabling method [Planned before 1.0 realease]
