@@ -20,6 +20,8 @@ ffmpeg.exe
 ffplay.exe
 ffprobe.exe
 deletedCode
+codeExample
+src
 .env.test
 .env.prin
 .env.copy
