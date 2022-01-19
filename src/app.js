@@ -381,6 +381,7 @@ async function execute(url, message, serverQueue, querySearch) {
 
     let minutes = Math.floor(songInfo.video_details.durationInSec / 60);
     let seconds = songInfo.video_details.durationInSec - minutes * 60;
+    seconds = seconds < 10 ? "0" + seconds : seconds;
 
     const song = {
       title: songInfo.video_details.title,
@@ -400,6 +401,7 @@ async function execute(url, message, serverQueue, querySearch) {
         textChannel: message.channel,
         voiceChannel: voiceChannel,
         connection: null,
+        player: null,
         songs: [],
         volume: 5,
         playing: true,
@@ -453,6 +455,9 @@ async function execute(url, message, serverQueue, querySearch) {
           adapterCreator: voiceChannel.guild.voiceAdapterCreator,
         });
         queueContruct.connection = connection;
+
+        var player = createAudioPlayer();
+        queueContruct.player = player;
 
         play(message.guild, queueContruct.songs[0]);
         return;
@@ -523,18 +528,15 @@ async function play(guild, song) {
     inputType: source.type,
   });
 
-  let player = createAudioPlayer();
+  serverQueue.player.play(stream);
 
-  player.play(stream);
+  serverQueue.connection.subscribe(serverQueue.player);
 
-  serverQueue.connection.subscribe(player);
-
-  player.on("stateChange", (oldState, newState) => {
+  serverQueue.player.on("stateChange", (oldState, newState) => {
     console.log(
       `Audio player transitioned from ${oldState.status} to ${newState.status}`
     );
 
-    console.log(serverQueue);
     if (newState.status === "idle") {
       if (serverQueue.songs.length != 0 && serverQueue.songs.length >= 0) {
         serverQueue.songs.shift();
@@ -581,6 +583,10 @@ function stop(message, serverQueue) {
 
   serverQueue.connection.destroy();
   queue.delete(message.guildId);
+
+  return message.channel
+    .send({ content: `❌ ${message.author} a déconnecté le bot !` })
+    .catch(console.error);
 }
 
 function pause(message, serverQueue) {
@@ -597,7 +603,7 @@ function pause(message, serverQueue) {
 
   if (serverQueue.playing) {
     serverQueue.playing = false;
-    serverQueue.connection.dispatcher.pause();
+    serverQueue.player.pause();
     return message.channel
       .send({ content: `⏸ ${message.author} a mis en pause la musique !` })
       .catch(console.error);
@@ -618,9 +624,7 @@ function resume(message, serverQueue) {
 
   if (!serverQueue.playing) {
     serverQueue.playing = true;
-    serverQueue.connection.dispatcher.resume();
-    serverQueue.connection.dispatcher.pause(true);
-    serverQueue.connection.dispatcher.resume();
+    serverQueue.player.unpause();
     return message.channel
       .send({ content: `▶ ${message.author} a repris la musique !` })
       .catch(console.error);
