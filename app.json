@@ -42,6 +42,11 @@
             "description": "Boolean. if True: Activate the NE command for playing Xiaomi 11 Lite NE Song.",
             "required": "true",
             "value": "false"
+        },
+        "TRIGGER_PREFIX": {
+            "description": "Single Character. The prefix with which you intend to use the bot (e.g. to trigger commands).",
+            "required": "true",
+            "value": "&"
         }
     },
     "success_url": "https://destroykeaum.alwaysdata.net/caard.html",
