@@ -22,3 +22,7 @@ ffprobe.exe
 deletedCode
 codeExample
 src
+.env.test
+.env.prin
+.env.copy
+codeExample
