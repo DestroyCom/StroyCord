@@ -314,6 +314,7 @@ async function executePlaylist(playlistURL, message, serverQueue, querySearch) {
           textChannel: message.channel,
           voiceChannel: voiceChannel,
           connection: null,
+          player: null,
           songs: [],
           volume: 5,
           playing: true,
@@ -330,6 +331,9 @@ async function executePlaylist(playlistURL, message, serverQueue, querySearch) {
             adapterCreator: voiceChannel.guild.voiceAdapterCreator,
           });
           queueContruct.connection = connection;
+
+          var player = createAudioPlayer();
+          queueContruct.player = player;
 
           play(message.guild, queueContruct.songs[0]);
         } catch (error) {
@@ -467,6 +471,7 @@ async function execute(url, message, serverQueue, querySearch) {
         .setAuthor({
           name: message.author.username,
           iconURL: message.author.avatarURL(),
+          trez,
         })
         .setColor("#C4302B")
         .setFooter({
