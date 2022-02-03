@@ -75,3 +75,4 @@ The bot uses :
 - [ ] Change the "Xiaomi Song" into a custom song selection & add a disabling method [Planned before 0.9 realease]
 - [ ] Fix "I'll be back" features and creates a disabling method [Planned before 1.0 realease]
 - [ ] Add multi-language support (English/French to start) [Planned before 1.0 realease]
+- [ ] Add Smart Assistant support [No plan]
