@@ -42,6 +42,8 @@ const clientDiscord = new Client({
 const PREFIX = process.env.TRIGGER_PREFIX;
 const queue = new Map();
 
+const embed_constructor = require("./components/embed_constructor");
+
 const { google } = require("googleapis");
 
 //When the bot connect for the first time
@@ -80,45 +82,58 @@ clientDiscord.on("error", (error) => {
 
 //Main chat listener
 clientDiscord.on("messageCreate", (message) => {
-  //If the bot speaks or word dosent start with triggerd command, ignore the message
-  if (message.author.bot) return;
-  if (!message.content.startsWith(PREFIX)) return;
+  if (message.author.bot || !message.content.startsWith(PREFIX)) return;
 
   const serverQueue = queue.get(message.guild.id);
 
-  message.delete();
+  let messageArray = message.content.split(" ");
 
-  if (message.content.startsWith(PREFIX + "feur")) {
-    //Feur case
-    message.channel.send({
-      content: "https://destroykeaum.alwaysdata.net/assets/other/feur.mp4",
-    });
-  } else if (message.content.startsWith(`${PREFIX}p`)) {
-    console.log("play");
-    //play case
-    getURL(message, serverQueue);
-    return;
-  } else if (message.content.startsWith(`${PREFIX}s`)) {
-    //skip case
-    skip(message, serverQueue);
-    return;
-  } else if (message.content.startsWith(`${PREFIX}fo`)) {
-    //disconnect case
-    stop(message, serverQueue);
-    return;
-  } else if (message.content.startsWith(`${PREFIX}w`)) {
-    //pause case
-    pause(message, serverQueue);
-  } else if (message.content.startsWith(`${PREFIX}r`)) {
-    //pause case
-    resume(message, serverQueue);
-  } else if (message.content.startsWith(`${PREFIX}q`)) {
-    //pause case
-    actualQueue(message);
-  } else {
-    message.channel.send({ content: "La commande n'existe pas !" }); //error case
+  const command = messageArray[0].slice(PREFIX.length);
+
+  test();
+
+  switch (command) {
+    case "play":
+    case "p":
+      getURL(message, serverQueue);
+      break;
+    case "skip":
+    case "s":
+      skip(message, serverQueue);
+      break;
+    case "stop":
+    case "st":
+      stop(message, serverQueue);
+      break;
+    case "pause":
+    case "pa":
+      pause(message, serverQueue);
+      break;
+    case "resume":
+    case "re":
+      resume(message, serverQueue);
+      break;
+    case "queue":
+    case "q":
+      actualQueue(message);
+      break;
+    default:
+      message.channel.send({ content: "La commande n'existe pas !" });
+      break;
   }
+
+  setTimeout(() => {
+    message.delete();
+  }, 1000);
 });
+
+async function test() {
+  let tmp = await playdl.playlist_info(
+    "https://youtube.com/playlist?list=PLURXxcqVW69d8EDpGXQ4KCCs6OngrGN2S",
+    { incomplete: true }
+  );
+  console.log(tmp);
+}
 
 /*
 
@@ -243,45 +258,15 @@ async function executePlaylist(playlistURL, message, serverQueue, querySearch) {
 
   const playlistID = videoIdPlaylist;
 
-  const embedPlayedPlaylist = new MessageEmbed()
-    .setTitle(message.author.username + " a ajouté une playlist !")
-    .setAuthor({
-      name: message.author.username,
-      iconURL: message.author.avatarURL(),
-    })
-    .setColor("#C4302B")
-    .setFooter({
-      text: "StroyCord/D-Key Bot",
-      iconURL:
-        "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png",
-    })
-    .setThumbnail(
-      responsePlaylistInfo[0].snippet.thumbnails[
-        Object.keys(responsePlaylistInfo[0].snippet.thumbnails)[
-          Object.keys(responsePlaylistInfo[0].snippet.thumbnails).length - 1
-        ]
-      ].url
-    )
-    .setTimestamp()
-    .setURL("https://youtube.com/playlist?list=" + responsePlaylistInfo[0].id)
-    .addFields(
-      {
-        name: "Nom de la playlist :",
-        value: responsePlaylistInfo[0].snippet.title,
-        inline: true,
-      },
-      {
-        name: "Playlist crée par :",
-        value: responsePlaylistInfo[0].snippet.channelTitle,
-        inline: true,
-      },
-      {
-        name: "Mis en file d'attente :",
-        value: responsePlaylistSearch.length - 1 + " musiques",
-      }
-    );
-
-  message.channel.send({ embeds: [embedPlayedPlaylist] });
+  message.channel.send({
+    embeds: [
+      embed_constructor.list(
+        message,
+        responsePlaylistInfo,
+        responsePlaylistSearch
+      ),
+    ],
+  });
 
   for (const [index, id] of playlistID.entries()) {
     const serverQueue = queue.get(message.guild.id);
@@ -407,42 +392,9 @@ async function execute(url, message, serverQueue, querySearch) {
       queueContruct.songs.push(song);
 
       try {
-        const embedPlayed = new MessageEmbed()
-          .setTitle(song.title)
-          .setAuthor({
-            name: message.author.username,
-            iconURL: message.author.avatarURL(),
-          })
-          .setColor("#C4302B")
-          .setFooter({
-            text: "StroyCord/D-Key Bot",
-            iconURL:
-              "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png",
-          })
-          .setThumbnail(song.thumbnail)
-          .setTimestamp()
-          .setURL(song.url)
-          .addFields(
-            {
-              name: message.author.username + " a demandé cette musique !",
-              value: song.title,
-            },
-            {
-              name: "De :",
-              value: song.videoAuthor,
-              inline: true,
-            },
-            {
-              name: "Trouvé avec :",
-              value: PREFIX + "p " + song.querySearch,
-              inline: true,
-            },
-            {
-              name: "Durée :",
-              value: song.videoLength,
-            }
-          );
-        message.channel.send({ embeds: [embedPlayed] });
+        message.channel.send({
+          embeds: [embed_constructor.new(song, message, PREFIX)],
+        });
 
         var connection = await joinVoiceChannel({
           channelId: voiceChannel.id,
@@ -463,47 +415,10 @@ async function execute(url, message, serverQueue, querySearch) {
       }
     } else {
       serverQueue.songs.push(song);
-      const embedAdded = new MessageEmbed()
-        .setTitle(
-          message.author.username +
-            " a ajouté une musique sur la file d'attente !"
-        )
-        .setAuthor({
-          name: message.author.username,
-          iconURL: message.author.avatarURL(),
-          trez,
-        })
-        .setColor("#C4302B")
-        .setFooter({
-          text: "StroyCord/D-Key Bot",
-          iconURL:
-            "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png",
-        })
-        .setThumbnail(song.thumbnail)
-        .setTimestamp()
-        .setURL(song.url)
-        .addFields(
-          {
-            name: song.title,
-            value: "\u200B",
-          },
-          {
-            name: "De :",
-            value: song.videoAuthor,
-            inline: true,
-          },
-          {
-            name: "Trouvé avec :",
-            value: PREFIX + "p " + song.querySearch,
-            inline: true,
-          },
-          {
-            name: "Durée :",
-            value: song.videoLength,
-          }
-        );
 
-      return message.channel.send({ embeds: [embedAdded] });
+      return message.channel.send({
+        embeds: [embed_constructor.added(song, message, PREFIX)],
+      });
     }
   } catch (err) {
     errors(err.statusCode, message);
@@ -642,74 +557,20 @@ function resume(message, serverQueue) {
 function actualQueue(message) {
   const serverQueue = queue.get(message.guild.id);
 
-  if (!serverQueue)
+  if (!serverQueue || songsList.length === 0)
     return message.channel.send({
       content: "Aucune musique n'est jouée actuellement !",
     });
 
   let songsList = serverQueue.songs;
-
-  if (songsList.length === 0) {
-    return message.channel.send({
-      content: "Aucune musique n'est jouée actuellement !",
-    });
-  }
-  let tabEmbeds = [];
-  songsList.forEach((song, index) => {
-    if (index > 10) {
-      return;
-    } else if (index === 10) {
-      tabEmbeds.push({
-        name: "...",
-        value: "\u200B",
-      });
-    } else {
-      tabEmbeds.push({
-        name: index + 1 + ". " + song.title,
-        value: song.videoAuthor + ", " + song.videoLength + " minutes.",
-      });
-    }
-  });
-
-  const embedQueue = new MessageEmbed()
-    .setTitle(
-      "Vous avez " + songsList.length + " musiques en liste d'attente !"
-    )
-    .setAuthor({
-      name: "Stroycord",
-      iconURL:
-        "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png",
-    })
-    .setColor("#37123C")
-    .setFooter({
-      text: "StroyCord/D-Key Bot",
-      iconURL:
-        "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png",
-    })
-    .setTimestamp()
-    .addFields(tabEmbeds);
-
-  return message.channel.send({ embeds: [embedQueue] });
+  return message.channel.send({ embeds: [embed_constructor.queue(songsList)] });
 }
 
 function errors(errorCode, message) {
   switch (errorCode) {
     case 403:
     case 410:
-      let errorEmbed = new MessageEmbed()
-        .setTitle("⚠️ ERREUR : Impossible d'acceder à la musique demandée !")
-        .setAuthor({
-          name: "Stroycord",
-          iconURL:
-            "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png",
-        })
-        .setColor("#181818")
-        .setTimestamp()
-        .addFields({
-          name: "Les raisons peuvent etre diverses (vidéo soumise a une limite d'âge, privée, bloquée par les ayants droits)",
-          value: "Error code : 410",
-        });
-      return message.channel.send({ embeds: [errorEmbed] });
+      return message.channel.send({ embeds: [embed_constructor.error()] });
     default:
       return;
   }
