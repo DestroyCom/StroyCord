@@ -519,7 +519,13 @@ async function play(guild, song) {
     return;
   }
 
-  const source = await playdl.stream(song.url);
+  var source = null;
+  /*  try { */
+  console.log("source", song.url);
+  source = await playdl.stream(song.url);
+
+  console.log(source);
+
   const stream = createAudioResource(source.stream, {
     inputType: source.type,
   });
@@ -527,6 +533,10 @@ async function play(guild, song) {
   serverQueue.player.play(stream);
 
   serverQueue.connection.subscribe(serverQueue.player);
+  /* } catch (err) {
+    console.log(err, "handleerror");
+    skip("skipError", serverQueue);
+  } */
 
   serverQueue.player.on("stateChange", (oldState, newState) => {
     console.log(
@@ -546,11 +556,13 @@ async function play(guild, song) {
 }
 
 function skip(message, serverQueue) {
-  if (!message.member.voice.channel)
-    return message.channel.send({
-      content:
-        "Vous avez besoin d'etre dans un salon vocal pour arreter une musique !",
-    });
+  if (message !== "skipError") {
+    if (!message.member.voice.channel)
+      return message.channel.send({
+        content:
+          "Vous avez besoin d'etre dans un salon vocal pour arreter une musique !",
+      });
+  }
   if (!serverQueue) {
     return message.channel.send({
       content: "Aucune musique n'est jouée actuellement !",
