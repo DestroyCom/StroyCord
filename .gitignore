@@ -27,3 +27,4 @@ src
 .env.copy
 codeExample
 OLD
+wait_*

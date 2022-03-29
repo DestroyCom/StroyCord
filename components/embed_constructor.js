@@ -29,7 +29,7 @@ exports.new = (song, message, PREFIX) => {
       },
       {
         name: "Trouvé avec :",
-        value: PREFIX + "p " + song.querySearch,
+        value: PREFIX + "p " + song.url,
         inline: true,
       },
       {
@@ -39,8 +39,11 @@ exports.new = (song, message, PREFIX) => {
     );
 };
 
-exports.list = (message, responsePlaylistInfo, responsePlaylistSearch) => {
-  return new MessageEmbed()
+exports.list = (message, playlistData) => {
+  let size = playlistData.videos.length;
+  if (size > 30) size = 30;
+
+  let msg = new MessageEmbed()
     .setTitle(message.author.username + " a ajouté une playlist !")
     .setAuthor({
       name: message.author.username,
@@ -52,35 +55,34 @@ exports.list = (message, responsePlaylistInfo, responsePlaylistSearch) => {
       iconURL:
         "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png",
     })
-    .setThumbnail(
-      responsePlaylistInfo[0].snippet.thumbnails[
-        Object.keys(responsePlaylistInfo[0].snippet.thumbnails)[
-          Object.keys(responsePlaylistInfo[0].snippet.thumbnails).length - 1
-        ]
-      ].url
-    )
     .setTimestamp()
-    .setURL("https://youtube.com/playlist?list=" + responsePlaylistInfo[0].id)
+    .setURL(playlistData.url)
     .addFields(
       {
         name: "Nom de la playlist :",
-        value: responsePlaylistInfo[0].snippet.title,
+        value: playlistData.title,
         inline: true,
       },
       {
         name: "Playlist crée par :",
-        value: responsePlaylistInfo[0].snippet.channelTitle,
+        value: playlistData.channel.name,
         inline: true,
       },
       {
         name: "Mis en file d'attente :",
-        value: responsePlaylistSearch.length - 1 + " musiques",
+        value:
+          (playlistData.videos.length > 30 ? 30 : playlistData.videos.length) +
+          " musiques",
       }
     );
+
+  if (playlistData.thumbnail !== undefined)
+    msg.setThumbnail(playlistData.thumbnail.url);
+
+  return msg;
 };
 
 exports.added = (song, message, PREFIX) => {
-  console.log("new embed");
   return new MessageEmbed()
     .setTitle(
       message.author.username + " a ajouté une musique sur la file d'attente !"
@@ -88,7 +90,6 @@ exports.added = (song, message, PREFIX) => {
     .setAuthor({
       name: message.author.username,
       iconURL: message.author.avatarURL(),
-      trez,
     })
     .setColor("#C4302B")
     .setFooter({
@@ -111,7 +112,7 @@ exports.added = (song, message, PREFIX) => {
       },
       {
         name: "Trouvé avec :",
-        value: PREFIX + "p " + song.querySearch,
+        value: PREFIX + "p " + song.url,
         inline: true,
       },
       {
