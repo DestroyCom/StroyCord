@@ -145,7 +145,7 @@ clientDiscord.on('voiceStateUpdate', (oldMember, newMember) => {
 */
 
 async function getURL(message) {
-  const arg = message.content.split(" ").slice(1);
+  var arg = message.content.split(" ").slice(1);
 
   const voiceChannel = message.member.voice.channel;
   if (!voiceChannel) {
@@ -172,14 +172,13 @@ async function getURL(message) {
   const test_type = playdl.yt_validate(arg[0]);
 
   if (test_type === "search") {
-    let searchedVideo = await playdl.search(arg[0], {
-      limit: 1,
-    });
+    arg = await message.content.replace(PREFIX + "p", "");
+    let searchedVideo = await playdl.search(arg, { limit: 1 });
 
     let embed_infos = [message, PREFIX];
     await queue_create(
       message,
-      searchedVideo,
+      searchedVideo[0],
       voiceChannel,
       0,
       embed_infos,
