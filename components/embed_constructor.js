@@ -1,7 +1,6 @@
 const { MessageEmbed } = require("discord.js");
 
 exports.new = (song, message, PREFIX) => {
-  console.log("new embed", song, message, PREFIX);
   return new MessageEmbed()
     .setTitle(song.title)
     .setAuthor({
@@ -159,19 +158,15 @@ exports.queue = (songsList) => {
     .addFields(tabEmbeds);
 };
 
-exports.error = () => {
-  console.log("new embed");
+exports.error = (errorMsg) => {
   return new MessageEmbed()
-    .setTitle("⚠️ ERREUR : Impossible d'acceder à la musique demandée !")
+    .setTitle("⚠️ UNE ERREUR S'EST PRODUITE !")
+    .setDescription(errorMsg)
     .setAuthor({
       name: "Stroycord",
       iconURL:
         "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png",
     })
     .setColor("#181818")
-    .setTimestamp()
-    .addFields({
-      name: "Les raisons peuvent etre diverses (vidéo soumise a une limite d'âge, privée, bloquée par les ayants droits)",
-      value: "Error code : 410",
-    });
+    .setTimestamp();
 };
