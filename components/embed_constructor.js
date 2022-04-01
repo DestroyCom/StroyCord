@@ -38,7 +38,7 @@ exports.new = (song, message, PREFIX) => {
     );
 };
 
-exports.list = (message, playlistData) => {
+exports.list = (message, playlistData, PREFIX) => {
   let size = playlistData.videos.length;
   if (size > 30) size = 30;
 
@@ -57,6 +57,10 @@ exports.list = (message, playlistData) => {
     .setTimestamp()
     .setURL(playlistData.url)
     .addFields(
+      {
+        name: "Trouvé avec :",
+        value: PREFIX + "p " + playlistData.url,
+      },
       {
         name: "Nom de la playlist :",
         value: playlistData.title,

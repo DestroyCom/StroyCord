@@ -6,16 +6,14 @@ This project being at the beginning "Je Reviens Of DevilKing", so it can also se
 ## How to use it ?
 
 The bot has 4 commands:
-_You have to add the prefix before each command (e.g. `&p [music]`)_
+_You have to add your prefix before each command (e.g. `&p [music]`)_
 
-- `p [music url or music name]` is used to start playing music.
-- `s` is used to skip the current music
-- `w` is used to pause the current music
-- `r` is used to resume the current music
-- `fo` disconnects the bot and stops the music playing
-- `ne` play the french Xiaomi 11 Lite NE Song.
-- `q` display the current music queue.
-- `feur` is used to be able to "feur" your friends
+- `play [music url or music name]` is used to start playing music (or `p`).
+- `skip` is used to skip the current music (or `s`).
+- `pause` is used to pause the current music (or `pa`).
+- `resume` is used to resume the current music (or `re`).
+- `fuckoff` disconnects the bot and stops the music playing (or `fo`).
+- `queue` display the current music queue (or `q`).
 
 ## Deploys
 
@@ -46,18 +44,16 @@ The bot uses :
 
 - Discord.JS - [Website](https://discord.js.org/#/) - [Github repository](https://github.com/discordjs/discord.js/)
 - dotenv - [dotenv on npm](https://www.npmjs.com/package/dotenv)
-- esm - [esm on npm](https://www.npmjs.com/package/esm)
-- google APIs [Website](https://developers.google.com/) - [npm](https://www.npmjs.com/package/googleapis)
 - ffmpeg - [website](https://www.ffmpeg.org/)
 - fluent ffmpeg - [fluent-ffmpeg on npm](https://www.npmjs.com/package/fluent-ffmpeg)
-- ytdl core - [Github repository](https://github.com/fent/node-ytdl-core) - [ytdl on npm](https://www.npmjs.com/package/ytdl-core)
+- play-dl - [Github repository](https://github.com/play-dl/play-dl) - [ytdl on npm](https://www.npmjs.com/package/play-dl)
 - Heroku Buildpack FFMPEG - [Github repository](https://github.com/jonathanong/heroku-buildpack-ffmpeg-latest)
 
 # Made by DestCom
 
 | Who                      | Mail                                       | LinkedIn                                         | GitHub                                | Portfolio                                    |
 | ------------------------ | ------------------------------------------ | ------------------------------------------------ | ------------------------------------- | -------------------------------------------- |
-| Azevedo Da Silva Antoine | [HERE](antoine.azevedo-da-silva@hetic.net) | [HERE](https://www.linkedin.com/in/antoine-ads/) | [HERE](https://github.com/DestroyCom) | [HERE](https://destroykeaum.alwaysdata.net/) |
+| Azevedo Da Silva Antoine | [HERE](antoine.azevedo-da-silva@hetic.net) | [HERE](https://www.linkedin.com/in/antoine-ads/) | [HERE](https://github.com/DestroyCom) | [HERE](https://destcom.herokuapp.com/) |
 
 #### Roadmap
 

@@ -174,7 +174,8 @@ async function getURL(message) {
       0,
       embed_infos,
       test_type,
-      queue
+      queue,
+      PREFIX
     );
   } else {
     if (test_type === "playlist") {
@@ -193,7 +194,8 @@ async function getURL(message) {
           index,
           embed_infos,
           test_type,
-          queue
+          queue,
+          PREFIX
         );
       }
     } else {
@@ -206,7 +208,8 @@ async function getURL(message) {
         0,
         embed_infos,
         test_type,
-        queue
+        queue,
+        PREFIX
       );
     }
   }

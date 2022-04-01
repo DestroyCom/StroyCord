@@ -13,7 +13,8 @@ const queue_create = async (
   index,
   embed,
   type,
-  queue
+  queue,
+  PREFIX
 ) => {
   const serverQueue = queue.get(message.guild.id);
   var songInfo = {};
@@ -61,7 +62,7 @@ const queue_create = async (
 
         if (type == "playlist") {
           return message.channel.send({
-            embeds: [embed_constructor.list(embed[0], embed[1])],
+            embeds: [embed_constructor.list(embed[0], embed[1], PREFIX)],
           });
         } else {
           return message.channel.send({
