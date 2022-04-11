@@ -82,7 +82,8 @@ const queue_create = async (
         });
     }
   } catch (err) {
-    bases.errors(err.statusCode, message);
+    console.log(err);
+    bases.errors(err.toString(), message);
     return;
   }
 };

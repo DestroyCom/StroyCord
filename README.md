@@ -17,7 +17,7 @@ _You have to add your prefix before each command (e.g. `&p [music]`)_
 
 ## Deploys
 
-**You will need a _Youtube API Key_ and a _Discord Developper Application_ !!**
+**You will need a  _Discord Developper Application_ !!**
 
 ### Deploy on Heroku
 
@@ -68,6 +68,7 @@ The bot uses :
 - [x] Add customs prefix [Planned for 0.8 realease]
 - [x] ~~Add help for getting API Key [Planned for 0.9 realease]~~ (unnecessary)
 - [ ] Transform repetitive code into modules or functions [Planned for 0.9 realease]
+- [ ] Add a redo play [Planned for 0.9 realease]
 - [ ] Change the "Xiaomi Song" into a custom song selection & add a disabling method [Planned before 0.9 realease]
 - [ ] Fix "I'll be back" features and creates a disabling method [Planned before 1.0 realease]
 - [ ] Add multi-language support (English/French to start) [Planned before 1.0 realease]

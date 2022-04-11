@@ -33,11 +33,6 @@
             "required": "true",
             "value": "YOUR CHANNEL_ID"
         },
-        "GOOGLE_YOUTUBE_API_KEY": {
-            "description": "The API Key from google API used for the music search.",
-            "required": "true",
-            "value": "YOUR GOOGLE_YOUTUBE_API_KEY"
-        },
         "XIAOMI_SONG": {
             "description": "Boolean. if True: Activate the NE command for playing Xiaomi 11 Lite NE Song.",
             "required": "true",
@@ -49,6 +44,6 @@
             "value": "&"
         }
     },
-    "success_url": "https://destroykeaum.alwaysdata.net/caard.html",
+    "success_url": "https://destcom.herokuapp.com/",
     "keywords": ["nodejs", "discord", "discordjs", "esm", "dotenv", "music", "youtube"]
 }

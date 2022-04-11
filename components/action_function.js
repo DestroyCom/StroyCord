@@ -7,7 +7,12 @@ const play = async (guild, song, queue) => {
   const serverQueue = queue.get(guild.id);
   if (!song) {
     queue.delete(guild.id);
-    serverQueue.connection.destroy();
+    try {
+      serverQueue.connection.destroy();
+    } catch (e) {
+      console.log("Connection already destroyed");
+      console.log(e);
+    }
     return;
   }
 
@@ -28,7 +33,12 @@ const play = async (guild, song, queue) => {
         play(guild, serverQueue.songs[0], queue);
       } else if (oldState.status === "playing") {
         queue.delete(guild.id);
-        serverQueue.connection.destroy();
+        try {
+          serverQueue.connection.destroy();
+        } catch (e) {
+          console.log("Connection already destroyed");
+          console.log(e);
+        }
       }
     }
   });
@@ -70,7 +80,12 @@ const stop = (message, serverQueue, queue) => {
       content: "Aucune musique n'est jouée actuellement !",
     });
 
-  serverQueue.connection.destroy();
+  try {
+    serverQueue.connection.destroy();
+  } catch (e) {
+    console.log("Connection already destroyed");
+    console.log(e);
+  }
   queue.delete(message.guildId);
 
   return message.channel
