@@ -1,0 +1,54 @@
+{
+    "name": "StroyCord/D-Key Bot - Music Bot for discord",
+    "description": "A discord bot to play music on discord's VC",
+    "repository": "https://github.com/DestroyCom/JE-REVIENS-OF-DEVILKING",
+    "logo": "https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png",
+    "website": "https://destroykeaum.alwaysdata.net/",
+    "buildpacks": [{
+            "url": "heroku/nodejs"
+        },
+        {
+            "url": "https://github.com/jonathanong/heroku-buildpack-ffmpeg-latest"
+        }
+    ],
+
+    "env": {
+        "BOT_TOKEN": {
+            "description": "The token of your bot discord.",
+            "required": "true",
+            "value": "YOUR BOT_TOKEN"
+        },
+        "USER_ID": {
+            "description": "The id of the user you want to see when he logs out.",
+            "required": "true",
+            "value": "YOUR USER_ID"
+        },
+        "VOICE_CHANNEL_ID": {
+            "description": "The id of the voice room you are checking.",
+            "required": "true",
+            "value": "YOUR VOICE_CHANNEL_ID"
+        },
+        "CHANNEL_ID": {
+            "description": "The id of the salon where you want to send the message.",
+            "required": "true",
+            "value": "YOUR CHANNEL_ID"
+        },
+        "GOOGLE_YOUTUBE_API_KEY": {
+            "description": "The API Key from google API used for the music search.",
+            "required": "true",
+            "value": "YOUR GOOGLE_YOUTUBE_API_KEY"
+        },
+        "XIAOMI_SONG": {
+            "description": "Boolean. if True: Activate the NE command for playing Xiaomi 11 Lite NE Song.",
+            "required": "true",
+            "value": "false"
+        },
+        "TRIGGER_PREFIX": {
+            "description": "Single Character. The prefix with which you intend to use the bot (e.g. to trigger commands).",
+            "required": "true",
+            "value": "&"
+        }
+    },
+    "success_url": "https://destroykeaum.alwaysdata.net/caard.html",
+    "keywords": ["nodejs", "discord", "discordjs", "esm", "dotenv", "music", "youtube"]
+}
