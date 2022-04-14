@@ -26,3 +26,5 @@ src
 .env.prin
 .env.copy
 codeExample
+OLD
+wait_*

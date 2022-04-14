@@ -6,20 +6,18 @@ This project being at the beginning "Je Reviens Of DevilKing", so it can also se
 ## How to use it ?
 
 The bot has 4 commands:
-_You have to add the prefix before each command (e.g. `&p [music]`)_
+_You have to add your prefix before each command (e.g. `&p [music]`)_
 
-- `p [music url or music name]` is used to start playing music.
-- `s` is used to skip the current music
-- `w` is used to pause the current music
-- `r` is used to resume the current music
-- `fo` disconnects the bot and stops the music playing
-- `ne` play the french Xiaomi 11 Lite NE Song.
-- `q` display the current music queue.
-- `feur` is used to be able to "feur" your friends
+- `play [music url or music name]` is used to start playing music (or `p`).
+- `skip` is used to skip the current music (or `s`).
+- `pause` is used to pause the current music (or `pa`).
+- `resume` is used to resume the current music (or `re`).
+- `fuckoff` disconnects the bot and stops the music playing (or `fo`).
+- `queue` display the current music queue (or `q`).
 
 ## Deploys
 
-**You will need a _Youtube API Key_ and a _Discord Developper Application_ !!**
+**You will need a  _Discord Developper Application_ !!**
 
 ### Deploy on Heroku
 
@@ -46,33 +44,24 @@ The bot uses :
 
 - Discord.JS - [Website](https://discord.js.org/#/) - [Github repository](https://github.com/discordjs/discord.js/)
 - dotenv - [dotenv on npm](https://www.npmjs.com/package/dotenv)
-- esm - [esm on npm](https://www.npmjs.com/package/esm)
-- google APIs [Website](https://developers.google.com/) - [npm](https://www.npmjs.com/package/googleapis)
 - ffmpeg - [website](https://www.ffmpeg.org/)
 - fluent ffmpeg - [fluent-ffmpeg on npm](https://www.npmjs.com/package/fluent-ffmpeg)
-- ytdl core - [Github repository](https://github.com/fent/node-ytdl-core) - [ytdl on npm](https://www.npmjs.com/package/ytdl-core)
+- play-dl - [Github repository](https://github.com/play-dl/play-dl) - [ytdl on npm](https://www.npmjs.com/package/play-dl)
 - Heroku Buildpack FFMPEG - [Github repository](https://github.com/jonathanong/heroku-buildpack-ffmpeg-latest)
 
 # Made by DestCom
 
 | Who                      | Mail                                       | LinkedIn                                         | GitHub                                | Portfolio                                    |
 | ------------------------ | ------------------------------------------ | ------------------------------------------------ | ------------------------------------- | -------------------------------------------- |
-| Azevedo Da Silva Antoine | [HERE](antoine.azevedo-da-silva@hetic.net) | [HERE](https://www.linkedin.com/in/antoine-ads/) | [HERE](https://github.com/DestroyCom) | [HERE](https://destroykeaum.alwaysdata.net/) |
+| Azevedo Da Silva Antoine | [HERE](antoine.azevedo-da-silva@hetic.net) | [HERE](https://www.linkedin.com/in/antoine-ads/) | [HERE](https://github.com/DestroyCom) | [HERE](https://destcom.herokuapp.com/) |
 
 #### Roadmap
 
-- [x] Basic features (play/skip/quit)
-- [x] Searching music (Youtube API)
-- [x] Add first discord embeds
-- [x] Update Readme (How to deploy)
-- [x] Handle playlist request [Planned for 0.7 realease]
-- [x] Add "pause" & "resume" feature [Planned for 0.8 realease]
-- [x] Delete request message [Planned for 0.8 realease]
-- [x] Display actual song queue [Planned for 0.8 realease]
-- [ ] Transform current function into modules [Planned for 0.9 realease]
-- [x] Add customs prefix [Planned for 0.8 realease]
-- [ ] Add help for getting API Key [Planned for 0.9 realease]
-- [ ] Change the "Xiaomi Song" into a custom song selection & add a disabling method [Planned before 0.9 realease]
+_See old steps of the roadmap at [archives/TODO.md](./archives/TODO.md)_
+
+- [ ] Transform repetitive code into modules or functions [Planned for 0.9 realease]
+- [ ] Add a redo play [Planned before 1.0 realease]
+- [ ] Change the "Xiaomi Song" into a custom song selection & add a disabling method [Planned before 1.0 realease]
 - [ ] Fix "I'll be back" features and creates a disabling method [Planned before 1.0 realease]
 - [ ] Add multi-language support (English/French to start) [Planned before 1.0 realease]
 - [ ] Add Smart Assistant support [No plan]

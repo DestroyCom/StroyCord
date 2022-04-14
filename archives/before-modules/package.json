@@ -1,9 +1,9 @@
 {
   "name": "stroycord",
   "description": "La fameuse phrase \"je reviens\" de DevilKing a chaque depart de ce dernier de discord INCLUS MAINTENANT UN BOT MUSICAL",
-  "version": "0.9.0-beta.5",
+  "version": "0.8.4",
   "engines": {
-    "node": ">=16.14.*"
+    "node": "16.13.2"
   },
   "scripts": {
     "start": "node app.js",
@@ -20,13 +20,14 @@
   },
   "homepage": "https://github.com/DestroyCom/JE-REVIENS-OF-DEVILKING#readme",
   "dependencies": {
-    "@discordjs/opus": "^0.7.0",
-    "@discordjs/voice": "^0.8.0",
+    "@discordjs/opus": "^0.5.3",
+    "@discordjs/voice": "^0.7.5",
     "discord.js": "^13.6.0",
     "dotenv": "^12.0.3",
     "ffmpeg": "^0.0.4",
-    "ffmpeg-static": "^5.0.0",
-    "libsodium-wrappers": "^0.7.10",
-    "play-dl": "^1.9.4"
+    "ffmpeg-static": "^4.4.1",
+    "googleapis": "^92.0.0",
+    "libsodium-wrappers": "^0.7.9",
+    "play-dl": "^1.7.8"
   }
 }
