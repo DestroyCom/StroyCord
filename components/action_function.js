@@ -1,5 +1,5 @@
 const playdl = require("play-dl");
-const { createAudioResource } = require("@discordjs/voice");
+const { AudioPlayerStatus, createAudioResource } = require("@discordjs/voice");
 
 const embed_constructor = require("./embed_constructor");
 
@@ -8,7 +8,9 @@ const play = async (guild, song, queue) => {
   if (!song) {
     queue.delete(guild.id);
     try {
-      serverQueue.connection.destroy();
+      if (serverQueue) {
+        serverQueue.connection.destroy();
+      }
     } catch (e) {
       console.log("Connection already destroyed");
       console.log(e);
@@ -26,21 +28,9 @@ const play = async (guild, song, queue) => {
 
   serverQueue.connection.subscribe(serverQueue.player);
 
-  serverQueue.player.on("stateChange", (oldState, newState) => {
-    if (newState.status === "idle") {
-      if (serverQueue.songs.length != 0 && serverQueue.songs.length >= 0) {
-        serverQueue.songs.shift();
-        play(guild, serverQueue.songs[0], queue);
-      } else if (oldState.status === "playing") {
-        queue.delete(guild.id);
-        try {
-          serverQueue.connection.destroy();
-        } catch (e) {
-          console.log("Connection already destroyed");
-          console.log(e);
-        }
-      }
-    }
+  serverQueue.player.on(AudioPlayerStatus.Idle, () => {
+    serverQueue.songs.shift();
+    play(guild, serverQueue.songs[0], queue);
   });
 
   return;

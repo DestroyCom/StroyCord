@@ -187,7 +187,8 @@ async function getURL(message) {
 
       for (const [index, video] of playlistData.videos.entries()) {
         if (index === 30) break;
-        await queue_handler.queue_create(
+        let response = null;
+        response = await queue_handler.queue_create(
           message,
           video,
           voiceChannel,
@@ -197,6 +198,8 @@ async function getURL(message) {
           queue,
           PREFIX
         );
+
+        if (response === "ERR") break;
       }
     } else {
       let embed_infos = [message, PREFIX];

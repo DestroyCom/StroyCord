@@ -71,8 +71,8 @@ const queue_create = async (
         }
       } catch (error) {
         queue.delete(message.guild.id);
-
         require("./bases").errors(error, message);
+        return "ERR";
       }
     } else {
       serverQueue.songs.push(song);
@@ -84,6 +84,7 @@ const queue_create = async (
   } catch (err) {
     console.log(err);
     bases.errors(err.toString(), message);
+    return "ERR";
     return;
   }
 };
