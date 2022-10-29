@@ -1,7 +1,7 @@
-const { MessageEmbed } = require("discord.js");
+const { EmbedBuilder } = require("discord.js");
 
 exports.new = (song, message, PREFIX) => {
-  return new MessageEmbed()
+  return new EmbedBuilder()
     .setTitle(song.title)
     .setAuthor({
       name: message.author.username,
@@ -42,7 +42,7 @@ exports.list = (message, playlistData, PREFIX) => {
   let size = playlistData.videos.length;
   if (size > 30) size = 30;
 
-  let msg = new MessageEmbed()
+  let msg = new EmbedBuilder()
     .setTitle(message.author.username + " a ajouté une playlist !")
     .setAuthor({
       name: message.author.username,
@@ -86,7 +86,7 @@ exports.list = (message, playlistData, PREFIX) => {
 };
 
 exports.added = (song, message, PREFIX) => {
-  return new MessageEmbed()
+  return new EmbedBuilder()
     .setTitle(
       message.author.username + " a ajouté une musique sur la file d'attente !"
     )
@@ -143,7 +143,7 @@ exports.queue = (songsList) => {
     }
   });
 
-  return new MessageEmbed()
+  return new EmbedBuilder()
     .setTitle(
       "Vous avez " + songsList.length + " musiques en liste d'attente !"
     )
@@ -163,7 +163,7 @@ exports.queue = (songsList) => {
 };
 
 exports.error = (errorMsg) => {
-  return new MessageEmbed()
+  return new EmbedBuilder()
     .setTitle("⚠️ UNE ERREUR S'EST PRODUITE !")
     .setDescription(errorMsg)
     .setAuthor({
