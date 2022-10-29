@@ -1,7 +1,7 @@
 # StroyCord/D-Key Bot (Previously JE REVIENS OF DEVILKING)
 
-Since the recent action of youtube to close the most used bots on discord, I had the desire to create my own.
-This project being at the beginning "Je Reviens Of DevilKing", so it can also sends the message "I'll be back" every time a specific user disconnects from a specific discord voice room and allow you to "feur" your friends.
+Since the recent action of youtube to close the most used bots on discord, I wanted to create my own.
+This project being at the beginning a private joke called "Je Reviens Of DevilKing", it can also sends the message "I'll be back" every time a specific user disconnects from a specific discord voice room and allow you to "feur" your friends.
 
 ## How to use it ?
 
@@ -17,13 +17,13 @@ _You have to add your prefix before each command (e.g. `&p [music]`)_
 
 ## Deploys
 
-**You will need a  _Discord Developper Application_ !!**
+**You will need a _Discord Developper Application_ !!**
 
-### Deploy on Heroku
+### Deploy with docker and docker-compose
 
-_You can easily deploy it on Heroku with this button :_
-
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/DestroyCom/JE-REVIENS-OF-DEVILKING)
+- Clone the repository
+- Rename the file `.env.dist` to `.env` and fill it with the corrects informations.
+- Then simply pull the repository and run `docker-compose up -d` in the root folder.
 
 ### Deploy on localhost
 
@@ -49,11 +49,20 @@ The bot uses :
 - play-dl - [Github repository](https://github.com/play-dl/play-dl) - [ytdl on npm](https://www.npmjs.com/package/play-dl)
 - Heroku Buildpack FFMPEG - [Github repository](https://github.com/jonathanong/heroku-buildpack-ffmpeg-latest)
 
+### Deploy on Heroku
+
+_You can ~~easily~~ deploy it on Heroku with this button :_
+
+> Since the announcement of Heroku, of the withdrawal of the freeplan, it is in my opinion more interesting to set up the bot via their service.
+> However if you have a student GitHub account, you can claim 10$ of credits per month for 1 year for free.
+
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/DestroyCom/JE-REVIENS-OF-DEVILKING)
+
 # Made by DestCom
 
-| Who                      | Mail                                       | LinkedIn                                         | GitHub                                | Portfolio                                    |
-| ------------------------ | ------------------------------------------ | ------------------------------------------------ | ------------------------------------- | -------------------------------------------- |
-| Azevedo Da Silva Antoine | [HERE](antoine.azevedo-da-silva@hetic.net) | [HERE](https://www.linkedin.com/in/antoine-ads/) | [HERE](https://github.com/DestroyCom) | [HERE](https://destcom.herokuapp.com/) |
+| Who     | Mail                                       | LinkedIn                                         | GitHub                                | Portfolio                                  |
+| ------- | ------------------------------------------ | ------------------------------------------------ | ------------------------------------- | ------------------------------------------ |
+| DestCom | [HERE](antoine.azevedo-da-silva@hetic.net) | [HERE](https://www.linkedin.com/in/antoine-ads/) | [HERE](https://github.com/DestroyCom) | [HERE](https://portfolio.destcom.website/) |
 
 #### Roadmap
 
