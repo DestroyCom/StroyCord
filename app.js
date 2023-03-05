@@ -36,6 +36,10 @@ const queue = new Map();
 const actions = require("./components/action_function");
 const queue_handler = require("./components/queue_constructor");
 
+process.on("unhandledRejection", (error) => {
+  console.error("Unhandled promise rejection:", error);
+});
+
 //When the bot connect for the first time
 clientDiscord.once("ready", () => {
   console.log(`Logged in as ${clientDiscord.user.tag}!`);
