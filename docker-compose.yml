@@ -2,11 +2,17 @@ version: "3"
 
 services:
   stroycord:
+    container_name: stroycord
     image: stroycord
     build:
       context: .
       dockerfile: Dockerfile
     restart: always
-    volumes:
-      - .:/stroycord-app:rw
     command: "npm start"
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN}
+      TRIGGER_PREFIX: ${TRIGGER_PREFIX}
+      #XIAOMI_SONG: ${XIAOMI_SONG}
+      #CHANNEL_ID: ${CHANNEL_ID}
+      #VOICE_CHANNEL_ID: ${VOICE_CHANNEL_ID}
+      #USER_ID: ${USER_ID}
