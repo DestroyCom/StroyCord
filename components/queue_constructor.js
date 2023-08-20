@@ -75,7 +75,7 @@ const queue_create = async (
         require("./bases").log.error({
           message: `Error occured : ${error}`,
           where: "discord",
-          action: "queue_create",
+          action: "join_voice_channel",
         });
         return "ERR";
       }
