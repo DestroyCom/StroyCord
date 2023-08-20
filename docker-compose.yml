@@ -11,6 +11,7 @@ services:
     environment:
       BOT_TOKEN: ${BOT_TOKEN}
       TRIGGER_PREFIX: ${TRIGGER_PREFIX}
+      TZ: ${TIMEZONE}
       #XIAOMI_SONG: ${XIAOMI_SONG}
       #CHANNEL_ID: ${CHANNEL_ID}
       #VOICE_CHANNEL_ID: ${VOICE_CHANNEL_ID}
