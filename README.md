@@ -74,3 +74,12 @@ _See old steps of the roadmap at [archives/TODO.md](./archives/TODO.md)_
 - [ ] Fix "I'll be back" features and creates a disabling method [Planned before 1.0 realease]
 - [ ] Add multi-language support (English/French to start) [Planned before 1.0 realease]
 - [ ] Add Smart Assistant support [No plan]
+
+#### ENVIRONMENT VARIABLES
+
+| VARIABLE       | REQUIRED | DEFAULT      | USED ONLY FOR DOCKER | DESCRIPTION                                |
+| -------------- | -------- | ------------ | -------------------- | ------------------------------------------ |
+| BOT_TOKEN      | TRUE     |              | FALSE                | Your discord app token                     |
+| TRIGGER_PREFIX | FALSE    | &            | FALSE                | Your bot prefix                            |
+| LOG_DIR        | FALSE    | /log         | TRUE                 | Your logging directory path use for docker |
+| TIMEZONE       | FALSE    | Europe/Paris | TRUE                 | Your container timezone                    |

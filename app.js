@@ -26,7 +26,7 @@ const clientDiscord = new Client({
   ],
 });
 
-const PREFIX = process.env.TRIGGER_PREFIX;
+const PREFIX = process.env.TRIGGER_PREFIX || "&";
 const queue = new Map();
 
 const actions = require("./components/action_function");
