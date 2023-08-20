@@ -7,8 +7,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    restart: always
-    command: "npm start"
+    restart: on-failure
     environment:
       BOT_TOKEN: ${BOT_TOKEN}
       TRIGGER_PREFIX: ${TRIGGER_PREFIX}
@@ -16,3 +15,5 @@ services:
       #CHANNEL_ID: ${CHANNEL_ID}
       #VOICE_CHANNEL_ID: ${VOICE_CHANNEL_ID}
       #USER_ID: ${USER_ID}
+    volumes:
+      - ${LOG_DIR}:/stroycord_app/logs:rw

@@ -72,6 +72,11 @@ const queue_create = async (
       } catch (error) {
         queue.delete(message.guild.id);
         require("./bases").errors(error, message);
+        require("./bases").log.error({
+          message: `Error occured : ${error}`,
+          where: "discord",
+          action: "queue_create",
+        });
         return "ERR";
       }
     } else {
@@ -84,6 +89,11 @@ const queue_create = async (
   } catch (err) {
     console.log(err);
     bases.errors(err.toString(), message);
+    bases.log.error({
+      message: `Error occured : ${err}`,
+      where: "discord",
+      action: "queue_create",
+    });
     return "ERR";
     return;
   }

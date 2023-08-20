@@ -14,6 +14,11 @@ const play = async (guild, song, queue) => {
     } catch (e) {
       console.log("Connection already destroyed");
       console.log(e);
+      require("./bases").log.error({
+        message: `Error occured : ${e}`,
+        where: "discord",
+        action: "play",
+      });
     }
     return;
   }
@@ -75,6 +80,11 @@ const stop = (message, serverQueue, queue) => {
   } catch (e) {
     console.log("Connection already destroyed");
     console.log(e);
+    require("./bases").log.error({
+      message: `Error occured : ${e}`,
+      where: "discord",
+      action: "stop",
+    });
   }
   queue.delete(message.guildId);
 
