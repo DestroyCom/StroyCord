@@ -17,4 +17,4 @@ services:
       #VOICE_CHANNEL_ID: ${VOICE_CHANNEL_ID}
       #USER_ID: ${USER_ID}
     volumes:
-      - ${LOG_DIR}:/stroycord_app/logs:rw
+      - ${LOG_DIR:-logs}:/stroycord_app/logs:rw

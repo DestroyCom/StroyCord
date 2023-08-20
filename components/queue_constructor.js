@@ -41,6 +41,7 @@ const queue_create = async (
         songs: [],
         volume: 5,
         playing: true,
+        connectedToVoiceChannel: false,
       };
 
       queue.set(message.guild.id, queueContruct);

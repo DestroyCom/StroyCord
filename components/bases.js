@@ -60,6 +60,17 @@ exports.errors = (errorMsg, message) => {
   });
 };
 
+exports.formatTimeDisplay = (time) => {
+  const parts = time.split(":");
+  const minutes = parts[0];
+  const seconds = parts[1];
+
+  // Ajoute un zéro initial si les secondes sont inférieures à 10
+  const formattedSeconds = seconds < 10 ? `0${seconds}` : seconds;
+
+  return `${minutes}:${formattedSeconds}`;
+};
+
 /* 
   ***************
   Exemple for logging

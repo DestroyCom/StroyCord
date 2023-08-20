@@ -5,11 +5,16 @@ const embed_constructor = require("./embed_constructor");
 
 const play = async (guild, song, queue) => {
   const serverQueue = queue.get(guild.id);
+
   if (!song) {
     queue.delete(guild.id);
     try {
       if (serverQueue) {
         serverQueue.connection.destroy();
+        serverQueue.player.stop();
+        serverQueue.songs = [];
+        serverQueue.playing = false;
+        serverQueue.connectedToVoiceChannel = false;
       }
     } catch (e) {
       console.log("Connection already destroyed");
@@ -31,7 +36,10 @@ const play = async (guild, song, queue) => {
 
   serverQueue.player.play(stream);
 
-  serverQueue.connection.subscribe(serverQueue.player);
+  if (!serverQueue.connectedToVoiceChannel) {
+    serverQueue.connectedToVoiceChannel = true;
+    serverQueue.connection.subscribe(serverQueue.player);
+  }
 
   serverQueue.player.on(AudioPlayerStatus.Idle, () => {
     serverQueue.songs.shift();
@@ -77,6 +85,10 @@ const stop = (message, serverQueue, queue) => {
 
   try {
     serverQueue.connection.destroy();
+    serverQueue.player.stop();
+    serverQueue.songs = [];
+    serverQueue.playing = false;
+    serverQueue.connectedToVoiceChannel = false;
   } catch (e) {
     console.log("Connection already destroyed");
     console.log(e);

@@ -33,7 +33,7 @@ exports.new = (song, message, PREFIX) => {
       },
       {
         name: "Durée :",
-        value: song.videoLength,
+        value: require("./bases").formatTimeDisplay(song.videoLength),
       }
     );
 };
@@ -120,7 +120,7 @@ exports.added = (song, message, PREFIX) => {
       },
       {
         name: "Durée :",
-        value: song.videoLength,
+        value: require("./bases").formatTimeDisplay(song.videoLength),
       }
     );
 };
@@ -138,7 +138,11 @@ exports.queue = (songsList) => {
     } else {
       tabEmbeds.push({
         name: index + 1 + ". " + song.title,
-        value: song.videoAuthor + ", " + song.videoLength + " minutes.",
+        value:
+          song.videoAuthor +
+          ", " +
+          require("./bases").formatTimeDisplay(song.videoLength) +
+          " minutes.",
       });
     }
   });
