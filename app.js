@@ -1,11 +1,7 @@
 require("dotenv").config();
 
 const playdl = require("play-dl");
-/* playdl.getFreeClientID().then((clientID) => {
-  playdl.setToken({
-    soundcloud: process.env.SOUNDCLOUD_CLIENT_ID,
-  });
-}); */
+
 const { Client, GatewayIntentBits, Events } = require("discord.js");
 
 const clientDiscord = new Client({
@@ -38,44 +34,121 @@ const queue_handler = require("./components/queue_constructor");
 
 process.on("unhandledRejection", (error) => {
   console.error("Unhandled promise rejection:", error);
+  require("./components/bases").log.error({
+    message: `Unhandled promise rejection: ${error}`,
+    action: "unhandledRejection",
+    where: "app",
+  });
 });
 
 //When the bot connect for the first time
 clientDiscord.once("ready", () => {
   console.log(`Logged in as ${clientDiscord.user.tag}!`);
+  clientDiscord.user.setActivity("StroyCord", { type: "LISTENING" });
+  require("./components/bases").log.info({
+    message: `Bot is ready as ${clientDiscord.user.tag}!`,
+    action: "ready",
+    where: "discord",
+  });
 });
 
 //When the bot reconnect
 clientDiscord.once("reconnecting", () => {
   console.log("Reconnecting!");
+  require("./components/bases").log.warn({
+    message: "Bot is reconnecting!",
+    action: "reconnecting",
+    where: "discord",
+  });
 });
 
 //When the bot disconnect
 clientDiscord.on("disconnect", (message) => {
   const serverQueue = queue.get(message.guild.id);
 
-  if (!serverQueue)
+  if (!serverQueue) {
+    require("./components/bases").log.info({
+      message: `Bot is not connected in a voice channel!`,
+      discordServer: message.guild.name,
+      action: "disconnected",
+      where: "discord",
+    });
+
     return message.channel.send({
       content: "Je ne suis pas connecté dans un salon vocal !",
     });
+  }
 
   serverQueue.songs = [];
   serverQueue.connection.dispatcher.end();
   console.log("Disconnect!");
+  require("./components/bases").log.info({
+    message: `Bot is successfully disconnected!`,
+    discordServer: message.guild.name,
+    action: "disconnected",
+    where: "discord",
+  });
+});
+
+//When the bot is kicked
+clientDiscord.on("guildDelete", (guild) => {
+  console.log(`I have been removed from: ${guild.name} (id: ${guild.id})`);
+  require("./components/bases").log.info({
+    message: `Bot has been removed from: ${guild.name} (id: ${guild.id})`,
+    action: "remove",
+    where: "guild",
+  });
+});
+
+//When the bot is kicked out of a voice channel
+clientDiscord.on("voiceStateUpdate", (oldState, newState) => {
+  if (oldState.channelId === null) return;
+
+  const serverQueue = queue.get(oldState.guild.id);
+
+  if (!serverQueue) return;
+
+  if (oldState.member.user.id === clientDiscord.user.id) {
+    if (newState.channelId === null) {
+      serverQueue.songs = [];
+      console.log(serverQueue);
+      if (serverQueue.connection.dispatcher) {
+        serverQueue.connection.dispatcher.end();
+      }
+      require("./components/bases").log.info({
+        message: `Bot has been kicked out of a voice channel by ${oldState.member.user.tag}`,
+        discordServer: oldState.guild.name,
+        action: "kick",
+        where: "voiceChannel",
+      });
+    }
+  }
 });
 
 //Error handler - ex : ECONNRESET
 clientDiscord.on("uncaughtException", (err) => {
   console.log(err);
+  require("./components/bases").log.error({
+    message: `Error occured : ${err}`,
+    where: "discord",
+  });
 });
 
 clientDiscord.on("error", (error) => {
   console.log("Error occured :", error);
+  require("./components/bases").log.error({
+    message: `Error occured : ${error}`,
+    where: "discord",
+  });
 });
 
-clientDiscord.on(Events.InteractionCreate, (interaction) => {
+/* clientDiscord.on(Events.InteractionCreate, (interaction) => {
   console.log(interaction);
-});
+  if (!interaction.isCommand()) return;
+  require("./components/bases").log.info({
+    message: `Command ${interaction.commandName} was used by ${interaction.user.tag} in ${interaction.guild.name}`,
+  });
+}); */
 
 //Main chat listener
 clientDiscord.on("messageCreate", (message) => {
