@@ -1,7 +1,7 @@
 name: Docker build
 on: 
   release:
-    types: [created]
+    types: [created, edited]
 
 jobs:
   docker:
