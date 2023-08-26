@@ -1,11 +1,13 @@
-# StroyCord/D-Key Bot (Previously JE REVIENS OF DEVILKING)
+# StroyCord
 
+_Previously JE REVIENS OF DEVILKING_
 Since the recent action of youtube to close the most used bots on discord, I wanted to create my own.
-This project being at the beginning a private joke called "Je Reviens Of DevilKing", it can also sends the message "I'll be back" every time a specific user disconnects from a specific discord voice room and allow you to "feur" your friends.
+
+---
 
 ## How to use it ?
 
-The bot has 4 commands:
+The bot has 4 majors commands:
 _You have to add your prefix before each command (e.g. `&p [music]`)_
 
 - `play [music url or music name]` is used to start playing music (or `p`).
@@ -15,71 +17,59 @@ _You have to add your prefix before each command (e.g. `&p [music]`)_
 - `fuckoff` disconnects the bot and stops the music playing (or `fo`).
 - `queue` display the current music queue (or `q`).
 
+---
+
 ## Deploys
 
 **You will need a _Discord Developper Application_ !!**
 
 ### Deploy with docker and docker-compose
 
+#### Launch with a new mongodb server, a mongodb explorer
+
 - Clone the repository
 - Rename the file `.env.dist` to `.env` and fill it with the corrects informations.
 - Then simply pull the repository and run `docker-compose up -d` in the root folder.
 
+### Launch with a custom docker config
+
+- Clone the repository
+- Rename the file `.env.dist` to `.env` and fill it with the corrects informations.
+- Create your own `docker-compose.yml`.
+- Then simply pull the repository and run `docker-compose up -d` in the root folder.
+
 ### Deploy on localhost
 
-_To see how to deploy it in the cloud, please see the section above_  
+_You will need a mongodb server_
 You can start this project in a few steps :
 
-1. Clone this directory,
-2. run the command npm install,
-3. download ffmpeg at [ffmpeg.org](https://www.ffmpeg.org/) and install _"ffmpeg.exe"_, _"ffplay.exe"_ and _"ffprobe.exe"_ in the root folder
-4. Then rename the file '.env.dist' into '.env',
-5. Once you have your accounts and the keys, replace the variables in the '.env' with your own.
+- Clone this directory,
+- run the command npm install,
+- Then rename the file '.env.dist' into '.env',
+- Once you have your accounts and the keys, replace the variables in the '.env' with your own.
 
-You can now launch it with the command `npm start`.
+You can now launch it with the command:
 
-## What does the bot use?
+- `npm run build` to compile the bot
+  then `npm run start` to start the bot
+- `npm run dev` to start the bot in watch mode
 
-The bot uses :
-
-- Discord.JS - [Website](https://discord.js.org/#/) - [Github repository](https://github.com/discordjs/discord.js/)
-- dotenv - [dotenv on npm](https://www.npmjs.com/package/dotenv)
-- ffmpeg - [website](https://www.ffmpeg.org/)
-- fluent ffmpeg - [fluent-ffmpeg on npm](https://www.npmjs.com/package/fluent-ffmpeg)
-- play-dl - [Github repository](https://github.com/play-dl/play-dl) - [ytdl on npm](https://www.npmjs.com/package/play-dl)
-- Heroku Buildpack FFMPEG - [Github repository](https://github.com/jonathanong/heroku-buildpack-ffmpeg-latest)
-
-### Deploy on Heroku
-
-_You can ~~easily~~ deploy it on Heroku with this button :_
-
-> Since the announcement of Heroku, of the withdrawal of the freeplan, it is in my opinion more interesting to set up the bot via their service.
-> However if you have a student GitHub account, you can claim 10$ of credits per month for 1 year for free.
-
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/DestroyCom/JE-REVIENS-OF-DEVILKING)
-
-# Made by DestCom
-
-| Who     | Mail                                       | LinkedIn                                         | GitHub                                | Portfolio                                  |
-| ------- | ------------------------------------------ | ------------------------------------------------ | ------------------------------------- | ------------------------------------------ |
-| DestCom | [HERE](antoine.azevedo-da-silva@hetic.net) | [HERE](https://www.linkedin.com/in/antoine-ads/) | [HERE](https://github.com/DestroyCom) | [HERE](https://portfolio.destcom.website/) |
-
-#### Roadmap
-
-_See old steps of the roadmap at [archives/TODO.md](./archives/TODO.md)_
-
-- [ ] Transform repetitive code into modules or functions [Planned for 0.9 realease]
-- [ ] Add a redo play [Planned before 1.0 realease]
-- [ ] Change the "Xiaomi Song" into a custom song selection & add a disabling method [Planned before 1.0 realease]
-- [ ] Fix "I'll be back" features and creates a disabling method [Planned before 1.0 realease]
-- [ ] Add multi-language support (English/French to start) [Planned before 1.0 realease]
-- [ ] Add Smart Assistant support [No plan]
+---
 
 #### ENVIRONMENT VARIABLES
 
-| VARIABLE       | REQUIRED | DEFAULT      | USED ONLY FOR DOCKER | DESCRIPTION                                |
-| -------------- | -------- | ------------ | -------------------- | ------------------------------------------ |
-| BOT_TOKEN      | TRUE     |              | FALSE                | Your discord app token                     |
-| TRIGGER_PREFIX | FALSE    | &            | FALSE                | Your bot prefix                            |
-| LOG_DIR        | FALSE    | /log         | TRUE                 | Your logging directory path use for docker |
-| TIMEZONE       | FALSE    | Europe/Paris | TRUE                 | Your container timezone                    |
+| VARIABLE                   | REQUIRED | DEFAULT        | USED ONLY FOR DOCKER | DESCRIPTION                                         |
+| -------------------------- | -------- | -------------- | -------------------- | --------------------------------------------------- |
+| DISCORD_TOKEN              | TRUE     |                | FALSE                | string - Your discord app token                     |
+| DISCORD_CLIENT_ID          | TRUE     |                | FALSE                | string - Your discord client id                     |
+| PREFIX                     | FALSE    | &              | FALSE                | string - Your bot prefix                            |
+| -------------------------- | -------- | ------------   | -------------------- | ------------------------------------------          |
+| DATABASE_CONNECTION_STRING | TRUE     |                | FALSE                | string - Your mongodb uri string                    |
+| DATABASE_USER              | TRUE     |                | FALSE                | string - Your mongodb user name                     |
+| DATABASE_PASSWORD          | TRUE     |                | FALSE                | string - Your mongodb user password                 |
+| DATABASE_NAME              | FALSE    | stroycord      | FALSE                | string - Your mongodb database name                 |
+| STROYCORD_LOGO             | FALSE    | StroyCord Logo | FALSE                | string - The avatar url you want to give to the bot |
+| LANGUAGE                   | FALSE    | en-US          | FALSE                | string - The bot language                           |
+| -------------------------- | -------- | ------------   | -------------------- | ------------------------------------------          |
+| LOG_DIR                    | FALSE    | /log           | TRUE                 | string - Your logging directory path use for docker |
+| TIMEZONE                   | FALSE    | Europe/Paris   | TRUE                 | string - Your container timezone                    |

@@ -1,0 +1,109 @@
+{
+  "global": {
+    "search": "Search"
+  },
+  "botBehaviour": {
+    "startup": "Bot is starting...",
+    "needPermission": "The bot needs permission to access and speak in the voice channel"
+  },
+  "commandContext": {
+    "startAPlay": "start a session",
+    "skipAPlay": "skip the music",
+    "stopAPlay": "pause the session",
+    "resumeAPlay": "resume the session",
+    "queueAPlay": "show the list of following songs",
+    "clearAPlay": "stop the session",
+    "unableToSkip": "There is no music to skip",
+    "unableToPause": "The music is already paused",
+    "unableToResume": "The music is not paused"
+  },
+  "embedsText": {
+    "global": {
+      "youCanUse": "You can use the command",
+      "youHave": "You have",
+      "toLaunchANewMusic": "to launch a new song",
+      "duration": "Duration",
+      "findWith": "Found with",
+      "from": "From",
+      "musics": "songs"
+    },
+    "player": {
+      "pause": {
+        "title": "paused the music",
+        "description": "to resume the music"
+      },
+      "resume": {
+        "title": "resumed the music",
+        "description": "to pause the music"
+      },
+      "skip": {
+        "title": "skipped the music",
+        "description": "to remove from queue",
+        "fields": {
+          "nowPlaying": "Now playing",
+          "previouslyPlayed": "Previously played"
+        }
+      },
+      "remove": {
+        "title": "disconnected the bot"
+      }
+    },
+    "song": {
+      "newSong": {
+        "title": "requested this song"
+      },
+      "addSong": {
+        "title": "added a song to the queue"
+      },
+      "generic": {
+        "title": "New Song",
+        "description": "A new song is starting"
+      }
+    },
+    "lists": {
+      "emptyQueue": {
+        "title": "No songs in the queue"
+      },
+      "queue": {
+        "title": "songs in queue"
+      },
+      "playlist": {
+        "title": "added a playlist",
+        "fields": {
+          "playListName": "Playlist Name",
+          "playlistCreatedBy": "Playlist created by",
+          "putInQueue": "Added to queue"
+        }
+      }
+    },
+    "errors": {
+      "arguments": {
+        "unknown": {
+          "title": "Unknown Argument",
+          "description": "You must specify a search or URL to start playing"
+        },
+        "missing": {
+          "title": "Missing Argument",
+          "description": "You must specify a search or URL to start playing"
+        }
+      },
+      "authorPresence": {
+        "title": "You must be in a voice channel to",
+        "description": "Join a voice channel and try again"
+      },
+      "noMusicPlaying": {
+        "title": "No music is currently playing"
+      },
+      "request": {
+        "title": "Unknown Command",
+        "description": "The command was not recognized",
+        "fields": {
+          "usableCommands": "List of available commands"
+        }
+      },
+      "unknown": {
+        "title": "AN ERROR OCCURRED"
+      }
+    }
+  }
+}
