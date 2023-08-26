@@ -2,6 +2,7 @@ name: Docker build
 on: 
   release:
     types: [created, edited]
+  workflow_dispatch:
 
 jobs:
   docker:
