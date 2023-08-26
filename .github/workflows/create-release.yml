@@ -3,7 +3,7 @@ name: Release pipeline
 on:
   push:
     tags:
-      - "v*.*.*"
+      - 'v*'
 
 jobs:
   build:
