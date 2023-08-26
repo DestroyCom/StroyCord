@@ -1,5 +1,8 @@
 name: Docker build
-on: release
+on: 
+  release:
+    types: [created]
+
 jobs:
   docker:
     runs-on: ubuntu-latest
