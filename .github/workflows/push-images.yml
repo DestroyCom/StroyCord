@@ -1,8 +1,12 @@
 name: Docker build
-on: 
+on:
   release:
     types: [created, edited]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag'
+        required: true
 
 jobs:
   docker:
@@ -15,6 +19,6 @@ jobs:
           image: destcom/stroycord
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-          tag: ${{ github.ref_name }}
+          tag: ${{ github.ref_name || inputs.tag }}
           tag_with_latest: true
           build_file: ./StroyCord.Dockerfile
