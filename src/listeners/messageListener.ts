@@ -1,5 +1,6 @@
 import { Client, Events } from 'discord.js';
 import { yt_validate } from 'play-dl';
+import { commands } from 'src/commands/slashCommands';
 import {
   currentCommand,
   pauseCommand,
@@ -72,5 +73,15 @@ export default (client: Client): void => {
     setTimeout(() => {
       message.delete();
     }, 1000);
+  });
+
+  client.on(Events.InteractionCreate, async (interaction) => {
+    if (!interaction.isCommand()) {
+      return;
+    }
+    const { commandName } = interaction;
+    if (commands[commandName as keyof typeof commands]) {
+      commands[commandName as keyof typeof commands].execute(interaction);
+    }
   });
 };

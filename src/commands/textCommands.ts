@@ -43,7 +43,7 @@ export const playCommand = (
     songRequest(request, guildId, requestAuthor, textChannel.id, voiceChannel);
   } else if (request.startsWith('https') && requestType === 'playlist') {
     playlistHandler(request, guildId, requestAuthor, textChannel.id, voiceChannel);
-  } else if (request.startsWith('https') && requestType === 'search') {
+  } else if (requestType === 'search') {
     searchSong(request, guildId, requestAuthor, textChannel.id, voiceChannel);
   } else {
     if (request.startsWith('https://www.youtube.com/live/')) {
