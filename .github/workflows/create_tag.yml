@@ -13,7 +13,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          ref: prod
+          ref: release
           fetch-depth: 0
       - name: Get last commit message
         id: commit_message
