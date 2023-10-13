@@ -1,0 +1,113 @@
+{
+  "global": {
+    "search": "Recherche"
+  },
+  "botBehaviour": {
+    "startup": "Le bot démarre...",
+    "needPermission": "Le bot a besoin de la permission d'acceder et de parler dans le salon vocal"
+  },
+  "commandContext": {
+    "startAPlay": "lancer une lecture",
+    "skipAPlay": "passer la musique",
+    "stopAPlay": "mettre en pause la lecture",
+    "resumeAPlay": "reprendre la lecture",
+    "queueAPlay": "afficher la liste des musiques",
+    "clearAPlay": "stopper la lecture",
+    "unableToSkip": "Aucune musique n'est en cours de lecture",
+    "unableToPause": "La musique est deja pausé",
+    "unableToResume": "La musique n'est pas en pause"
+  },
+  "embedsText": {
+    "global": {
+      "youCanUse": "Vous pouvez utiliser la commande",
+      "youHave": "Vous avez",
+      "toLaunchANewMusic": "pour lancer une nouvelle musique",
+      "duration": "Durée",
+      "findWith": "Trouvé avec",
+      "from": "De",
+      "musics": "musiques",
+      "asked": "demandé par"
+    },
+    "player": {
+      "pause": {
+        "title": "a mis la musique en pause",
+        "description": "pour reprendre la musique"
+      },
+      "resume": {
+        "title": "a repris la musique",
+        "description": "pour mettre la musique en pause"
+      },
+      "skip": {
+        "title": "a passé la musique",
+        "description": "pour supprimer la file",
+        "fields": {
+          "nowPlaying": "Se joue maintenant",
+          "previouslyPlayed": "Jouée précédemment"
+        }
+      },
+      "remove": {
+        "title": "a déconnecté le bot"
+      }
+    },
+    "song": {
+      "nowPlaying": {
+        "title": "Se joue actuellement"
+      },
+      "newSong": {
+        "title": "a demandé cette musique"
+      },
+      "addSong": {
+        "title": "a ajouté une musique sur la file d'attente"
+      },
+      "generic": {
+        "title": "Nouvelle chanson",
+        "description": "Une nouvelle chanson se lance"
+      }
+    },
+    "lists": {
+      "emptyQueue": {
+        "title": "Aucune musique dans la file d'attente"
+      },
+      "queue": {
+        "title": "musiques en liste d'attente"
+      },
+      "playlist": {
+        "title": "a ajouté une playlist",
+        "fields": {
+          "playListName": "Nom de la playlist",
+          "playlistCreatedBy": "Playlist crée par",
+          "putInQueue": "Mis en file d'attente"
+        }
+      }
+    },
+    "errors": {
+      "arguments": {
+        "unknown": {
+          "title": "Argument non reconnu",
+          "description": "Vous devez spécifier une recherche ou une URL pour lancer une lecture"
+        },
+        "missing": {
+          "title": "Argument manquant",
+          "description": "Vous devez spécifier une recherche ou une URL pour lancer une lecture"
+        }
+      },
+      "authorPresence": {
+        "title": "Vous devez etre dans un salon vocal pour",
+        "description": "Rejoignez un salon vocal et réessayez"
+      },
+      "noMusicPlaying": {
+        "title": "Aucune musique n'est en cours de lecture"
+      },
+      "request": {
+        "title": "Commande inconnue",
+        "description": "La commande n'as pas été reconnue",
+        "fields": {
+          "usableCommands": "Liste des commande disponible"
+        }
+      },
+      "unknown": {
+        "title": "UNE ERREUR S'EST PRODUITE"
+      }
+    }
+  }
+}
