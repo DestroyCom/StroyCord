@@ -12,6 +12,7 @@ const {
   DATABASE_NAME = 'stroycord',
   STROYCORD_LOGO = 'https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png',
   LANGUAGE = 'en-US',
+  DETECT_FROM_ALL_MESSAGES = false,
 } = process.env;
 
 if (!DISCORD_TOKEN) throw new Error('No token provided');
@@ -40,4 +41,5 @@ export const secrets = {
   DATABASE_NAME,
   STROYCORD_LOGO,
   LANGUAGE,
+  DETECT_FROM_ALL_MESSAGES,
 };

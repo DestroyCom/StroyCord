@@ -1,4 +1,5 @@
 import { Client, Events } from 'discord.js';
+import { yt_validate } from 'play-dl';
 import {
   pauseCommand,
   playCommand,
@@ -14,13 +15,18 @@ import { messageFormater } from 'src/utils/utils';
 
 export default (client: Client): void => {
   client.on(Events.MessageCreate, async (message) => {
-    if (message.author.bot || !message.content.startsWith(secrets.PREFIX)) return;
+    if (message.author.bot) return;
+    if (!secrets.DETECT_FROM_ALL_MESSAGES && !message.content.startsWith(secrets.PREFIX)) return;
 
     const guild = await fetchGuild(message.guildId!);
-
-    const { command, splittedMessage } = messageFormater(message.content);
     const voiceChannel = message.member?.voice.channel;
     const textChannel = message.channel;
+    let { command, splittedMessage } = messageFormater(message.content);
+
+    if (yt_validate(message.content) && !message.content.startsWith(secrets.PREFIX)) {
+      command = 'play';
+      splittedMessage = ['play', message.content];
+    }
 
     switch (command) {
       case 'play':

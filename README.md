@@ -58,18 +58,19 @@ You can now launch it with the command:
 
 #### ENVIRONMENT VARIABLES
 
-| VARIABLE                   | REQUIRED | DEFAULT        | USED ONLY FOR DOCKER | DESCRIPTION                                         |
-| -------------------------- | -------- | -------------- | -------------------- | --------------------------------------------------- |
-| DISCORD_TOKEN              | TRUE     |                | FALSE                | string - Your discord app token                     |
-| DISCORD_CLIENT_ID          | TRUE     |                | FALSE                | string - Your discord client id                     |
-| PREFIX                     | FALSE    | &              | FALSE                | string - Your bot prefix                            |
-| -------------------------- | -------- | ------------   | -------------------- | ------------------------------------------          |
-| DATABASE_CONNECTION_STRING | TRUE     |                | FALSE                | string - Your mongodb uri string                    |
-| DATABASE_USER              | TRUE     |                | FALSE                | string - Your mongodb user name                     |
-| DATABASE_PASSWORD          | TRUE     |                | FALSE                | string - Your mongodb user password                 |
-| DATABASE_NAME              | FALSE    | stroycord      | FALSE                | string - Your mongodb database name                 |
-| STROYCORD_LOGO             | FALSE    | StroyCord Logo | FALSE                | string - The avatar url you want to give to the bot |
-| LANGUAGE                   | FALSE    | en-US          | FALSE                | string - The bot language                           |
-| -------------------------- | -------- | ------------   | -------------------- | ------------------------------------------          |
-| LOG_DIR                    | FALSE    | /log           | TRUE                 | string - Your logging directory path use for docker |
-| TIMEZONE                   | FALSE    | Europe/Paris   | TRUE                 | string - Your container timezone                    |
+| VARIABLE                   | REQUIRED | DEFAULT        | USED ONLY FOR DOCKER | DESCRIPTION                                               |
+| -------------------------- | -------- | -------------- | -------------------- | --------------------------------------------------------- |
+| DISCORD_TOKEN              | TRUE     |                | FALSE                | string - Your discord app token                           |
+| DISCORD_CLIENT_ID          | TRUE     |                | FALSE                | string - Your discord client id                           |
+| PREFIX                     | FALSE    | &              | FALSE                | string - Your bot prefix                                  |
+| DETECT_FROM_ALL_MESSAGES   | FALSE    | false          | FALSE                | boolean - Used to directly detect and play a youtube link |
+| -------------------------- | -------- | ------------   | -------------------- | ------------------------------------------                |
+| DATABASE_CONNECTION_STRING | TRUE     |                | FALSE                | string - Your mongodb uri string                          |
+| DATABASE_USER              | TRUE     |                | FALSE                | string - Your mongodb user name                           |
+| DATABASE_PASSWORD          | TRUE     |                | FALSE                | string - Your mongodb user password                       |
+| DATABASE_NAME              | FALSE    | stroycord      | FALSE                | string - Your mongodb database name                       |
+| STROYCORD_LOGO             | FALSE    | StroyCord Logo | FALSE                | string - The avatar url you want to give to the bot       |
+| LANGUAGE                   | FALSE    | en-US          | FALSE                | string - The bot language                                 |
+| -------------------------- | -------- | ------------   | -------------------- | ------------------------------------------                |
+| LOG_DIR                    | FALSE    | /log           | TRUE                 | string - Your logging directory path use for docker       |
+| TIMEZONE                   | FALSE    | Europe/Paris   | TRUE                 | string - Your container timezone                          |
