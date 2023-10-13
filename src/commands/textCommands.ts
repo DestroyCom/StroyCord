@@ -8,7 +8,8 @@ import { pause, remove, resume, skipSong } from 'src/core/player';
 import { playlistHandler } from 'src/core/requestHandlers/playlistRequest';
 import { searchSong } from 'src/core/requestHandlers/searchRequest';
 import { songRequest } from 'src/core/requestHandlers/songRequest';
-import { getFirstSong, getNextSongs } from 'src/database/queries/guilds/get';
+import { getFirstSong, getLastPlayedSong, getNextSongs } from 'src/database/queries/guilds/get';
+import { shiftSongs } from 'src/database/queries/guilds/update';
 import { missingRequiredArgument, unknownError, unreconizedArgumentEmbed } from 'src/utils/embeds/errorsEmbed';
 import { queueEmbed } from 'src/utils/embeds/listSongEmbed';
 import { pauseEmbed, removeEmbed, resumeEmbed, skipEmbed } from 'src/utils/embeds/playerEmbeds';
@@ -151,6 +152,7 @@ export const removeCommand = async (
     return;
   if (!hasPermission(voiceChannel as VoiceChannel, textChannel)) return;
 
+  await shiftSongs(guildId);
   await remove(guildId);
 
   textChannel.send({
@@ -172,6 +174,29 @@ export const currentCommand = async (
   textChannel.send({
     embeds: [nowPlayingEmbed(currentSong)],
   });
+};
+
+export const redoCommand = async (
+  guildId: string,
+  textChannel: TextBasedChannel,
+  requestAuthor: User,
+  voiceChannel?: VoiceBasedChannel | null
+) => {
+  if (
+    !checkCommandUsability(
+      guildId,
+      textChannel,
+      voiceChannel as VoiceChannel,
+      i18n.t('commandContext.startAPlay'),
+      false
+    )
+  )
+    return;
+  if (!hasPermission(voiceChannel as VoiceChannel, textChannel)) return;
+
+  const lastPlayedSong = await getLastPlayedSong(guildId);
+
+  songRequest(lastPlayedSong.url, guildId, requestAuthor, textChannel.id, voiceChannel);
 };
 
 const hasPermission = (voiceChannel: VoiceChannel, textChannel: TextBasedChannel) => {

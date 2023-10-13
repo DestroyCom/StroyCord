@@ -11,6 +11,7 @@ The bot has 4 majors commands:
 _You have to add your prefix before each command (e.g. `&p [music]`)_
 
 - `play [music url or music name]` is used to start playing music (or `p`).
+- `redo` is used to replay the last music played.
 - `skip` is used to skip the current music (or `s`).
 - `pause` is used to pause the current music (or `pa`).
 - `resume` is used to resume the current music (or `re`).

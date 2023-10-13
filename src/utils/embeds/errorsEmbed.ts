@@ -69,6 +69,11 @@ export const unknownRequestEmbed = (): EmbedBuilder => {
         inline: true,
       },
       {
+        name: 'redo',
+        value: `${secrets.PREFIX}redo`,
+        inline: true,
+      },
+      {
         name: 'skip',
         value: `${secrets.PREFIX}s`,
         inline: true,

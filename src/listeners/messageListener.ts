@@ -5,6 +5,7 @@ import {
   pauseCommand,
   playCommand,
   queueCommand,
+  redoCommand,
   removeCommand,
   resumeCommand,
   skipCommand,
@@ -57,6 +58,9 @@ export default (client: Client): void => {
       case 'c':
       case 'current':
         currentCommand(guild.guildId, textChannel, voiceChannel);
+        break;
+      case 'redo':
+        redoCommand(guild.guildId, textChannel, message.author, voiceChannel);
         break;
       default:
         message.channel.send({
