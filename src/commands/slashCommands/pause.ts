@@ -1,5 +1,6 @@
 import { CommandInteraction, SlashCommandBuilder, TextChannel } from 'discord.js';
 import { client } from 'src/Bot';
+import i18n from 'src/config/i18n';
 import { fetchGuild } from 'src/database/queries/guilds/get';
 
 import { pauseCommand } from '../textCommands';
@@ -10,18 +11,36 @@ export async function execute(interaction: CommandInteraction) {
   const guild = await fetchGuild(interaction.guildId!);
 
   const channel = client.channels.cache.get(interaction.channelId!);
-  if (!(channel instanceof TextChannel)) return interaction.reply('Error: Text channel not found !');
+  if (!(channel instanceof TextChannel))
+    return interaction.reply(
+      `${i18n.t('embedsText.errors.arguments.unknown.title')} ${i18n.t(
+        'embedsText.errors.arguments.textChannelNotFound'
+      )} !`
+    );
 
   const textChannel = channel as TextChannel;
   //@ts-expect-error : voiceChannel is not a property of interaction.member
   const voiceChannel = interaction.member.voice.channel;
 
-  if (!guild) return interaction.reply('Error: Guild not found !');
-  if (!voiceChannel) return interaction.reply('Error: You must be in a voice channel !');
-  if (!textChannel) return interaction.reply('Error: Text channel not found !');
+  if (!guild)
+    return interaction.reply(
+      `${i18n.t('embedsText.errors.arguments.unknown.title')} ${i18n.t('embedsText.errors.arguments.guildNotFound')} !`
+    );
+  if (!voiceChannel)
+    return interaction.reply(
+      `${i18n.t('embedsText.errors.arguments.unknown.title')} ${i18n.t(
+        'embedsText.errors.arguments.voiceChannelNotFound'
+      )} !`
+    );
+  if (!textChannel)
+    return interaction.reply(
+      `${i18n.t('embedsText.errors.arguments.unknown.title')} ${i18n.t(
+        'embedsText.errors.arguments.textChannelNotFound'
+      )} !`
+    );
 
   await pauseCommand(guild.guildId, textChannel, interaction.user, voiceChannel);
-  interaction.reply('Understood !');
+  interaction.reply(`${i18n.t('global.understood')} !`);
   interaction.deleteReply();
   return;
 }

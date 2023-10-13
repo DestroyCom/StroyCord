@@ -1,6 +1,7 @@
 {
   "global": {
-    "search": "Search"
+    "search": "Search",
+    "understood": "Understood"
   },
   "botBehaviour": {
     "startup": "Bot is starting...",
@@ -107,7 +108,11 @@
       },
       "unknown": {
         "title": "AN ERROR OCCURRED"
-      }
+      },
+      "textChannelNotFound": "The text channel was not found",
+      "voiceChannelNotFound": "The voice channel was not found",
+      "guildNotFound": "The guild was not found",
+      "queryNotFound": "The query was not found"
     }
   }
 }
