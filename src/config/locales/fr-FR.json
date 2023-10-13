@@ -1,6 +1,7 @@
 {
   "global": {
-    "search": "Recherche"
+    "search": "Recherche",
+    "understood": "Compris"
   },
   "botBehaviour": {
     "startup": "Le bot démarre...",
@@ -107,7 +108,11 @@
       },
       "unknown": {
         "title": "UNE ERREUR S'EST PRODUITE"
-      }
+      },
+      "textChannelNotFound": "Le salon textuel n'as pas été trouvé",
+      "voiceChannelNotFound": "Le salon vocal n'as pas été trouvé",
+      "guildNotFound": "Le serveur n'as pas été trouvé",
+      "queryNotFound": "Aucune recherche specifiée"
     }
   }
 }
