@@ -45,7 +45,7 @@ export const missingRequiredArgument = (): EmbedBuilder => {
 export const unreconizedArgumentEmbed = (): EmbedBuilder => {
   return new EmbedBuilder()
     .setTitle(`⚠️ ${i18n.t('embedsText.errors.arguments.unknown.title')} !`)
-    .setDescription(`${'embedsText.errors.arguments.unknown.description'} !`)
+    .setDescription(`${i18n.t('embedsText.errors.arguments.unknown.description')} !`)
     .setAuthor({
       name: 'Stroycord',
       iconURL: secrets.STROYCORD_LOGO,

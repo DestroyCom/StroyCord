@@ -18,16 +18,19 @@ export const getSongs = async (guildId: string) => {
 
 export const getFirstSong = async (guildId: string) => {
   const guild = await fetchGuild(guildId);
+  if (!guild.nextSongs) return [];
   return guild.nextSongs[0];
 };
 
 export const getNextSongs = async (guildId: string) => {
   const guild = await fetchGuild(guildId);
+  if (!guild.nextSongs) return [];
   return guild.nextSongs.slice(1);
 };
 
 export const getLastPlayedSong = async (guildId: string) => {
   const guild = await fetchGuild(guildId);
+  if (!guild.previouslyPlayedSongs) return [];
   return guild.previouslyPlayedSongs[guild.previouslyPlayedSongs.length - 1];
 };
 

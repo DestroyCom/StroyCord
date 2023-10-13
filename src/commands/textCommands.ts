@@ -65,7 +65,7 @@ export const skipCommand = async (
 
   const nextSongs = await getNextSongs(guildId);
 
-  if (nextSongs.length === 0) {
+  if (nextSongs.length != 0) {
     await textChannel.send({
       embeds: [await skipEmbed(author, guildId)],
     });

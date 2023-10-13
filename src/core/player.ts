@@ -4,14 +4,11 @@ import { activePlayers, client } from 'src/Bot';
 import { emptyNextSongs, removeCurrentPlayingSong } from 'src/database/queries/guilds/delete';
 import { getCurrentVoiceChannel, getFirstSong, getNextSongs } from 'src/database/queries/guilds/get';
 import { shiftSongs } from 'src/database/queries/guilds/update';
+import { voiceConnectionErrorListener } from 'src/listeners/errorListeners';
 import { createAudioPlayerListener, removeAllAudioPlayerListener } from 'src/listeners/playerListerners';
 import { songInterface } from 'src/utils/interfaces';
 
 export const songPlayer = async (guildId: string) => {
-  /* if (activePlayers[guildId] && activePlayers[guildId].audioPlayer) {
-    removeAudioPlayerListener(activePlayers[guildId]?.audioPlayer);
-  } */
-
   const voiceChannel = await getCurrentVoiceChannel(guildId);
   const nextSong: songInterface = await getFirstSong(guildId);
   const adapterCreator = (await client.guilds.fetch(voiceChannel.guildId)).voiceAdapterCreator;
@@ -43,6 +40,8 @@ export const songPlayer = async (guildId: string) => {
 
   audioPlayer.play(audioStream);
   connection.subscribe(audioPlayer);
+
+  voiceConnectionErrorListener(guildId);
 };
 
 export const skipSong = async (guildId: string) => {
@@ -63,11 +62,16 @@ export const remove = async (guildId: string, isFromSkip: boolean = false) => {
   } else {
     await emptyNextSongs(guildId);
   }
-  removeAllAudioPlayerListener(activePlayers[guildId].audioPlayer);
-  activePlayers[guildId].audioPlayer.stop();
-  delete activePlayers[guildId];
+
+  if (activePlayers[guildId] && activePlayers[guildId].audioPlayer) {
+    removeAllAudioPlayerListener(activePlayers[guildId].audioPlayer);
+    activePlayers[guildId].audioPlayer.stop();
+    delete activePlayers[guildId];
+  }
+
   getVoiceConnection(guildId)?.disconnect();
   getVoiceConnection(guildId)?.destroy();
+  getVoiceConnection(guildId)?.removeAllListeners();
   return;
 };
 

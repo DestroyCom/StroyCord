@@ -38,7 +38,7 @@
       },
       "skip": {
         "title": "skipped the music",
-        "description": "to remove from queue",
+        "description": "to remove the queue",
         "fields": {
           "nowPlaying": "Now playing",
           "previouslyPlayed": "Previously played"
