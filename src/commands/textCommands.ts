@@ -37,16 +37,20 @@ export const playCommand = (
 
   if (request === '') return textChannel.send({ embeds: [missingRequiredArgument()] });
 
-  if (requestType === 'video') {
+  if (request.startsWith('https') && requestType === 'video') {
     songRequest(request, guildId, requestAuthor, textChannel.id, voiceChannel);
-  } else if (requestType === 'playlist') {
+  } else if (request.startsWith('https') && requestType === 'playlist') {
     playlistHandler(request, guildId, requestAuthor, textChannel.id, voiceChannel);
-  } else if (requestType === 'search') {
+  } else if (request.startsWith('https') && requestType === 'search') {
     searchSong(request, guildId, requestAuthor, textChannel.id, voiceChannel);
   } else {
-    return textChannel.send({
-      embeds: [unreconizedArgumentEmbed()],
-    });
+    if (request.startsWith('https://www.youtube.com/live/')) {
+      songRequest(request, guildId, requestAuthor, textChannel.id, voiceChannel);
+    } else {
+      return textChannel.send({
+        embeds: [unreconizedArgumentEmbed()],
+      });
+    }
   }
 };
 
