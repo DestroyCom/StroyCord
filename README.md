@@ -16,6 +16,7 @@ _You have to add your prefix before each command (e.g. `&p [music]`)_
 - `resume` is used to resume the current music (or `re`).
 - `fuckoff` disconnects the bot and stops the music playing (or `fo`).
 - `queue` display the current music queue (or `q`).
+- `current` displays the music currently playing (or `c`).
 
 ---
 

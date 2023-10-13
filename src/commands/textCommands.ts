@@ -8,10 +8,11 @@ import { pause, remove, resume, skipSong } from 'src/core/player';
 import { playlistHandler } from 'src/core/requestHandlers/playlistRequest';
 import { searchSong } from 'src/core/requestHandlers/searchRequest';
 import { songRequest } from 'src/core/requestHandlers/songRequest';
-import { getNextSongs } from 'src/database/queries/guilds/get';
+import { getFirstSong, getNextSongs } from 'src/database/queries/guilds/get';
 import { missingRequiredArgument, unknownError, unreconizedArgumentEmbed } from 'src/utils/embeds/errorsEmbed';
 import { queueEmbed } from 'src/utils/embeds/listSongEmbed';
 import { pauseEmbed, removeEmbed, resumeEmbed, skipEmbed } from 'src/utils/embeds/playerEmbeds';
+import { nowPlayingEmbed } from 'src/utils/embeds/songEmbed';
 
 export const playCommand = (
   splittedMessage: string[],
@@ -154,6 +155,22 @@ export const removeCommand = async (
 
   textChannel.send({
     embeds: [removeEmbed(author)],
+  });
+};
+
+export const currentCommand = async (
+  guildId: string,
+  textChannel: TextBasedChannel,
+  voiceChannel?: VoiceBasedChannel | null
+) => {
+  if (!checkCommandUsability(guildId, textChannel, voiceChannel as VoiceChannel, i18n.t('commandContext.clearAPlay')))
+    return;
+  if (!hasPermission(voiceChannel as VoiceChannel, textChannel)) return;
+
+  const currentSong = await getFirstSong(guildId);
+
+  textChannel.send({
+    embeds: [nowPlayingEmbed(currentSong)],
   });
 };
 

@@ -10,7 +10,7 @@ export const noPresenceInVoiceChannelEmbed = (commandTried: string): EmbedBuilde
       name: 'Stroycord',
       iconURL: secrets.STROYCORD_LOGO,
     })
-    .setColor('#181818')
+    .setColor('#37123C')
     .setTimestamp();
 };
 
@@ -26,7 +26,7 @@ export const noMusicCurrentlyPlayingEmbed = (): EmbedBuilder => {
       name: 'Stroycord',
       iconURL: secrets.STROYCORD_LOGO,
     })
-    .setColor('#181818')
+    .setColor('#37123C')
     .setTimestamp();
 };
 
@@ -38,7 +38,7 @@ export const missingRequiredArgument = (): EmbedBuilder => {
       name: 'Stroycord',
       iconURL: secrets.STROYCORD_LOGO,
     })
-    .setColor('#181818')
+    .setColor('#37123C')
     .setTimestamp();
 };
 
@@ -50,7 +50,7 @@ export const unreconizedArgumentEmbed = (): EmbedBuilder => {
       name: 'Stroycord',
       iconURL: secrets.STROYCORD_LOGO,
     })
-    .setColor('#181818')
+    .setColor('#37123C')
     .setTimestamp();
 };
 
@@ -92,13 +92,18 @@ export const unknownRequestEmbed = (): EmbedBuilder => {
         name: 'queue',
         value: `${secrets.PREFIX}q`,
         inline: true,
+      },
+      {
+        name: 'current',
+        value: `${secrets.PREFIX}c`,
+        inline: true,
       }
     )
     .setAuthor({
       name: 'Stroycord',
       iconURL: secrets.STROYCORD_LOGO,
     })
-    .setColor('#181818')
+    .setColor('#37123C')
     .setTimestamp();
 };
 
@@ -111,6 +116,6 @@ export const unknownError = (errorMsg: any): EmbedBuilder => {
       name: 'Stroycord',
       iconURL: secrets.STROYCORD_LOGO,
     })
-    .setColor('#181818')
+    .setColor('#37123C')
     .setTimestamp();
 };

@@ -18,7 +18,7 @@ export const queueEmbed = async (nextSongs: songInterface[]): Promise<EmbedBuild
         name: 'Stroycord',
         iconURL: secrets.STROYCORD_LOGO,
       })
-      .setColor('#181818')
+      .setColor('#37123C')
       .setTimestamp();
 
   const tabEmbeds: { name: string; value: string }[] = [];
@@ -49,7 +49,7 @@ export const queueEmbed = async (nextSongs: songInterface[]): Promise<EmbedBuild
     })
     .setColor('#37123C')
     .setFooter({
-      text: 'StroyCord/D-Key Bot',
+      text: 'StroyCord',
       iconURL: secrets.STROYCORD_LOGO,
     })
     .setTimestamp()
@@ -65,7 +65,7 @@ export const playlistEmbed = async (author: User, playlistData: YouTubePlayList)
     })
     .setColor('#C4302B')
     .setFooter({
-      text: 'StroyCord/D-Key Bot',
+      text: 'StroyCord',
       iconURL: secrets.STROYCORD_LOGO,
     })
     .setTimestamp()

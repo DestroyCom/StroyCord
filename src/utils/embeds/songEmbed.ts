@@ -7,6 +7,37 @@ import { embedChecksInterface, songInterface } from '../interfaces';
 
 const stroyCordLogo = secrets.STROYCORD_LOGO;
 
+export const nowPlayingEmbed = (song: songInterface): EmbedBuilder => {
+  const { author, noAuthorEmbed } = embedChecks(song.requestAuthor.id);
+
+  if (author === undefined) return noAuthorEmbed;
+
+  return new EmbedBuilder()
+    .setTitle(`🎶 ${i18n.t('embedsText.song.nowPlaying.title')} 🎶`)
+    .setAuthor({
+      name: 'Stroycord',
+      iconURL: stroyCordLogo,
+    })
+    .setColor('#37123C')
+    .setFooter({
+      text: 'StroyCord',
+      iconURL: stroyCordLogo,
+    })
+    .setThumbnail(song.thumbnail)
+    .setTimestamp()
+    .setURL(song.url)
+    .addFields(
+      {
+        name: song.title,
+        value: `${i18n.t('embedsText.global.duration')} : ${song.videoLength}`,
+      },
+      {
+        name: `${i18n.t('embedsText.global.asked')} :`,
+        value: author.username,
+      }
+    );
+};
+
 export const newSongEmbed = (song: songInterface): EmbedBuilder => {
   const { author, iconURL, noAuthorEmbed } = embedChecks(song.requestAuthor.id);
 
@@ -20,7 +51,7 @@ export const newSongEmbed = (song: songInterface): EmbedBuilder => {
     })
     .setColor('#C4302B')
     .setFooter({
-      text: 'StroyCord/D-Key Bot',
+      text: 'StroyCord',
       iconURL: stroyCordLogo,
     })
     .setThumbnail(song.thumbnail)
@@ -61,7 +92,7 @@ export const addSongEmbed = (song: songInterface): EmbedBuilder => {
     })
     .setColor('#C4302B')
     .setFooter({
-      text: 'StroyCord/D-Key Bot',
+      text: 'StroyCord',
       iconURL: stroyCordLogo,
     })
     .setThumbnail(song.thumbnail)
@@ -99,7 +130,7 @@ const embedChecks = (requestAuthorId: string): embedChecksInterface => {
       name: 'Stroycord',
       iconURL: stroyCordLogo,
     })
-    .setColor('#181818')
+    .setColor('#37123C')
     .setTimestamp();
 
   const iconURL = author?.avatarURL() || stroyCordLogo;

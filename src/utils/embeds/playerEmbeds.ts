@@ -19,7 +19,7 @@ export const pauseEmbed = (author: User) => {
       name: 'Stroycord',
       iconURL: stroyCordLogo,
     })
-    .setColor('#181818')
+    .setColor('#37123C')
     .setTimestamp();
 };
 
@@ -35,7 +35,7 @@ export const resumeEmbed = (author: User) => {
       name: 'Stroycord',
       iconURL: stroyCordLogo,
     })
-    .setColor('#181818')
+    .setColor('#37123C')
     .setTimestamp();
 };
 
@@ -70,7 +70,7 @@ export const skipEmbed = async (author: User, guildId: string) => {
       name: 'Stroycord',
       iconURL: stroyCordLogo,
     })
-    .setColor('#181818')
+    .setColor('#37123C')
     .setTimestamp();
 };
 
@@ -86,6 +86,6 @@ export const removeEmbed = (author: User) => {
       name: 'Stroycord',
       iconURL: stroyCordLogo,
     })
-    .setColor('#181818')
+    .setColor('#37123C')
     .setTimestamp();
 };

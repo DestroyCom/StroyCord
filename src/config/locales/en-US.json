@@ -25,7 +25,8 @@
       "duration": "Duration",
       "findWith": "Found with",
       "from": "From",
-      "musics": "songs"
+      "musics": "songs",
+      "asked": "requested by"
     },
     "player": {
       "pause": {
@@ -49,6 +50,9 @@
       }
     },
     "song": {
+      "nowPlaying": {
+        "title": "Currently playing"
+      },
       "newSong": {
         "title": "requested this song"
       },

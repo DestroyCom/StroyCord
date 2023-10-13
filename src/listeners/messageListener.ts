@@ -1,6 +1,7 @@
 import { Client, Events } from 'discord.js';
 import { yt_validate } from 'play-dl';
 import {
+  currentCommand,
   pauseCommand,
   playCommand,
   queueCommand,
@@ -52,6 +53,10 @@ export default (client: Client): void => {
       case 'queue':
       case 'q':
         queueCommand(guild.guildId, textChannel, message.author, voiceChannel);
+        break;
+      case 'c':
+      case 'current':
+        currentCommand(guild.guildId, textChannel, voiceChannel);
         break;
       default:
         message.channel.send({
