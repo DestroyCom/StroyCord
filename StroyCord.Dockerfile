@@ -4,7 +4,7 @@ FROM node:lts-alpine as build
 WORKDIR /build
 COPY package*.json ./
 
-RUN apk update && apk add python3 make g++
+RUN apk update && apk add python3 make g++ ffmpeg
 RUN npm ci
 COPY . .
 
@@ -15,7 +15,7 @@ FROM node:lts-alpine
 ENV NODE_ENV=production
 
 WORKDIR /app
-RUN apk update && apk add python3 make g++
+RUN apk update && apk add python3 make g++ ffmpeg
 
 COPY --from=build /build/dist ./dist
 COPY --from=build /build/package*.json ./
