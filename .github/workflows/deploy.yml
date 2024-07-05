@@ -14,7 +14,11 @@ jobs:
     needs: create_tag
     uses: ./.github/workflows/build.yml
     secrets: inherit
+  build_playdl_forked:
+    needs: create_tag
+    uses: ./.github/workflows/build-playdl-forked.yml
+    secrets: inherit
   release:
-    needs: [build]
+    needs: [build, build_playdl_forked]
     uses: ./.github/workflows/release.yml
     secrets: inherit

@@ -1,0 +1,37 @@
+name: Docker build forked PlayDL
+on:
+  workflow_call:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to use for the image'
+        required: true
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+        with:
+          ref: release
+          fetch-depth: 0
+      - name: Replace package.json
+        run: |
+          rm -rf package.json
+          rm -rf package-lock.json
+          cp -r package.json.dupe package.json
+          npm install
+      - name: Get Latest Tag
+        id: latest_tag
+        uses: WyriHaximus/github-action-get-previous-tag@v1
+      - name: Echo latest tag
+        run: echo '${{ steps.latest_tag.outputs.tag }}'
+      - name: Kaniko build
+        uses: aevea/action-kaniko@master
+        with:
+          image: destcom/stroycord
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          tag: 'playdl-forked-${{ github.event.inputs.tag || steps.latest_tag.outputs.tag }}'
+          tag_with_latest: false
+          build_file: ./StroyCord.Dockerfile
