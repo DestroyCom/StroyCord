@@ -1,9 +1,9 @@
-version: "3"
+version: '3'
 
 services:
   stroycord:
     container_name: stroycord
-    image: stroycord:latest
+    image: destcom/stroycord:latest
     build:
       context: .
       dockerfile: StroyCord.Dockerfile
