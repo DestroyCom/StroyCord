@@ -11,10 +11,10 @@ export const fetchGuild = async (guildId: string) => {
   return query;
 };
 
-export const getSongs = async (guildId: string) => {
+/* export const getSongs = async (guildId: string) => {
   const guild = await fetchGuild(guildId);
   return guild.nextSongs;
-};
+}; */
 
 export const getFirstSong = async (guildId: string) => {
   const guild = await fetchGuild(guildId);

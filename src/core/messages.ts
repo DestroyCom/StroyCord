@@ -1,5 +1,5 @@
+import ytpl from '@distube/ytpl';
 import { TextChannel, User } from 'discord.js';
-import { YouTubePlayList } from 'play-dl';
 import { client } from 'src/Bot';
 import { getFirstSong, getNextSongs } from 'src/database/queries/guilds/get';
 import { playlistEmbed } from 'src/utils/embeds/listSongEmbed';
@@ -49,7 +49,7 @@ export const sendEmbed = async (
 
 export const sendQueueEmbed = async (
   guildId: string,
-  playlistData: YouTubePlayList,
+  playlistData: ytpl.result,
   textChannelId: string,
   author: User
 ) => {

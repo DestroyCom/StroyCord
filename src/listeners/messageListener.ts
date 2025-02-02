@@ -1,5 +1,4 @@
 import { Client, Events } from 'discord.js';
-import { yt_validate } from 'play-dl';
 import { commands } from 'src/commands/slashCommands';
 import {
   currentCommand,
@@ -14,7 +13,7 @@ import {
 import { secrets } from 'src/config/secrets';
 import { fetchGuild } from 'src/database/queries/guilds/get';
 import { unknownRequestEmbed } from 'src/utils/embeds/errorsEmbed';
-import { messageFormater } from 'src/utils/utils';
+import { messageFormater, yt_validate } from 'src/utils/utils';
 
 export default (client: Client): void => {
   client.on(Events.MessageCreate, async (message) => {

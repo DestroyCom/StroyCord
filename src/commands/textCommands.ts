@@ -1,6 +1,12 @@
 import { AudioPlayerStatus } from '@discordjs/voice';
-import { PermissionFlagsBits, TextBasedChannel, User, VoiceBasedChannel, VoiceChannel } from 'discord.js';
-import { yt_validate } from 'play-dl';
+import {
+  PartialGroupDMChannel,
+  PermissionFlagsBits,
+  TextBasedChannel,
+  User,
+  VoiceBasedChannel,
+  VoiceChannel,
+} from 'discord.js';
 import { activePlayers } from 'src/Bot';
 import i18n from 'src/config/i18n';
 import { authorNotInVoiceChannel, noMusicCurrentlyPlaying } from 'src/core/errors';
@@ -14,6 +20,7 @@ import { missingRequiredArgument, unknownError, unreconizedArgumentEmbed } from 
 import { queueEmbed } from 'src/utils/embeds/listSongEmbed';
 import { pauseEmbed, removeEmbed, resumeEmbed, skipEmbed } from 'src/utils/embeds/playerEmbeds';
 import { nowPlayingEmbed } from 'src/utils/embeds/songEmbed';
+import { yt_validate } from 'src/utils/utils';
 
 export const playCommand = (
   splittedMessage: string[],
@@ -37,7 +44,8 @@ export const playCommand = (
   const request = splittedMessage.slice(1).join(' ');
   const requestType = yt_validate(request);
 
-  if (request === '') return textChannel.send({ embeds: [missingRequiredArgument()] });
+  if (request === '' && !(textChannel instanceof PartialGroupDMChannel))
+    return textChannel.send({ embeds: [missingRequiredArgument()] });
 
   if (request.startsWith('https') && requestType === 'video') {
     songRequest(request, guildId, requestAuthor, textChannel.id, voiceChannel);
@@ -49,6 +57,7 @@ export const playCommand = (
     if (request.startsWith('https://www.youtube.com/live/')) {
       songRequest(request, guildId, requestAuthor, textChannel.id, voiceChannel);
     } else {
+      if (textChannel instanceof PartialGroupDMChannel) return;
       return textChannel.send({
         embeds: [unreconizedArgumentEmbed()],
       });
@@ -72,6 +81,7 @@ export const skipCommand = async (
   const nextSongs = await getNextSongs(guildId);
 
   if (nextSongs.length != 0) {
+    if (textChannel instanceof PartialGroupDMChannel) return;
     await textChannel.send({
       embeds: [await skipEmbed(author, guildId)],
     });
@@ -93,8 +103,10 @@ export const pauseCommand = async (
   if (guildPlayerState === AudioPlayerStatus.Playing || guildPlayerState === AudioPlayerStatus.Buffering) {
     await pause(guildId);
 
+    if (textChannel instanceof PartialGroupDMChannel) return;
     textChannel.send({ embeds: [pauseEmbed(author)] });
   } else {
+    if (textChannel instanceof PartialGroupDMChannel) return;
     textChannel.send({
       embeds: [unknownError(i18n.t('commandContext.unableToPause'))],
     });
@@ -115,10 +127,12 @@ export const resumeCommand = async (
 
   if (guildPlayerState === AudioPlayerStatus.Paused || guildPlayerState === AudioPlayerStatus.AutoPaused) {
     await resume(guildId);
+    if (textChannel instanceof PartialGroupDMChannel) return;
     textChannel.send({
       embeds: [resumeEmbed(author)],
     });
   } else {
+    if (textChannel instanceof PartialGroupDMChannel) return;
     textChannel.send({
       embeds: [unknownError(i18n.t('commandContext.unableToResume'))],
     });
@@ -137,6 +151,7 @@ export const queueCommand = async (
 
   const nextSongs = await getNextSongs(guildId);
 
+  if (textChannel instanceof PartialGroupDMChannel) return;
   textChannel.send({
     embeds: [await queueEmbed(nextSongs)],
   });
@@ -155,6 +170,7 @@ export const removeCommand = async (
   await shiftSongs(guildId);
   await remove(guildId);
 
+  if (textChannel instanceof PartialGroupDMChannel) return;
   textChannel.send({
     embeds: [removeEmbed(author)],
   });
@@ -171,6 +187,7 @@ export const currentCommand = async (
 
   const currentSong = await getFirstSong(guildId);
 
+  if (textChannel instanceof PartialGroupDMChannel) return;
   textChannel.send({
     embeds: [nowPlayingEmbed(currentSong)],
   });
@@ -205,6 +222,8 @@ const hasPermission = (voiceChannel: VoiceChannel, textChannel: TextBasedChannel
   const retreivePermission = voiceChannel.permissionsFor(textChannel.client.user);
 
   if (!retreivePermission?.has(PermissionFlagsBits.Connect) || !retreivePermission?.has(PermissionFlagsBits.Speak)) {
+    if (textChannel instanceof PartialGroupDMChannel) return;
+
     textChannel.send({
       embeds: [unknownError(i18n.t('botBehaviour.needPermission'))],
     });

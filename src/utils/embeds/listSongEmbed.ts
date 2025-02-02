@@ -1,5 +1,5 @@
+import ytpl from '@distube/ytpl';
 import { EmbedBuilder, User } from 'discord.js';
-import { YouTubePlayList } from 'play-dl';
 import i18n from 'src/config/i18n';
 import { secrets } from 'src/config/secrets';
 
@@ -56,7 +56,7 @@ export const queueEmbed = async (nextSongs: songInterface[]): Promise<EmbedBuild
     .addFields(tabEmbeds);
 };
 
-export const playlistEmbed = async (author: User, playlistData: YouTubePlayList): Promise<EmbedBuilder> => {
+export const playlistEmbed = async (author: User, playlistData: ytpl.result): Promise<EmbedBuilder> => {
   const msg = new EmbedBuilder()
     .setTitle(`${author.username} ${i18n.t('embedsText.lists.playlist.title')} !`)
     .setAuthor({
@@ -82,17 +82,19 @@ export const playlistEmbed = async (author: User, playlistData: YouTubePlayList)
       },
       {
         name: `${i18n.t('embedsText.lists.playlist.fields.playlistCreatedBy')} :`,
-        value: (playlistData.channel && playlistData.channel.name) || 'No name',
+        value: (playlistData.author && playlistData.author.name) || 'No name',
         inline: true,
       },
       {
         name: `${i18n.t('embedsText.lists.playlist.fields.putInQueue')} :`,
         value:
-          (playlistData.videos.length > 30 ? 30 : playlistData.videos.length) + `${i18n.t('embedsText.global.musics')}`,
+          (playlistData.items.length > 30 ? 30 : playlistData.items.length) + `${i18n.t('embedsText.global.musics')}`,
       }
     );
 
-  if (playlistData.thumbnail !== undefined) msg.setThumbnail(playlistData.thumbnail.url);
+  if (playlistData.items.length > 0 && playlistData.items[0].thumbnail) {
+    msg.setThumbnail(playlistData.items[0].thumbnail);
+  }
 
   return msg;
 };
