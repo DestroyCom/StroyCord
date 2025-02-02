@@ -76,3 +76,50 @@ You can now launch it with the command:
 | -------------------------- | -------- | ------------   | -------------------- | ------------------------------------------                |
 | LOG_DIR                    | FALSE    | /log           | TRUE                 | string - Your logging directory path use for docker       |
 | TIMEZONE                   | FALSE    | Europe/Paris   | TRUE                 | string - Your container timezone                          |
+
+
+---
+
+
+#### Docker compose configuration
+
+```yaml
+services:
+  stroycord:
+    container_name: stroycord
+    image: destcom/stroycord:latest
+    build:
+      context: .
+      dockerfile: StroyCord.Dockerfile
+    environment:
+      DISCORD_TOKEN: ${DISCORD_TOKEN}
+      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
+      PREFIX: ${PREFIX}
+      LANGUAGE: ${LANGUAGE}
+      LOG_DIR: ${LOG_DIR:-./logs}
+      TIMEZONE: ${TIMEZONE:-Europe/Paris}
+      DATABASE_CONNECTION_STRING: ${DATABASE_CONNECTION_STRING}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_NAME: ${DATABASE_NAME}
+    restart: on-failure
+    volumes:
+      - ${LOG_DIR:-./logs}:/app/logs
+    networks:
+      - default
+    depends_on:
+      - mongodb
+  mongodb:
+    container_name: mongodb
+    image: mongo:latest
+    restart: on-failure
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-root}
+    ports:
+      - ${MONGO_PORT:-27017}:27017
+    volumes:
+      - ${MONGO_DATA_DIR:-./mongo/data/db}:/data/db
+    networks:
+      - default
+```
