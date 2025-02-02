@@ -1,8 +1,5 @@
 # StroyCord
 
-_Previously JE REVIENS OF DEVILKING_
-Since the recent action of youtube to close the most used bots on discord, I wanted to create my own.
-
 ---
 
 ## How to use it ?
@@ -123,3 +120,5 @@ services:
     networks:
       - default
 ```
+
+_This repo was previously JE REVIENS OF DEVILKING_
