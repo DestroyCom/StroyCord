@@ -1,5 +1,5 @@
+import ytpl from '@distube/ytpl';
 import { User, VoiceBasedChannel } from 'discord.js';
-import { playlist_info } from 'play-dl';
 
 import { sendQueueEmbed } from '../messages';
 import { songRequest } from './songRequest';
@@ -11,11 +11,8 @@ export const playlistHandler = async (
   textChannelId: string,
   voiceChannel?: VoiceBasedChannel | null
 ) => {
-  const playlistData = await playlist_info(url, {
-    incomplete: true,
-  });
-
-  const playlistVideos = await playlistData.all_videos();
+  const playlistData = await ytpl(url);
+  const playlistVideos = playlistData.items;
 
   for (let i = 0; i < playlistVideos.length; i++) {
     const video = playlistVideos[i];
