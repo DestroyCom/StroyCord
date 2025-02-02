@@ -1,5 +1,11 @@
-import { createAudioPlayer, createAudioResource, getVoiceConnection, joinVoiceChannel } from '@discordjs/voice';
-import { stream } from 'play-dl';
+import {
+  createAudioPlayer,
+  createAudioResource,
+  getVoiceConnection,
+  joinVoiceChannel,
+  StreamType,
+} from '@discordjs/voice';
+import ytdl from '@distube/ytdl-core';
 import { activePlayers, client } from 'src/Bot';
 import { emptyNextSongs, removeCurrentPlayingSong } from 'src/database/queries/guilds/delete';
 import { getCurrentVoiceChannel, getFirstSong, getNextSongs } from 'src/database/queries/guilds/get';
@@ -33,9 +39,14 @@ export const songPlayer = async (guildId: string) => {
     createAudioPlayerListener(audioPlayer, guildId);
   }
 
-  const source = await stream(nextSong.url);
-  const audioStream = createAudioResource(source.stream, {
-    inputType: source.type,
+  const stream = ytdl(nextSong.url, {
+    quality: 'highestaudio',
+    filter: 'audioonly',
+    highWaterMark: 1 << 25,
+  });
+
+  const audioStream = createAudioResource(stream, {
+    inputType: StreamType.Arbitrary,
   });
 
   audioPlayer.play(audioStream);

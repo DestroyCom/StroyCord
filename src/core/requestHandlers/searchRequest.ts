@@ -1,5 +1,5 @@
+import ytsr from '@distube/ytsr';
 import { User, VoiceBasedChannel } from 'discord.js';
-import { search } from 'play-dl';
 
 import { songRequest } from './songRequest';
 
@@ -10,7 +10,8 @@ export const searchSong = async (
   textChannelId: string,
   voiceChannel?: VoiceBasedChannel | null
 ) => {
-  const searchedVideo = await search(searchInput, { limit: 1 });
+  const searchedVideo = await ytsr(searchInput, { limit: 1 });
+  const video = searchedVideo.items[0];
 
-  songRequest(searchedVideo[0].url, guildId, requestAuthor, textChannelId, voiceChannel);
+  songRequest(video.url, guildId, requestAuthor, textChannelId, voiceChannel);
 };
