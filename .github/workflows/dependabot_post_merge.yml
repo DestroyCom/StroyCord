@@ -11,11 +11,17 @@ jobs:
     outputs:
       is_dependabot_merge: ${{ steps.check_author.outputs.is_dependabot_merge }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+
       - name: Check if commit is from Dependabot
         id: check_author
         run: |
           AUTHOR=$(git log -1 --pretty=format:'%an')
-          if [[ $AUTHOR == "dependabot[bot]" ]]; then
+          echo "Commit author: $AUTHOR"
+          if [[ "$AUTHOR" == "dependabot[bot]" ]]; then
             echo "is_dependabot_merge=true" >> $GITHUB_OUTPUT
           else
             echo "is_dependabot_merge=false" >> $GITHUB_OUTPUT
