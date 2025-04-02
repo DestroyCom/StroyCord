@@ -1,0 +1,36 @@
+name: Post-Dependabot Merge
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  check_for_dependabot_changes:
+    runs-on: ubuntu-latest
+    outputs:
+      is_dependabot_merge: ${{ steps.check_author.outputs.is_dependabot_merge }}
+    steps:
+      - name: Check if commit is from Dependabot
+        id: check_author
+        run: |
+          AUTHOR=$(git log -1 --pretty=format:'%an')
+          if [[ $AUTHOR == "dependabot[bot]" ]]; then
+            echo "is_dependabot_merge=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_dependabot_merge=false" >> $GITHUB_OUTPUT
+          fi
+
+  trigger_release:
+    needs: check_for_dependabot_changes
+    if: needs.check_for_dependabot_changes.outputs.is_dependabot_merge == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Trigger release workflow
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: trigger-release-pipeline
