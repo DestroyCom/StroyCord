@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - release
+  repository_dispatch:
+    types: [trigger-release-pipeline]
   workflow_dispatch:
 
 jobs:
