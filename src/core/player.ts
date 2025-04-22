@@ -5,7 +5,6 @@ import {
   joinVoiceChannel,
   StreamType,
 } from '@discordjs/voice';
-import ytdl from '@distube/ytdl-core';
 import { activePlayers, client } from 'src/Bot';
 import { emptyNextSongs, removeCurrentPlayingSong } from 'src/database/queries/guilds/delete';
 import { getCurrentVoiceChannel, getFirstSong, getNextSongs } from 'src/database/queries/guilds/get';
@@ -13,6 +12,9 @@ import { shiftSongs } from 'src/database/queries/guilds/update';
 import { voiceConnectionErrorListener } from 'src/listeners/errorListeners';
 import { createAudioPlayerListener, removeAllAudioPlayerListener } from 'src/listeners/playerListerners';
 import { songInterface } from 'src/utils/interfaces';
+import { getVideoIdFromUrl } from 'src/utils/utils';
+
+import { getSabrAudioStream } from './youtubeJs/getSabrAudioStream';
 
 export const songPlayer = async (guildId: string) => {
   const voiceChannel = await getCurrentVoiceChannel(guildId);
@@ -39,11 +41,23 @@ export const songPlayer = async (guildId: string) => {
     createAudioPlayerListener(audioPlayer, guildId);
   }
 
-  const stream = ytdl(nextSong.url, {
-    quality: 'highestaudio',
-    filter: 'audioonly',
-    highWaterMark: 1 << 25,
-  });
+  const id = getVideoIdFromUrl(nextSong.url);
+  if (!id) {
+    throw new Error('Cannot retrieve video ID');
+  }
+
+  let stream;
+  try {
+    stream = await getSabrAudioStream(id);
+  } catch (err) {
+    console.error('Erreur download YouTube:', err);
+    return remove(guildId);
+  }
+
+  console.log('stream', stream);
+  if (!stream) {
+    throw new Error('Cannot retrieve stream');
+  }
 
   const audioStream = createAudioResource(stream, {
     inputType: StreamType.Arbitrary,

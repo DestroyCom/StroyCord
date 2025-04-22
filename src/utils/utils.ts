@@ -1,6 +1,6 @@
-import ytdl from '@distube/ytdl-core';
 import axios from 'axios';
 import { Guild, InternalDiscordGatewayAdapterCreator, User, VoiceBasedChannel } from 'discord.js';
+import { fetchVideoInfo } from 'src/core/youtubeJs/videoGetter';
 
 import { secrets } from '../config/secrets';
 import { MessageFormaterInterface, songInterface } from './interfaces';
@@ -19,19 +19,19 @@ export const extractSongData = async (
   isQueueStart: boolean,
   isComingFromPlaylist: boolean = false
 ): Promise<songInterface> => {
-  const info = await ytdl.getInfo(url);
-  const rawSongData = info.videoDetails;
+  const info = await fetchVideoInfo(url);
+  const rawSongData = info.basic_info;
 
   const title = rawSongData.title || '';
-  const videoAuthor = rawSongData.author?.name || '';
-  const minutes = Math.floor(Number(rawSongData.lengthSeconds) / 60);
-  const seconds = Number(rawSongData.lengthSeconds) % 60;
+  const videoAuthor = rawSongData.author || '';
+  const minutes = Math.floor(Number(rawSongData.duration) / 60);
+  const seconds = Number(rawSongData.duration) % 60;
   const formattedTime = `${minutes}:${seconds < 10 ? `0${seconds}` : seconds}`;
 
   return {
     title,
-    url: rawSongData.video_url,
-    thumbnail: rawSongData.thumbnails[rawSongData.thumbnails.length - 1].url,
+    url: url,
+    thumbnail: rawSongData?.thumbnail?.[rawSongData.thumbnail.length - 1]?.url ?? '',
     videoAuthor,
     videoLength: minutes === 0 && seconds === 0 ? '`Livestream`' : formattedTime,
     minutes,
@@ -101,4 +101,9 @@ export async function getAudioStream(url: string) {
   });
 
   return response.data;
+}
+
+export function getVideoIdFromUrl(url: string): string | null {
+  const match = url.match(/^.*(?:youtu.be\/|v\/|\/u\/\w\/|embed\/|watch\?v=)([^#\&\?]*).*/);
+  return match && match[1].length === 11 ? match[1] : null;
 }

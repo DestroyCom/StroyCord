@@ -1,7 +1,7 @@
-import ytpl from '@distube/ytpl';
 import { EmbedBuilder, User } from 'discord.js';
 import i18n from 'src/config/i18n';
 import { secrets } from 'src/config/secrets';
+import { YtbPlaylistResult } from 'src/core/youtubeJs/playlistGetter';
 
 import { songInterface } from '../interfaces';
 
@@ -56,7 +56,7 @@ export const queueEmbed = async (nextSongs: songInterface[]): Promise<EmbedBuild
     .addFields(tabEmbeds);
 };
 
-export const playlistEmbed = async (author: User, playlistData: ytpl.result): Promise<EmbedBuilder> => {
+export const playlistEmbed = async (author: User, playlistData: YtbPlaylistResult): Promise<EmbedBuilder> => {
   const msg = new EmbedBuilder()
     .setTitle(`${author.username} ${i18n.t('embedsText.lists.playlist.title')} !`)
     .setAuthor({
