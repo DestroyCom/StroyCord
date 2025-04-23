@@ -7,3 +7,4 @@ updates:
     allow:
       - dependency-name: '@distube/ytdl-core'
       - dependency-name: '@distube/ytsr'
+      - dependency-name: 'youtube-dl-exec'

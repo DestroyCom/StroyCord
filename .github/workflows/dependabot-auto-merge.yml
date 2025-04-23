@@ -18,14 +18,14 @@ jobs:
           github-token: '${{ secrets.GITHUB_TOKEN }}'
 
       - name: Approve PR
-        if: ${{contains(steps.metadata.outputs.dependency-names, '@distube/ytdl-core') || contains(steps.metadata.outputs.dependency-names, '@distube/ytsr')}}
+        if: ${{contains(steps.metadata.outputs.dependency-names, '@distube/ytdl-core') || contains(steps.metadata.outputs.dependency-names, '@distube/ytsr') || contains(steps.metadata.outputs.dependency-names, 'youtube-dl-exec')}}
         run: gh pr review --approve "$PR_URL"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
       - name: Enable auto-merge for Dependabot PRs
-        if: ${{contains(steps.metadata.outputs.dependency-names, '@distube/ytdl-core') || contains(steps.metadata.outputs.dependency-names, '@distube/ytsr')}}
+        if: ${{contains(steps.metadata.outputs.dependency-names, '@distube/ytdl-core') || contains(steps.metadata.outputs.dependency-names, '@distube/ytsr') || contains(steps.metadata.outputs.dependency-names, 'youtube-dl-exec')}}
         run: gh pr merge --auto --merge "$PR_URL"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
