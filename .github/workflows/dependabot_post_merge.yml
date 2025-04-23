@@ -5,6 +5,10 @@ on:
     branches:
       - master
 
+permissions:
+  contents: read
+  actions: write
+
 jobs:
   check_for_dependabot_changes:
     runs-on: ubuntu-latest

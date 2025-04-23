@@ -20,6 +20,6 @@ RUN apk update && apk add python3 make g++ ffmpeg
 COPY --from=build /build/dist ./dist
 COPY --from=build /build/package*.json ./
 
-RUN npm ci --only=production --ignore-scripts
+RUN npm ci --only=production 
 
 CMD ["npm","run","start"]
