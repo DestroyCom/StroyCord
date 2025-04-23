@@ -8,7 +8,7 @@
     "start": "node ./dist/Bot.js",
     "build": "npm run lint && tsup ./src/Bot.ts --minify",
     "lint": "eslint --ignore-path .eslintignore --ext .js,.ts . --fix",
-    "prepare": "husky install",
+    "prepare": "husky install || true",
     "knip": "knip"
   },
   "husky": {
