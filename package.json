@@ -22,7 +22,7 @@
   "dependencies": {
     "@discordjs/opus": "0.10.0",
     "@discordjs/voice": "0.18.0",
-    "@distube/ytdl-core": "^4.16.0",
+    "@distube/ytdl-core": "^4.16.8",
     "@distube/ytpl": "^1.2.1",
     "@distube/ytsr": "^2.0.4",
     "axios": "^1.7.9",
@@ -31,7 +31,8 @@
     "i18n-js": "^4.3.0",
     "libsodium-wrappers": "0.7.15",
     "mongodb": "^5.8.1",
-    "mongoose": "^7.6.0"
+    "mongoose": "^7.6.0",
+    "youtube-dl-exec": "^3.0.20"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.7.1",
