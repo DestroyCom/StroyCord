@@ -5,7 +5,6 @@ import {
   joinVoiceChannel,
   StreamType,
 } from '@discordjs/voice';
-import ytdl from '@distube/ytdl-core';
 import { activePlayers, client } from 'src/Bot';
 import { emptyNextSongs, removeCurrentPlayingSong } from 'src/database/queries/guilds/delete';
 import { getCurrentVoiceChannel, getFirstSong, getNextSongs } from 'src/database/queries/guilds/get';
@@ -13,6 +12,7 @@ import { shiftSongs } from 'src/database/queries/guilds/update';
 import { voiceConnectionErrorListener } from 'src/listeners/errorListeners';
 import { createAudioPlayerListener, removeAllAudioPlayerListener } from 'src/listeners/playerListerners';
 import { songInterface } from 'src/utils/interfaces';
+import ytdl from 'youtube-dl-exec';
 
 export const songPlayer = async (guildId: string) => {
   const voiceChannel = await getCurrentVoiceChannel(guildId);
@@ -39,11 +39,19 @@ export const songPlayer = async (guildId: string) => {
     createAudioPlayerListener(audioPlayer, guildId);
   }
 
-  const stream = ytdl(nextSong.url, {
-    quality: 'highestaudio',
-    filter: 'audioonly',
-    highWaterMark: 1 << 25,
-  });
+  const stream = ytdl.exec(nextSong.url, {
+    noCheckCertificates: true,
+    noWarnings: true,
+    preferFreeFormats: true,
+    addHeader: ['referer:youtube.com', 'user-agent:googlebot'],
+    format: 'ba',
+    output: '-',
+  }).stdout;
+
+  if (!stream) {
+    console.log('Stream is undefined');
+    return;
+  }
 
   const audioStream = createAudioResource(stream, {
     inputType: StreamType.Arbitrary,

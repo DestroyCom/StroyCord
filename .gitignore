@@ -3,4 +3,4 @@ node_modules
 logs*
 mongo*
 dist
-```
+*player-script.js
