@@ -1,6 +1,6 @@
 {
   "name": "stroycord",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "A discord bot to play music in VC",
   "main": "src/Bot.ts",
   "scripts": {
