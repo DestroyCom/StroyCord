@@ -1,5 +1,5 @@
 ######### build stage
-FROM node:lts-alpine as build
+FROM node:lts-alpine AS build
 
 WORKDIR /build
 COPY package*.json ./
@@ -13,6 +13,7 @@ RUN npm run lint && npm run build
 ######### production stage
 FROM node:lts-alpine
 ENV NODE_ENV=production
+ENV HUSKY=0
 
 WORKDIR /app
 RUN apk update && apk add python3 make g++ ffmpeg
