@@ -22,7 +22,7 @@
   "dependencies": {
     "@discordjs/opus": "0.10.0",
     "@discordjs/voice": "0.18.0",
-    "@distube/ytdl-core": "^4.16.9",
+    "@distube/ytdl-core": "^4.16.10",
     "@distube/ytpl": "^1.2.1",
     "@distube/ytsr": "^2.0.4",
     "axios": "^1.7.9",
