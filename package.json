@@ -32,7 +32,7 @@
     "libsodium-wrappers": "0.7.15",
     "mongodb": "^5.8.1",
     "mongoose": "^7.6.0",
-    "youtube-dl-exec": "^3.0.27"
+    "youtube-dl-exec": "^3.0.28"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.7.1",
