@@ -75,7 +75,7 @@ export default (client: Client): void => {
   });
 
   client.on(Events.InteractionCreate, async (interaction) => {
-    if (!interaction.isCommand()) {
+    if (!interaction.isChatInputCommand()) {
       return;
     }
     const { commandName } = interaction;
