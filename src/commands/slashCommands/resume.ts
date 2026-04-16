@@ -1,4 +1,4 @@
-import { CommandInteraction, SlashCommandBuilder, TextChannel } from 'discord.js';
+import { type CommandInteraction, SlashCommandBuilder, TextChannel } from 'discord.js';
 import { client } from 'src/Bot';
 import i18n from 'src/config/i18n';
 import { fetchGuild } from 'src/database/queries/guilds/get';

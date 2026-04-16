@@ -1,4 +1,4 @@
-import { AudioPlayer } from '@discordjs/voice';
+import type { AudioPlayer } from '@discordjs/voice';
 import { sendEmbed } from 'src/core/messages';
 import { remove, skipSong } from 'src/core/player';
 

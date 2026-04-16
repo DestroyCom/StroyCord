@@ -1,9 +1,9 @@
-import ytpl from '@distube/ytpl';
-import { EmbedBuilder, User } from 'discord.js';
+import type ytpl from '@distube/ytpl';
+import { EmbedBuilder, type User } from 'discord.js';
 import i18n from 'src/config/i18n';
 import { secrets } from 'src/config/secrets';
 
-import { songInterface } from '../interfaces';
+import type { songInterface } from '../interfaces';
 
 export const queueEmbed = async (nextSongs: songInterface[]): Promise<EmbedBuilder> => {
   if (nextSongs.length === 0)

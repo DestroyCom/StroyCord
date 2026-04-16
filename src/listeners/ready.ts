@@ -1,4 +1,4 @@
-import { Client, Events } from 'discord.js';
+import { type Client, Events } from 'discord.js';
 import { setActivity } from 'src/core/activityStatus';
 import { deployCommands } from 'src/deploy-commands';
 

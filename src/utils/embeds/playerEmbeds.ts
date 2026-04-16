@@ -1,9 +1,9 @@
-import { EmbedBuilder, User } from 'discord.js';
+import { EmbedBuilder, type User } from 'discord.js';
 import i18n from 'src/config/i18n';
 import { secrets } from 'src/config/secrets';
 import { getFirstSong, getLastPlayedSong } from 'src/database/queries/guilds/get';
 
-import { songInterface } from '../interfaces';
+import type { songInterface } from '../interfaces';
 
 const stroyCordLogo = secrets.STROYCORD_LOGO;
 

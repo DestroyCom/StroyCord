@@ -1,5 +1,5 @@
 import { getVoiceConnection } from '@discordjs/voice';
-import { Client, Events, Guild } from 'discord.js';
+import { type Client, Events, type Guild } from 'discord.js';
 import { activePlayers } from 'src/Bot';
 import { remove } from 'src/core/player';
 import { emptyAllGuild, removeGuild } from 'src/database/queries/guilds/delete';

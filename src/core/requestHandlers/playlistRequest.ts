@@ -1,5 +1,5 @@
 import ytpl from '@distube/ytpl';
-import { User, VoiceBasedChannel } from 'discord.js';
+import type { User, VoiceBasedChannel } from 'discord.js';
 
 import { sendQueueEmbed } from '../messages';
 import { songRequest } from './songRequest';

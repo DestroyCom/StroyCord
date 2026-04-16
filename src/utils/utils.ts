@@ -1,9 +1,9 @@
 import ytdl from '@distube/ytdl-core';
 import axios from 'axios';
-import { Guild, InternalDiscordGatewayAdapterCreator, User, VoiceBasedChannel } from 'discord.js';
+import type { Guild, InternalDiscordGatewayAdapterCreator, User, VoiceBasedChannel } from 'discord.js';
 
 import { secrets } from '../config/secrets';
-import { MessageFormaterInterface, songInterface } from './interfaces';
+import type { MessageFormaterInterface, songInterface } from './interfaces';
 
 export const messageFormater = (message: string): MessageFormaterInterface => {
   return {
@@ -66,9 +66,9 @@ export const extractVoiceChannelData = async (
 const video_id_pattern = /^[a-zA-Z\d_-]{11,12}$/;
 const playlist_id_pattern = /^(PL|UU|LL|RD|OL)[a-zA-Z\d_-]{10,}$/;
 const video_pattern =
-  /^((?:https?:)?\/\/)?(?:(?:www|m|music)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w\-]+\?v=|shorts\/|embed\/|live\/|v\/)?)([\w\-]+)(\S+)?$/;
+  /^((?:https?:)?\/\/)?(?:(?:www|m|music)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w-]+\?v=|shorts\/|embed\/|live\/|v\/)?)([\w-]+)(\S+)?$/;
 const playlist_pattern =
-  /^((?:https?:)?\/\/)?(?:(?:www|m|music)\.)?((?:youtube\.com|youtu.be))\/(?:(playlist|watch))?(.*)?((\?|\&)list=)(PL|UU|LL|RD|OL)[a-zA-Z\d_-]{10,}(&.*)?$/;
+  /^((?:https?:)?\/\/)?(?:(?:www|m|music)\.)?((?:youtube\.com|youtu.be))\/(?:(playlist|watch))?(.*)?((\?|&)list=)(PL|UU|LL|RD|OL)[a-zA-Z\d_-]{10,}(&.*)?$/;
 export function yt_validate(url: string): 'playlist' | 'video' | 'search' | false {
   const url_ = url.trim();
   if (url_.indexOf('list=') === -1) {
@@ -88,7 +88,7 @@ export function yt_validate(url: string): 'playlist' | 'video' | 'search' | fals
       else return 'search';
     }
   } else {
-    if (!url_.match(playlist_pattern)) return yt_validate(url_.replace(/(\?|\&)list=[^&]*/, ''));
+    if (!url_.match(playlist_pattern)) return yt_validate(url_.replace(/(\?|&)list=[^&]*/, ''));
     else return 'playlist';
   }
 }

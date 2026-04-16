@@ -1,5 +1,5 @@
 import ytsr from '@distube/ytsr';
-import { User, VoiceBasedChannel } from 'discord.js';
+import type { User, VoiceBasedChannel } from 'discord.js';
 
 import { songRequest } from './songRequest';
 

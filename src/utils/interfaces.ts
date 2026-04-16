@@ -1,5 +1,5 @@
-import { AudioPlayer } from '@discordjs/voice';
-import { EmbedBuilder, User } from 'discord.js';
+import type { AudioPlayer } from '@discordjs/voice';
+import type { EmbedBuilder, User } from 'discord.js';
 
 export interface activePlayersInterface {
   [guildId: string]: {

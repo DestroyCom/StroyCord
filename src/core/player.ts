@@ -11,7 +11,7 @@ import { getCurrentVoiceChannel, getFirstSong, getNextSongs } from 'src/database
 import { shiftSongs } from 'src/database/queries/guilds/update';
 import { voiceConnectionErrorListener } from 'src/listeners/errorListeners';
 import { createAudioPlayerListener, removeAllAudioPlayerListener } from 'src/listeners/playerListerners';
-import { songInterface } from 'src/utils/interfaces';
+import type { songInterface } from 'src/utils/interfaces';
 import ytdl from 'youtube-dl-exec';
 
 export const songPlayer = async (guildId: string) => {

@@ -1,4 +1,4 @@
-import { PartialGroupDMChannel, TextBasedChannel } from 'discord.js';
+import { PartialGroupDMChannel, type TextBasedChannel } from 'discord.js';
 import { noMusicCurrentlyPlayingEmbed, noPresenceInVoiceChannelEmbed } from 'src/utils/embeds/errorsEmbed';
 
 export const authorNotInVoiceChannel = (textChannel: TextBasedChannel, commandTried: string) => {

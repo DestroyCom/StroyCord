@@ -1,4 +1,4 @@
-import { User, VoiceBasedChannel } from 'discord.js';
+import type { User, VoiceBasedChannel } from 'discord.js';
 import { activePlayers } from 'src/Bot';
 import { pushSongs, updateVoiceChannel } from 'src/database/queries/guilds/update';
 import { extractSongData, extractVoiceChannelData } from 'src/utils/utils';

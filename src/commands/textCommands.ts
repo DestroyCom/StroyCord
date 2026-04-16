@@ -2,10 +2,10 @@ import { AudioPlayerStatus } from '@discordjs/voice';
 import {
   PartialGroupDMChannel,
   PermissionFlagsBits,
-  TextBasedChannel,
-  User,
-  VoiceBasedChannel,
-  VoiceChannel,
+  type TextBasedChannel,
+  type User,
+  type VoiceBasedChannel,
+  type VoiceChannel,
 } from 'discord.js';
 import { activePlayers } from 'src/Bot';
 import i18n from 'src/config/i18n';
