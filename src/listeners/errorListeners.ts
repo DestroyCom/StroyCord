@@ -1,4 +1,4 @@
-import { getVoiceConnection } from '@discordjs/voice';
+import { getVoiceConnection, VoiceConnectionStatus } from '@discordjs/voice';
 import { type Client, Events, type Guild } from 'discord.js';
 import { activePlayers } from 'src/Bot';
 import { remove } from 'src/core/player';
@@ -32,7 +32,7 @@ export const voiceConnectionErrorListener = (guildId: string) => {
   });
 
   getVoiceConnection(guildId)?.on('stateChange', async (_, newState) => {
-    if (newState.status === 'disconnected') {
+    if (newState.status === VoiceConnectionStatus.Disconnected) {
       console.log(`Voice connection has been destroyed for guild ${guildId}`);
       await shiftSongs(guildId);
       await remove(guildId);
