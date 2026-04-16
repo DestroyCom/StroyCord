@@ -4,6 +4,8 @@ pre-commit:
       run: npx biome check --write .
 
 commit-msg:
+  skip:
+    - merge
   commands:
     validate:
       run: bash scripts/commit-msg.sh {1}

@@ -2,8 +2,8 @@
 
 MSG_PATH="$1"
 
-if [ -z "$MSG_PATH" ]; then
-  echo "Chemin du fichier de commit non spécifié" >&2
+if [ -z "$MSG_PATH" ] || [ ! -f "$MSG_PATH" ]; then
+  echo "Fichier de commit non trouvé: $MSG_PATH" >&2
   exit 1
 fi
 
