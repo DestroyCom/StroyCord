@@ -1,4 +1,5 @@
 import {
+  AudioPlayerStatus,
   createAudioPlayer,
   createAudioResource,
   getVoiceConnection,
@@ -96,14 +97,14 @@ export const remove = async (guildId: string, isFromSkip: boolean = false) => {
 
 export const pause = async (guildId: string) => {
   if (!activePlayers[guildId]) return;
-  if (activePlayers[guildId].audioPlayer.state.status !== 'playing') return;
+  if (activePlayers[guildId].audioPlayer.state.status !== AudioPlayerStatus.Playing) return;
 
   activePlayers[guildId].audioPlayer.pause();
 };
 
 export const resume = async (guildId: string) => {
   if (!activePlayers[guildId]) return;
-  if (activePlayers[guildId].audioPlayer.state.status !== 'paused') return;
+  if (activePlayers[guildId].audioPlayer.state.status !== AudioPlayerStatus.Paused) return;
 
   activePlayers[guildId].audioPlayer.unpause();
 };

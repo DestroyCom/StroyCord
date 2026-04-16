@@ -1,13 +1,14 @@
+import { AudioPlayerStatus } from '@discordjs/voice';
 import type { AudioPlayer } from '@discordjs/voice';
 import { sendEmbed } from 'src/core/messages';
 import { remove, skipSong } from 'src/core/player';
 
 export const createAudioPlayerListener = (audioPlayer: AudioPlayer, guildId: string) => {
   audioPlayer.on('stateChange', async (oldState, newState) => {
-    if (newState.status === 'idle' && oldState.status === 'playing') {
+    if (newState.status === AudioPlayerStatus.Idle && oldState.status === AudioPlayerStatus.Playing) {
       skipSong(guildId);
       return;
-    } else if (newState.status === 'playing' && oldState.status === 'buffering') {
+    } else if (newState.status === AudioPlayerStatus.Playing && oldState.status === AudioPlayerStatus.Buffering) {
       sendEmbed(guildId);
       return;
     }
