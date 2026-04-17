@@ -10,7 +10,7 @@ export const pushSongs = async (guildId: string, data: object[]) => {
 export const shiftSongs = async (guildId: string) => {
   //get the first song, move it to previouslyPlayedSongs and remove it from nextSongs
   const guild = await fetchGuild(guildId);
-  if (guild.nextSongs === undefined) {
+  if (guild.nextSongs == null) {
     return await emptyNextSongs(guildId);
   }
   const firstSong = guild.nextSongs[0];

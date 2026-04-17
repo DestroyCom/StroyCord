@@ -19,7 +19,7 @@ export const playlistHandler = async (
     if (video.url === undefined) continue;
     try {
       await songRequest(video.url, guildId, requestAuthor, textChannelId, voiceChannel, true);
-    } catch (error) {
+    } catch (_error) {
       console.log('error in playlistHandler');
     }
   }

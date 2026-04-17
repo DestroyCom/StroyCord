@@ -54,7 +54,7 @@ export const songPlayer = async (guildId: string) => {
   }).stdout;
 
   if (!stream) {
-    await sendErrorEmbed(guildId, nextSong.requestChannel, 'Failed to create audio stream for: ' + nextSong.title);
+    await sendErrorEmbed(guildId, nextSong.requestChannel, `Failed to create audio stream for: ${nextSong.title}`);
     return;
   }
 
@@ -87,7 +87,7 @@ export const remove = async (guildId: string, isFromSkip: boolean = false) => {
     await emptyNextSongs(guildId);
   }
 
-  if (activePlayers[guildId] && activePlayers[guildId].audioPlayer) {
+  if (activePlayers[guildId]?.audioPlayer) {
     removeAllAudioPlayerListener(activePlayers[guildId].audioPlayer);
     activePlayers[guildId].audioPlayer.stop();
     delete activePlayers[guildId];

@@ -112,8 +112,7 @@ export const unknownRequestEmbed = (): EmbedBuilder => {
     .setTimestamp();
 };
 
-// eslint-disable-next-line  @typescript-eslint/no-explicit-any
-export const unknownError = (errorMsg: any): EmbedBuilder => {
+export const unknownError = (errorMsg: string): EmbedBuilder => {
   return new EmbedBuilder()
     .setTitle(`⚠️ ${i18n.t('embedsText.errors.unknown.title').toUpperCase()} !`)
     .setDescription(errorMsg)

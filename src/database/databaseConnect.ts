@@ -12,7 +12,7 @@ export const connectToDatabase = async () => {
       pass: secrets.DATABASE_PASSWORD,
     });
     await emptyAllGuild();
-  } catch (error) {
+  } catch (_error) {
     console.log('Error connecting to database !');
     process.exit(0);
   }

@@ -17,7 +17,13 @@ export const songRequest = async (
   const activePlayerGuild = activePlayers[guildId];
 
   try {
-    const parsedSong = await extractSongData(url, requestAuthor, textChannelId, !activePlayerGuild, isComingFromPlaylist);
+    const parsedSong = await extractSongData(
+      url,
+      requestAuthor,
+      textChannelId,
+      !activePlayerGuild,
+      isComingFromPlaylist
+    );
     const parsedVoiceChannel = await extractVoiceChannelData(voiceChannel!);
 
     await pushSongs(guildId, [parsedSong]);

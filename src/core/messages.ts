@@ -1,8 +1,8 @@
 import type ytpl from '@distube/ytpl';
 import type { TextChannel, User } from 'discord.js';
 import { client } from 'src/Bot';
-import { unknownError } from 'src/utils/embeds/errorsEmbed';
 import { getFirstSong, getNextSongs } from 'src/database/queries/guilds/get';
+import { unknownError } from 'src/utils/embeds/errorsEmbed';
 import { playlistEmbed } from 'src/utils/embeds/listSongEmbed';
 import { addSongEmbed, newSongEmbed } from 'src/utils/embeds/songEmbed';
 import type { songInterface } from 'src/utils/interfaces';
@@ -64,9 +64,7 @@ export const sendQueueEmbed = async (
 };
 
 export const sendErrorEmbed = async (guildId: string, textChannelId: string, errorMsg: string) => {
-  const messageChannel = await client.guilds
-    .fetch(guildId)
-    .then((guild) => guild.channels.cache.get(textChannelId));
+  const messageChannel = await client.guilds.fetch(guildId).then((guild) => guild.channels.cache.get(textChannelId));
 
   return await (messageChannel as TextChannel)?.send({
     embeds: [unknownError(errorMsg)],

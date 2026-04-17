@@ -8,7 +8,7 @@ export const emptyNextSongs = async (guildId: string) => {
 
 export const removeCurrentPlayingSong = async (guildId: string) => {
   const guild = await fetchGuild(guildId);
-  if (guild.nextSongs === undefined) {
+  if (guild.nextSongs == null) {
     return await emptyNextSongs(guildId);
   }
   const firstSong = guild.nextSongs[0];

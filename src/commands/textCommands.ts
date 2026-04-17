@@ -80,7 +80,7 @@ export const skipCommand = async (
 
   const nextSongs = await getNextSongs(guildId);
 
-  if (nextSongs.length != 0) {
+  if (nextSongs.length !== 0) {
     if (textChannel instanceof PartialGroupDMChannel) return;
     await textChannel.send({
       embeds: [await skipEmbed(author, guildId)],
@@ -142,7 +142,7 @@ export const resumeCommand = async (
 export const queueCommand = async (
   guildId: string,
   textChannel: TextBasedChannel,
-  author: User,
+  _author: User,
   voiceChannel?: VoiceBasedChannel | null
 ) => {
   if (!checkCommandUsability(guildId, textChannel, voiceChannel as VoiceChannel, i18n.t('commandContext.queueAPlay')))

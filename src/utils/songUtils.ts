@@ -10,7 +10,7 @@ export const extractSongData = async (
   isQueueStart: boolean,
   isComingFromPlaylist: boolean = false
 ): Promise<songInterface> => {
-  let info;
+  let info: Awaited<ReturnType<typeof ytdl.getInfo>>;
   try {
     info = await ytdl.getInfo(url);
   } catch (e) {

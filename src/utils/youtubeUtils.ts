@@ -1,5 +1,3 @@
-import axios from 'axios';
-
 const video_id_pattern = /^[a-zA-Z\d_-]{11,12}$/;
 const playlist_id_pattern = /^(PL|UU|LL|RD|OL)[a-zA-Z\d_-]{10,}$/;
 const video_pattern =
@@ -29,14 +27,4 @@ export function yt_validate(url: string): 'playlist' | 'video' | 'search' | fals
     if (!url_.match(playlist_pattern)) return yt_validate(url_.replace(/(\?|&)list=[^&]*/, ''));
     else return 'playlist';
   }
-}
-
-export async function getAudioStream(url: string) {
-  const response = await axios({
-    url,
-    method: 'GET',
-    responseType: 'stream',
-  });
-
-  return response.data;
 }
