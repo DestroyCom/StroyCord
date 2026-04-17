@@ -1,46 +1,43 @@
-name: Post-Dependabot Merge
+name: Post-Dependabot merge
 
 on:
   push:
-    branches:
-      - master
+    branches: [master]
 
 permissions:
   contents: read
   actions: write
 
 jobs:
-  check_for_dependabot_changes:
+  check_author:
+    name: Check commit author
     runs-on: ubuntu-latest
     outputs:
-      is_dependabot_merge: ${{ steps.check_author.outputs.is_dependabot_merge }}
+      is_dependabot: ${{ steps.check.outputs.is_dependabot }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
 
       - name: Check if commit is from Dependabot
-        id: check_author
+        id: check
         run: |
           AUTHOR=$(git log -1 --pretty=format:'%an')
-          echo "Commit author: $AUTHOR"
           if [[ "$AUTHOR" == "dependabot[bot]" ]]; then
-            echo "is_dependabot_merge=true" >> $GITHUB_OUTPUT
+            echo "is_dependabot=true" >> "$GITHUB_OUTPUT"
           else
-            echo "is_dependabot_merge=false" >> $GITHUB_OUTPUT
+            echo "is_dependabot=false" >> "$GITHUB_OUTPUT"
           fi
 
   trigger_release:
-    needs: check_for_dependabot_changes
-    if: needs.check_for_dependabot_changes.outputs.is_dependabot_merge == 'true'
+    needs: check_author
+    if: needs.check_author.outputs.is_dependabot == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Trigger release workflow
-        uses: peter-evans/repository-dispatch@v2
+      - name: Trigger release pipeline
+        uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           event-type: trigger-release-pipeline

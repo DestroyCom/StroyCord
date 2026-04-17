@@ -8,6 +8,15 @@ on:
     types: [trigger-release-pipeline]
   workflow_dispatch:
 
+permissions:
+  contents: write
+  discussions: write
+  packages: write
+
+concurrency:
+  group: release-pipeline
+  cancel-in-progress: false
+
 jobs:
   create_tag:
     uses: ./.github/workflows/create_tag.yml
@@ -17,6 +26,6 @@ jobs:
     uses: ./.github/workflows/build.yml
     secrets: inherit
   release:
-    needs: [build]
+    needs: build
     uses: ./.github/workflows/release.yml
     secrets: inherit

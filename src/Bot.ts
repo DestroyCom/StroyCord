@@ -6,7 +6,7 @@ import { connectToDatabase } from './database/databaseConnect';
 import errorListeners from './listeners/errorListeners';
 import messageListener from './listeners/messageListener';
 import ready from './listeners/ready';
-import { activePlayersInterface } from './utils/interfaces';
+import type { activePlayersInterface } from './utils/interfaces';
 
 export const client = new Client({
   intents: [

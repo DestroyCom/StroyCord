@@ -1,4 +1,4 @@
-import { Client } from 'discord.js';
+import type { Client } from 'discord.js';
 
 export const setActivity = async (client: Client) => {
   if (!client.user || !client.application) {

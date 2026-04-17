@@ -1,31 +1,32 @@
-name: Create new tag based on last commit message
+name: Create tag
 
 on:
   workflow_call:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  deploy:
+  tag:
+    name: Create version tag
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           ref: release
           fetch-depth: 0
-      - name: Get last commit message
-        id: commit_message
+
+      - name: Derive tag from package.json version
+        id: tag
         run: |
-          MESSAGE=$(git log -1 --pretty=format:'%s')
-          CLEANED_MESSAGE=$(echo "$MESSAGE" | sed -e 's/[^a-zA-Z0-9.-]/-/g')
-          echo "COMMIT_MSG=${CLEANED_MESSAGE}" >> $GITHUB_ENV
-      - name: Create or update major version
-        uses: joutvhu/create-tag@v1
-        with:
-          tag_name: ${{ env.COMMIT_MSG }}
-          message: ${{ env.COMMIT_MSG }}
-          on_tag_exists: update
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION=$(node -p "require('./package.json').version")
+          echo "value=v${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Push tag
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Tags are intentionally force-pushed so re-running the pipeline on the same version updates the tag pointer.
+          git tag -f "${{ steps.tag.outputs.value }}" -m "${{ steps.tag.outputs.value }}"
+          git push -f origin "${{ steps.tag.outputs.value }}"

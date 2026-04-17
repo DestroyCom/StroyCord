@@ -1,9 +1,8 @@
-import ytpl from '@distube/ytpl';
-import { EmbedBuilder, User } from 'discord.js';
+import { EmbedBuilder, type User } from 'discord.js';
 import i18n from 'src/config/i18n';
 import { secrets } from 'src/config/secrets';
 
-import { songInterface } from '../interfaces';
+import type { PlaylistInfo, songInterface } from '../interfaces';
 
 export const queueEmbed = async (nextSongs: songInterface[]): Promise<EmbedBuilder> => {
   if (nextSongs.length === 0)
@@ -40,9 +39,7 @@ export const queueEmbed = async (nextSongs: songInterface[]): Promise<EmbedBuild
   });
 
   return new EmbedBuilder()
-    .setTitle(
-      `${i18n.t('embedsText.global.youHave')} ` + nextSongs.length + ` ${i18n.t('embedsText.lists.queue.title')} !`
-    )
+    .setTitle(`${i18n.t('embedsText.global.youHave')} ${nextSongs.length} ${i18n.t('embedsText.lists.queue.title')} !`)
     .setAuthor({
       name: 'Stroycord',
       iconURL: secrets.STROYCORD_LOGO,
@@ -56,7 +53,7 @@ export const queueEmbed = async (nextSongs: songInterface[]): Promise<EmbedBuild
     .addFields(tabEmbeds);
 };
 
-export const playlistEmbed = async (author: User, playlistData: ytpl.result): Promise<EmbedBuilder> => {
+export const playlistEmbed = async (author: User, playlistData: PlaylistInfo): Promise<EmbedBuilder> => {
   const msg = new EmbedBuilder()
     .setTitle(`${author.username} ${i18n.t('embedsText.lists.playlist.title')} !`)
     .setAuthor({
@@ -82,13 +79,12 @@ export const playlistEmbed = async (author: User, playlistData: ytpl.result): Pr
       },
       {
         name: `${i18n.t('embedsText.lists.playlist.fields.playlistCreatedBy')} :`,
-        value: (playlistData.author && playlistData.author.name) || 'No name',
+        value: playlistData.author?.name || 'No name',
         inline: true,
       },
       {
         name: `${i18n.t('embedsText.lists.playlist.fields.putInQueue')} :`,
-        value:
-          (playlistData.items.length > 30 ? 30 : playlistData.items.length) + `${i18n.t('embedsText.global.musics')}`,
+        value: `${playlistData.items.length > 30 ? 30 : playlistData.items.length}${i18n.t('embedsText.global.musics')}`,
       }
     );
 

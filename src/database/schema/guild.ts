@@ -10,22 +10,22 @@ export const guild_model = mongoose.model(
     registeredAt: {
       type: Date,
       required: true,
-      default: Date.now(),
+      default: Date.now,
     },
 
     currentVoiceChannel: {
-      type: Object,
+      type: mongoose.Schema.Types.Mixed,
       required: false,
       default: null,
     },
 
     previouslyPlayedSongs: {
-      type: Array,
+      type: [mongoose.Schema.Types.Mixed],
       required: false,
       default: [],
     },
     nextSongs: {
-      type: Array,
+      type: [mongoose.Schema.Types.Mixed],
       required: false,
       default: [],
     },

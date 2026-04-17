@@ -1,5 +1,6 @@
-import { Client, Events } from 'discord.js';
+import { type Client, Events } from 'discord.js';
 import { setActivity } from 'src/core/activityStatus';
+import { initYoutubeClient } from 'src/core/youtube';
 import { deployCommands } from 'src/deploy-commands';
 
 export default (client: Client): void => {
@@ -8,6 +9,7 @@ export default (client: Client): void => {
       return;
     }
 
+    await initYoutubeClient();
     await setActivity(client);
     console.log(`${client.user.username} is online !`);
 

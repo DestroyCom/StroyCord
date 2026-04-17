@@ -1,10 +1,10 @@
-import ytpl from '@distube/ytpl';
-import { TextChannel, User } from 'discord.js';
+import type { TextChannel, User } from 'discord.js';
 import { client } from 'src/Bot';
 import { getFirstSong, getNextSongs } from 'src/database/queries/guilds/get';
+import { unknownError } from 'src/utils/embeds/errorsEmbed';
 import { playlistEmbed } from 'src/utils/embeds/listSongEmbed';
 import { addSongEmbed, newSongEmbed } from 'src/utils/embeds/songEmbed';
-import { songInterface } from 'src/utils/interfaces';
+import type { PlaylistInfo, songInterface } from 'src/utils/interfaces';
 
 export const sendEmbed = async (
   guildId: string,
@@ -49,7 +49,7 @@ export const sendEmbed = async (
 
 export const sendQueueEmbed = async (
   guildId: string,
-  playlistData: ytpl.result,
+  playlistData: PlaylistInfo,
   textChannelId: string,
   author: User
 ) => {
@@ -59,5 +59,27 @@ export const sendQueueEmbed = async (
 
   return await (messageChannel as TextChannel)?.send({
     embeds: [embed],
+  });
+};
+
+export const sendErrorEmbed = async (guildId: string, textChannelId: string, errorMsg: string) => {
+  let guild: Awaited<ReturnType<typeof client.guilds.fetch>>;
+  try {
+    guild = await client.guilds.fetch(guildId);
+  } catch (e) {
+    console.error(`[messages] sendErrorEmbed: failed to fetch guild ${guildId}:`, e);
+    return;
+  }
+  const messageChannel =
+    (guild.channels.cache.get(textChannelId) as TextChannel | undefined) ??
+    ((await guild.channels.fetch(textChannelId).catch(() => null)) as TextChannel | null);
+
+  if (!messageChannel) {
+    console.error(`[messages] sendErrorEmbed: channel ${textChannelId} not found in guild ${guildId}`);
+    return;
+  }
+
+  return await messageChannel.send({
+    embeds: [unknownError(errorMsg)],
   });
 };

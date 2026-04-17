@@ -1,62 +1,56 @@
 {
   "name": "stroycord",
-  "version": "1.4.0",
+  "version": "1.5.0",
+  "engines": {
+    "node": ">=24"
+  },
   "description": "A discord bot to play music in VC",
   "main": "src/Bot.ts",
   "scripts": {
     "dev": "tsx watch ./src/Bot.ts",
     "start": "node ./dist/Bot.js",
     "build": "npm run lint && tsup ./src/Bot.ts --minify",
-    "lint": "eslint --ignore-path .eslintignore --ext .js,.ts . --fix",
-    "prepare": "husky install || true",
-    "knip": "knip"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run lint",
-      "commit-msg": "npx --no-install commitlint --edit $1"
-    }
+    "lint": "biome check --write .",
+    "lint:ci": "biome ci .",
+    "test": "vitest run",
+    "test:functional": "vitest run src/tests/functional",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "changeset": "changeset",
+    "knip": "knip",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:rebuild": "docker compose up -d --build",
+    "docker:logs": "docker compose logs -f stroycord",
+    "docker:test-env": "docker compose up -d mongodb mongo-express",
+    "docker:test-env-down": "docker compose stop mongodb mongo-express",
+    "docker:clean": "docker compose down -v"
   },
   "author": "Dest.Com",
   "license": "GPL-3.0",
   "dependencies": {
     "@discordjs/opus": "0.10.0",
-    "@discordjs/voice": "0.18.0",
-    "@distube/ytdl-core": "^4.16.12",
-    "@distube/ytpl": "^1.2.1",
-    "@distube/ytsr": "^2.0.4",
-    "axios": "^1.7.9",
-    "discord.js": "^14.13.0",
-    "dotenv": "^16.3.1",
-    "i18n-js": "^4.3.0",
-    "libsodium-wrappers": "0.7.15",
-    "mongodb": "^5.8.1",
-    "mongoose": "^7.6.0",
-    "youtube-dl-exec": "^3.1.5"
+    "@discordjs/voice": "0.19.2",
+    "discord.js": "14.26.3",
+    "dotenv": "17.4.2",
+    "i18n-js": "4.5.3",
+    "libsodium-wrappers": "0.8.3",
+    "mongodb": "7.1.1",
+    "mongoose": "9.4.1",
+    "youtube-dl-exec": "^3.1.5",
+    "youtubei.js": "^17.0.1"
   },
   "devDependencies": {
-    "@commitlint/cli": "^17.7.1",
-    "@commitlint/config-conventional": "^17.7.0",
-    "@types/i18n-js": "^3.8.5",
-    "@types/node": "^20.17.16",
-    "@typescript-eslint/eslint-plugin": "^6.7.4",
-    "@typescript-eslint/parser": "^6.4.1",
-    "eslint": "^8.51.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-config-standard-with-typescript": "^38.0.0",
-    "eslint-plugin-import": "^2.28.1",
-    "eslint-plugin-n": "^16.0.2",
-    "eslint-plugin-prettier": "^5.0.0",
-    "eslint-plugin-promise": "^6.1.1",
-    "eslint-plugin-simple-import-sort": "^10.0.0",
-    "husky": "^8.0.0",
-    "knip": "^5.43.6",
-    "prettier": "^3.0.2",
-    "tsup": "^7.2.0",
-    "tsx": "^3.12.7",
-    "typescript": "^5.7.3"
-  },
-  "overrides": {
-    "discord-api-types": ">=0.30.0"
+    "@biomejs/biome": "2.4.12",
+    "@changesets/cli": "^2.30.0",
+    "@types/node": "25.6.0",
+    "@vitest/coverage-v8": "4.1.4",
+    "knip": "6.4.1",
+    "lefthook": "2.1.6",
+    "mongodb-memory-server": "11.0.1",
+    "tsup": "8.5.1",
+    "tsx": "4.21.0",
+    "typescript": "6.0.2",
+    "vitest": "4.1.4"
   }
 }

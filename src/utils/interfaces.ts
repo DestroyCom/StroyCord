@@ -1,5 +1,5 @@
-import { AudioPlayer } from '@discordjs/voice';
-import { EmbedBuilder, User } from 'discord.js';
+import type { AudioPlayer } from '@discordjs/voice';
+import type { EmbedBuilder, User } from 'discord.js';
 
 export interface activePlayersInterface {
   [guildId: string]: {
@@ -34,4 +34,11 @@ export interface embedChecksInterface {
 export interface MessageFormaterInterface {
   splittedMessage: string[];
   command: string;
+}
+
+export interface PlaylistInfo {
+  url: string;
+  title: string;
+  author: { name: string };
+  items: Array<{ url: string; thumbnail?: string }>;
 }

@@ -8,7 +8,7 @@ export const emptyNextSongs = async (guildId: string) => {
 
 export const removeCurrentPlayingSong = async (guildId: string) => {
   const guild = await fetchGuild(guildId);
-  if (guild.nextSongs === undefined) {
+  if (guild.nextSongs == null) {
     return await emptyNextSongs(guildId);
   }
   const firstSong = guild.nextSongs[0];
@@ -19,15 +19,13 @@ export const removeCurrentPlayingSong = async (guildId: string) => {
 };
 
 export const emptyAllGuild = async () => {
-  return await guild_model
-    .updateMany({}, { nextSongs: [], currentVoiceChannel: {} })
-    .then(() => {
-      console.log('All guilds have been emptied !');
-    })
-    .catch((error) => {
-      console.log(error);
-      console.log('Error emptying all guilds !');
-    });
+  try {
+    await guild_model.updateMany({}, { nextSongs: [], currentVoiceChannel: {} });
+    console.log('All guilds have been emptied !');
+  } catch (error) {
+    console.log(error);
+    console.log('Error emptying all guilds !');
+  }
 };
 
 export const removeGuild = async (guildId: string) => {

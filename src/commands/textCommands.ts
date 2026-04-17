@@ -2,10 +2,10 @@ import { AudioPlayerStatus } from '@discordjs/voice';
 import {
   PartialGroupDMChannel,
   PermissionFlagsBits,
-  TextBasedChannel,
-  User,
-  VoiceBasedChannel,
-  VoiceChannel,
+  type TextBasedChannel,
+  type User,
+  type VoiceBasedChannel,
+  type VoiceChannel,
 } from 'discord.js';
 import { activePlayers } from 'src/Bot';
 import i18n from 'src/config/i18n';
@@ -20,7 +20,7 @@ import { missingRequiredArgument, unknownError, unreconizedArgumentEmbed } from 
 import { queueEmbed } from 'src/utils/embeds/listSongEmbed';
 import { pauseEmbed, removeEmbed, resumeEmbed, skipEmbed } from 'src/utils/embeds/playerEmbeds';
 import { nowPlayingEmbed } from 'src/utils/embeds/songEmbed';
-import { yt_validate } from 'src/utils/utils';
+import { yt_validate } from 'src/utils/youtubeUtils';
 
 export const playCommand = (
   splittedMessage: string[],
@@ -80,7 +80,7 @@ export const skipCommand = async (
 
   const nextSongs = await getNextSongs(guildId);
 
-  if (nextSongs.length != 0) {
+  if (nextSongs.length !== 0) {
     if (textChannel instanceof PartialGroupDMChannel) return;
     await textChannel.send({
       embeds: [await skipEmbed(author, guildId)],
@@ -142,7 +142,7 @@ export const resumeCommand = async (
 export const queueCommand = async (
   guildId: string,
   textChannel: TextBasedChannel,
-  author: User,
+  _author: User,
   voiceChannel?: VoiceBasedChannel | null
 ) => {
   if (!checkCommandUsability(guildId, textChannel, voiceChannel as VoiceChannel, i18n.t('commandContext.queueAPlay')))

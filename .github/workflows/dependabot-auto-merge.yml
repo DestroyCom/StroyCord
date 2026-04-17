@@ -8,25 +8,36 @@ permissions:
 
 jobs:
   dependabot:
+    name: Auto-merge Dependabot PR
     runs-on: ubuntu-latest
-    if: ${{ github.actor == 'dependabot[bot]' }}
+    if: github.actor == 'dependabot[bot]'
     steps:
       - name: Dependabot metadata
         id: metadata
-        uses: dependabot/fetch-metadata@v1.6.0
+        uses: dependabot/fetch-metadata@v2
         with:
-          github-token: '${{ secrets.GITHUB_TOKEN }}'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Approve PR
-        if: ${{contains(steps.metadata.outputs.dependency-names, '@distube/ytdl-core') || contains(steps.metadata.outputs.dependency-names, '@distube/ytsr') || contains(steps.metadata.outputs.dependency-names, 'youtube-dl-exec')}}
+        if: >
+          contains(steps.metadata.outputs.dependency-names, 'youtube-dl-exec') ||
+          contains(steps.metadata.outputs.dependency-names, 'youtubei.js') ||
+          contains(steps.metadata.outputs.dependency-names, 'discord.js') ||
+          contains(steps.metadata.outputs.dependency-names, '@discordjs/voice') ||
+          contains(steps.metadata.outputs.dependency-names, '@discordjs/opus')
         run: gh pr review --approve "$PR_URL"
         env:
-          PR_URL: ${{github.event.pull_request.html_url}}
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Enable auto-merge for Dependabot PRs
-        if: ${{contains(steps.metadata.outputs.dependency-names, '@distube/ytdl-core') || contains(steps.metadata.outputs.dependency-names, '@distube/ytsr') || contains(steps.metadata.outputs.dependency-names, 'youtube-dl-exec')}}
+      - name: Enable auto-merge
+        if: >
+          contains(steps.metadata.outputs.dependency-names, 'youtube-dl-exec') ||
+          contains(steps.metadata.outputs.dependency-names, 'youtubei.js') ||
+          contains(steps.metadata.outputs.dependency-names, 'discord.js') ||
+          contains(steps.metadata.outputs.dependency-names, '@discordjs/voice') ||
+          contains(steps.metadata.outputs.dependency-names, '@discordjs/opus')
         run: gh pr merge --auto --merge "$PR_URL"
         env:
-          PR_URL: ${{github.event.pull_request.html_url}}
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

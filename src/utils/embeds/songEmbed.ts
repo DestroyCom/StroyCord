@@ -3,7 +3,7 @@ import { client } from 'src/Bot';
 import i18n from 'src/config/i18n';
 import { secrets } from 'src/config/secrets';
 
-import { embedChecksInterface, songInterface } from '../interfaces';
+import type { embedChecksInterface, songInterface } from '../interfaces';
 
 const stroyCordLogo = secrets.STROYCORD_LOGO;
 

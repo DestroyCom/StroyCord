@@ -1,4 +1,4 @@
-import { Client, Events } from 'discord.js';
+import { type Client, Events } from 'discord.js';
 import { commands } from 'src/commands/slashCommands';
 import {
   currentCommand,
@@ -13,7 +13,8 @@ import {
 import { secrets } from 'src/config/secrets';
 import { fetchGuild } from 'src/database/queries/guilds/get';
 import { unknownRequestEmbed } from 'src/utils/embeds/errorsEmbed';
-import { messageFormater, yt_validate } from 'src/utils/utils';
+import { messageFormater } from 'src/utils/messageUtils';
+import { yt_validate } from 'src/utils/youtubeUtils';
 
 export default (client: Client): void => {
   client.on(Events.MessageCreate, async (message) => {
@@ -75,7 +76,7 @@ export default (client: Client): void => {
   });
 
   client.on(Events.InteractionCreate, async (interaction) => {
-    if (!interaction.isCommand()) {
+    if (!interaction.isChatInputCommand()) {
       return;
     }
     const { commandName } = interaction;

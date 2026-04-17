@@ -1,9 +1,9 @@
-import { User, VoiceBasedChannel } from 'discord.js';
+import type { User, VoiceBasedChannel } from 'discord.js';
 import { activePlayers } from 'src/Bot';
 import { pushSongs, updateVoiceChannel } from 'src/database/queries/guilds/update';
-import { extractSongData, extractVoiceChannelData } from 'src/utils/utils';
+import { extractSongData, extractVoiceChannelData } from 'src/utils/songUtils';
 
-import { sendEmbed } from '../messages';
+import { sendEmbed, sendErrorEmbed } from '../messages';
 import { songPlayer } from '../player';
 
 export const songRequest = async (
@@ -16,18 +16,28 @@ export const songRequest = async (
 ) => {
   const activePlayerGuild = activePlayers[guildId];
 
-  const parsedSong = await extractSongData(url, requestAuthor, textChannelId, !activePlayerGuild, isComingFromPlaylist);
-  const parsedVoiceChannel = await extractVoiceChannelData(voiceChannel!);
+  try {
+    const parsedSong = await extractSongData(
+      url,
+      requestAuthor,
+      textChannelId,
+      !activePlayerGuild,
+      isComingFromPlaylist
+    );
+    if (!voiceChannel) {
+      throw new Error('No voice channel provided');
+    }
+    const parsedVoiceChannel = await extractVoiceChannelData(voiceChannel);
 
-  await pushSongs(guildId, [parsedSong]);
-  await updateVoiceChannel(guildId, parsedVoiceChannel);
+    await pushSongs(guildId, [parsedSong]);
+    await updateVoiceChannel(guildId, parsedVoiceChannel);
 
-  if (!activePlayerGuild && !isComingFromPlaylist) {
-    await songPlayer(guildId);
-  } else if (!activePlayerGuild && isComingFromPlaylist) {
-    await songPlayer(guildId);
-  } else if (!isComingFromPlaylist) {
-    const isNewSong = !activePlayerGuild;
-    await sendEmbed(guildId, isNewSong, false);
+    if (!activePlayerGuild) {
+      await songPlayer(guildId);
+    } else if (!isComingFromPlaylist) {
+      await sendEmbed(guildId, false, false);
+    }
+  } catch (error) {
+    await sendErrorEmbed(guildId, textChannelId, String(error));
   }
 };
