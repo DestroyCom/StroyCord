@@ -63,9 +63,17 @@ export const sendQueueEmbed = async (
 };
 
 export const sendErrorEmbed = async (guildId: string, textChannelId: string, errorMsg: string) => {
-  const messageChannel = await client.guilds.fetch(guildId).then((guild) => guild.channels.cache.get(textChannelId));
+  const guild = await client.guilds.fetch(guildId);
+  const messageChannel =
+    (guild.channels.cache.get(textChannelId) as TextChannel | undefined) ??
+    ((await guild.channels.fetch(textChannelId).catch(() => null)) as TextChannel | null);
 
-  return await (messageChannel as TextChannel)?.send({
+  if (!messageChannel) {
+    console.error(`[messages] sendErrorEmbed: channel ${textChannelId} not found in guild ${guildId}`);
+    return;
+  }
+
+  return await messageChannel.send({
     embeds: [unknownError(errorMsg)],
   });
 };

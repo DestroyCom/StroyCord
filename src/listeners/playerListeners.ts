@@ -15,12 +15,8 @@ export const createAudioPlayerListener = (audioPlayer: AudioPlayer, guildId: str
   });
 
   audioPlayer.on('error', (error: unknown) => {
-    try {
-      remove(guildId);
-    } catch (errorCatch: unknown) {
-      console.error('error', error);
-      console.error('errorCatch', errorCatch);
-    }
+    console.error('[player] audio player error:', error);
+    remove(guildId).catch((e) => console.error('[player] remove error:', e));
   });
 };
 

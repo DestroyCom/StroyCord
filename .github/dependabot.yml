@@ -3,8 +3,11 @@ updates:
   - package-ecosystem: 'npm'
     directory: '/'
     schedule:
-      interval: 'daily'
+      interval: 'weekly'
+      day: 'monday'
     allow:
-      - dependency-name: '@distube/ytdl-core'
-      - dependency-name: '@distube/ytsr'
       - dependency-name: 'youtube-dl-exec'
+      - dependency-name: 'youtubei.js'
+      - dependency-name: 'discord.js'
+      - dependency-name: '@discordjs/voice'
+      - dependency-name: '@discordjs/opus'

@@ -12,6 +12,7 @@
     "build": "npm run lint && tsup ./src/Bot.ts --minify",
     "lint": "biome check --write .",
     "test": "vitest run",
+    "test:functional": "vitest run src/tests/functional",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "knip": "knip",
@@ -34,6 +35,7 @@
     "libsodium-wrappers": "0.8.3",
     "mongodb": "7.1.1",
     "mongoose": "9.4.1",
+    "youtube-dl-exec": "^3.1.5",
     "youtubei.js": "^17.0.1"
   },
   "devDependencies": {
