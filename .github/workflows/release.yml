@@ -20,7 +20,10 @@ jobs:
 
       - name: Get latest tag
         id: tag
-        run: echo "value=$(git describe --tags --abbrev=0)" >> "$GITHUB_OUTPUT"
+        run: |
+          git fetch --tags --no-recurse-submodules
+          TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          echo "value=${TAG}" >> "$GITHUB_OUTPUT"
 
       - uses: softprops/action-gh-release@v2
         with:

@@ -27,5 +27,6 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Tags are intentionally force-pushed so re-running the pipeline on the same version updates the tag pointer.
           git tag -f "${{ steps.tag.outputs.value }}" -m "${{ steps.tag.outputs.value }}"
           git push -f origin "${{ steps.tag.outputs.value }}"

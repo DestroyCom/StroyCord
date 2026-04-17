@@ -34,12 +34,16 @@ import { activePlayers } from 'src/Bot';
 import { songRequest } from 'src/core/requestHandlers/songRequest';
 
 describe('songRequest', () => {
-  const mockUser = { id: 'u1', username: 'testuser' } as any;
-  const mockVoiceChannel = { id: 'vc1', guild: { id: '42' } } as any;
+  const mockUser = { id: 'u1', username: 'testuser' } as unknown as import('discord.js').User;
+  const mockVoiceChannel = {
+    id: 'vc1',
+    guild: { id: '42' } as unknown as import('discord.js').Guild,
+  } as unknown as import('discord.js').VoiceBasedChannel;
+  const players = activePlayers as Record<string, { audioPlayer: object } | undefined>;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    delete (activePlayers as any)['42'];
+    delete players['42'];
   });
 
   it('calls songPlayer when no active player exists', async () => {
@@ -49,16 +53,23 @@ describe('songRequest', () => {
   });
 
   it('calls sendEmbed when player is active and song is not from playlist', async () => {
-    (activePlayers as any)['42'] = { audioPlayer: {} };
+    players['42'] = { audioPlayer: {} };
     await songRequest('https://youtube.com/watch?v=test', '42', mockUser, 'ch1', mockVoiceChannel, false);
     expect(mockSendEmbed).toHaveBeenCalledWith('42', false, false);
     expect(mockSongPlayer).not.toHaveBeenCalled();
   });
 
   it('calls neither songPlayer nor sendEmbed when coming from playlist and player active', async () => {
-    (activePlayers as any)['42'] = { audioPlayer: {} };
+    players['42'] = { audioPlayer: {} };
     await songRequest('https://youtube.com/watch?v=test', '42', mockUser, 'ch1', mockVoiceChannel, true);
     expect(mockSongPlayer).not.toHaveBeenCalled();
     expect(mockSendEmbed).not.toHaveBeenCalled();
+  });
+
+  it('calls sendErrorEmbed and not songPlayer when extractSongData rejects', async () => {
+    mockExtractSongData.mockRejectedValueOnce(new Error('Video not found'));
+    await songRequest('https://youtube.com/watch?v=invalid', '42', mockUser, 'ch1', mockVoiceChannel);
+    expect(mockSendErrorEmbed).toHaveBeenCalledWith('42', 'ch1', expect.stringContaining('Video not found'));
+    expect(mockSongPlayer).not.toHaveBeenCalled();
   });
 });

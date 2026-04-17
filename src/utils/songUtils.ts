@@ -35,7 +35,7 @@ export const extractSongData = async (
     url: videoUrl,
     thumbnail,
     videoAuthor,
-    videoLength: minutes === 0 && seconds === 0 ? '`Livestream`' : formattedTime,
+    videoLength: minutes === 0 && seconds === 0 ? 'Livestream' : formattedTime,
     minutes,
     seconds,
     requestDateTimestamp: Date.now(),

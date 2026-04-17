@@ -6,10 +6,18 @@ import { shiftSongs } from 'src/database/queries/guilds/update';
 export const createAudioPlayerListener = (audioPlayer: AudioPlayer, guildId: string) => {
   audioPlayer.on('stateChange', async (oldState, newState) => {
     if (newState.status === AudioPlayerStatus.Idle && oldState.status === AudioPlayerStatus.Playing) {
-      skipSong(guildId);
+      try {
+        await skipSong(guildId);
+      } catch (e) {
+        console.error('[player] skipSong error:', e);
+      }
       return;
     } else if (newState.status === AudioPlayerStatus.Playing && oldState.status === AudioPlayerStatus.Buffering) {
-      sendEmbed(guildId);
+      try {
+        await sendEmbed(guildId);
+      } catch (e) {
+        console.error('[player] sendEmbed error:', e);
+      }
       return;
     }
   });

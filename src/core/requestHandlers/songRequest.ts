@@ -24,7 +24,10 @@ export const songRequest = async (
       !activePlayerGuild,
       isComingFromPlaylist
     );
-    const parsedVoiceChannel = await extractVoiceChannelData(voiceChannel!);
+    if (!voiceChannel) {
+      throw new Error('No voice channel provided');
+    }
+    const parsedVoiceChannel = await extractVoiceChannelData(voiceChannel);
 
     await pushSongs(guildId, [parsedSong]);
     await updateVoiceChannel(guildId, parsedVoiceChannel);

@@ -11,6 +11,7 @@
     "start": "node ./dist/Bot.js",
     "build": "npm run lint && tsup ./src/Bot.ts --minify",
     "lint": "biome check --write .",
+    "lint:ci": "biome ci .",
     "test": "vitest run",
     "test:functional": "vitest run src/tests/functional",
     "test:watch": "vitest",

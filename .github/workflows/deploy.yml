@@ -8,6 +8,11 @@ on:
     types: [trigger-release-pipeline]
   workflow_dispatch:
 
+permissions:
+  contents: write
+  discussions: write
+  packages: write
+
 concurrency:
   group: release-pipeline
   cancel-in-progress: false

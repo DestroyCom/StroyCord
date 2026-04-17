@@ -9,7 +9,7 @@ fi
 
 message=$(tr -d '\n' < "$MSG_PATH")
 
-commit_regex='^(feat|fix|chore|ci|docs|style|refactor|test|build|perf|revert)(\([a-z0-9-]+\))?: .+$'
+commit_regex='^(feat|fix|chore|ci|docs|style|refactor|test|build|perf|revert)(\([a-z0-9-]+\))?!?: .+$'
 
 if [[ "$message" =~ $commit_regex ]]; then
   exit 0

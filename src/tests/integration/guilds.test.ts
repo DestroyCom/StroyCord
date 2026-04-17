@@ -135,6 +135,7 @@ describe('shiftSongs', () => {
     await expect(shiftSongs(GUILD_ID)).resolves.toBeDefined();
     const guild = await fetchGuild(GUILD_ID);
     expect(guild.nextSongs).toEqual([]);
+    expect(guild.previouslyPlayedSongs).toEqual([]);
   });
 });
 

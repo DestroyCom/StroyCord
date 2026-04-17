@@ -10,7 +10,7 @@ export const guild_model = mongoose.model(
     registeredAt: {
       type: Date,
       required: true,
-      default: Date.now(),
+      default: Date.now,
     },
 
     currentVoiceChannel: {

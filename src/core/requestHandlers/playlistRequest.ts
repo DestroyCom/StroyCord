@@ -25,8 +25,8 @@ export const playlistHandler = async (
         voiceChannel,
         true
       );
-    } catch (_error) {
-      console.log('error in playlistHandler');
+    } catch (e) {
+      console.error('[playlistHandler] failed to process video:', e);
     }
   }
 

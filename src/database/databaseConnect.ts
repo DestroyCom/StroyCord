@@ -13,7 +13,7 @@ export const connectToDatabase = async () => {
     });
     await emptyAllGuild();
   } catch (_error) {
-    console.log('Error connecting to database !');
-    process.exit(0);
+    console.error('Error connecting to database !', _error);
+    process.exit(1);
   }
 };

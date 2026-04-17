@@ -6,4 +6,4 @@ coverage/
 .husky/
 src/tests/
 *.log
-.env
+.env*

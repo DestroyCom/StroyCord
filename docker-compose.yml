@@ -38,7 +38,7 @@ services:
     networks:
       - stroycord-network
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "mongosh", "--username", "${MONGO_INITDB_ROOT_USERNAME:-root}", "--password", "${MONGO_INITDB_ROOT_PASSWORD:-root}", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -63,7 +63,7 @@ services:
       mongodb:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8081"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://${ME_CONFIG_BASICAUTH_USERNAME:-admin}:${ME_CONFIG_BASICAUTH_PASSWORD:-admin123}@localhost:8081"]
       interval: 30s
       timeout: 10s
       retries: 3

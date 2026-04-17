@@ -63,7 +63,13 @@ export const sendQueueEmbed = async (
 };
 
 export const sendErrorEmbed = async (guildId: string, textChannelId: string, errorMsg: string) => {
-  const guild = await client.guilds.fetch(guildId);
+  let guild: Awaited<ReturnType<typeof client.guilds.fetch>>;
+  try {
+    guild = await client.guilds.fetch(guildId);
+  } catch (e) {
+    console.error(`[messages] sendErrorEmbed: failed to fetch guild ${guildId}:`, e);
+    return;
+  }
   const messageChannel =
     (guild.channels.cache.get(textChannelId) as TextChannel | undefined) ??
     ((await guild.channels.fetch(textChannelId).catch(() => null)) as TextChannel | null);
