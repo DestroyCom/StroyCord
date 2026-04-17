@@ -11,7 +11,14 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "knip": "knip"
+    "knip": "knip",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:rebuild": "docker compose up -d --build",
+    "docker:logs": "docker compose logs -f stroycord",
+    "docker:test-env": "docker compose up -d mongodb mongo-express",
+    "docker:test-env-down": "docker compose stop mongodb mongo-express",
+    "docker:clean": "docker compose down -v"
   },
   "author": "Dest.Com",
   "license": "GPL-3.0",
