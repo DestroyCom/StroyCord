@@ -35,3 +35,10 @@ export interface MessageFormaterInterface {
   splittedMessage: string[];
   command: string;
 }
+
+export interface PlaylistInfo {
+  url: string;
+  title: string;
+  author: { name: string };
+  items: Array<{ url: string; thumbnail?: string }>;
+}
