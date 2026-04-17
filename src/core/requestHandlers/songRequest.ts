@@ -22,12 +22,9 @@ export const songRequest = async (
   await pushSongs(guildId, [parsedSong]);
   await updateVoiceChannel(guildId, parsedVoiceChannel);
 
-  if (!activePlayerGuild && !isComingFromPlaylist) {
-    await songPlayer(guildId);
-  } else if (!activePlayerGuild && isComingFromPlaylist) {
+  if (!activePlayerGuild) {
     await songPlayer(guildId);
   } else if (!isComingFromPlaylist) {
-    const isNewSong = !activePlayerGuild;
-    await sendEmbed(guildId, isNewSong, false);
+    await sendEmbed(guildId, false, false);
   }
 };
