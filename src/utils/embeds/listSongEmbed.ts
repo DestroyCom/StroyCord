@@ -1,9 +1,8 @@
-import type ytpl from '@distube/ytpl';
 import { EmbedBuilder, type User } from 'discord.js';
 import i18n from 'src/config/i18n';
 import { secrets } from 'src/config/secrets';
 
-import type { songInterface } from '../interfaces';
+import type { PlaylistInfo, songInterface } from '../interfaces';
 
 export const queueEmbed = async (nextSongs: songInterface[]): Promise<EmbedBuilder> => {
   if (nextSongs.length === 0)
@@ -54,7 +53,7 @@ export const queueEmbed = async (nextSongs: songInterface[]): Promise<EmbedBuild
     .addFields(tabEmbeds);
 };
 
-export const playlistEmbed = async (author: User, playlistData: ytpl.result): Promise<EmbedBuilder> => {
+export const playlistEmbed = async (author: User, playlistData: PlaylistInfo): Promise<EmbedBuilder> => {
   const msg = new EmbedBuilder()
     .setTitle(`${author.username} ${i18n.t('embedsText.lists.playlist.title')} !`)
     .setAuthor({

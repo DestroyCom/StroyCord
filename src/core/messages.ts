@@ -1,11 +1,10 @@
-import type ytpl from '@distube/ytpl';
 import type { TextChannel, User } from 'discord.js';
 import { client } from 'src/Bot';
 import { getFirstSong, getNextSongs } from 'src/database/queries/guilds/get';
 import { unknownError } from 'src/utils/embeds/errorsEmbed';
 import { playlistEmbed } from 'src/utils/embeds/listSongEmbed';
 import { addSongEmbed, newSongEmbed } from 'src/utils/embeds/songEmbed';
-import type { songInterface } from 'src/utils/interfaces';
+import type { PlaylistInfo, songInterface } from 'src/utils/interfaces';
 
 export const sendEmbed = async (
   guildId: string,
@@ -50,7 +49,7 @@ export const sendEmbed = async (
 
 export const sendQueueEmbed = async (
   guildId: string,
-  playlistData: ytpl.result,
+  playlistData: PlaylistInfo,
   textChannelId: string,
   author: User
 ) => {
