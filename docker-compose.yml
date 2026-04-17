@@ -14,6 +14,9 @@ services:
       DATABASE_USER: ${DATABASE_USER}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
       DATABASE_NAME: ${DATABASE_NAME:-stroycord}
+      YOUTUBE_COOKIES_PATH: ${YOUTUBE_COOKIES_PATH:-}
+    volumes:
+      - ${YOUTUBE_COOKIES_PATH_HOST:-/dev/null}:/app/cookies.txt:ro
     restart: on-failure
     networks:
       - stroycord-network
