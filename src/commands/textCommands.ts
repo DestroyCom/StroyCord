@@ -20,7 +20,7 @@ import { missingRequiredArgument, unknownError, unreconizedArgumentEmbed } from 
 import { queueEmbed } from 'src/utils/embeds/listSongEmbed';
 import { pauseEmbed, removeEmbed, resumeEmbed, skipEmbed } from 'src/utils/embeds/playerEmbeds';
 import { nowPlayingEmbed } from 'src/utils/embeds/songEmbed';
-import { yt_validate } from 'src/utils/utils';
+import { yt_validate } from 'src/utils/youtubeUtils';
 
 export const playCommand = (
   splittedMessage: string[],
