@@ -1,3 +1,4 @@
+import { Readable } from 'node:stream';
 import {
   AudioPlayerStatus,
   createAudioPlayer,
@@ -8,6 +9,7 @@ import {
 } from '@discordjs/voice';
 import { activePlayers, client } from 'src/Bot';
 import { sendErrorEmbed } from 'src/core/messages';
+import { youtubeClient } from 'src/core/youtube';
 import { emptyNextSongs, removeCurrentPlayingSong } from 'src/database/queries/guilds/delete';
 import { getCurrentVoiceChannel, getFirstSong, getNextSongs } from 'src/database/queries/guilds/get';
 import { shiftSongs } from 'src/database/queries/guilds/update';
@@ -17,7 +19,7 @@ import {
   voiceConnectionErrorListener,
 } from 'src/listeners/playerListeners';
 import type { songInterface } from 'src/utils/interfaces';
-import ytdl from 'youtube-dl-exec';
+import { extractVideoId } from 'src/utils/youtubeUtils';
 
 export const songPlayer = async (guildId: string) => {
   const voiceChannel = await getCurrentVoiceChannel(guildId);
@@ -44,20 +46,17 @@ export const songPlayer = async (guildId: string) => {
     createAudioPlayerListener(audioPlayer, guildId);
   }
 
-  const stream = ytdl.exec(nextSong.url, {
-    noCheckCertificates: true,
-    noWarnings: true,
-    preferFreeFormats: true,
-    addHeader: ['referer:youtube.com', 'user-agent:googlebot'],
-    format: 'ba',
-    output: '-',
-  }).stdout;
-
-  if (!stream) {
+  const videoId = extractVideoId(nextSong.url);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let webStream: any;
+  try {
+    webStream = await youtubeClient.download(videoId, { type: 'audio', quality: 'best' });
+  } catch {
     await sendErrorEmbed(guildId, nextSong.requestChannel, `Failed to create audio stream for: ${nextSong.title}`);
     return;
   }
 
+  const stream = Readable.fromWeb(webStream as ReadableStream<Uint8Array>);
   const audioStream = createAudioResource(stream, {
     inputType: StreamType.Arbitrary,
   });
