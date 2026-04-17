@@ -1,5 +1,6 @@
-import ytpl from '@distube/ytpl';
 import type { User, VoiceBasedChannel } from 'discord.js';
+import { youtubeClient } from 'src/core/youtube';
+import type { PlaylistInfo } from 'src/utils/interfaces';
 
 import { sendQueueEmbed } from '../messages';
 import { songRequest } from './songRequest';
@@ -11,18 +12,33 @@ export const playlistHandler = async (
   textChannelId: string,
   voiceChannel?: VoiceBasedChannel | null
 ) => {
-  const playlistData = await ytpl(url);
-  const playlistVideos = playlistData.items;
+  const playlist = await youtubeClient.getPlaylist(url);
 
-  for (let i = 0; i < playlistVideos.length; i++) {
-    const video = playlistVideos[i];
-    if (video.url === undefined) continue;
+  for (const video of playlist.videos) {
+    if (!video.id) continue;
     try {
-      await songRequest(video.url, guildId, requestAuthor, textChannelId, voiceChannel, true);
+      await songRequest(
+        `https://www.youtube.com/watch?v=${video.id}`,
+        guildId,
+        requestAuthor,
+        textChannelId,
+        voiceChannel,
+        true
+      );
     } catch (_error) {
       console.log('error in playlistHandler');
     }
   }
 
-  sendQueueEmbed(guildId, playlistData, textChannelId, requestAuthor);
+  const playlistInfo: PlaylistInfo = {
+    url,
+    title: playlist.info.title?.toString() ?? '',
+    author: { name: playlist.info.author?.name?.toString() ?? '' },
+    items: playlist.videos.map(v => ({
+      url: `https://www.youtube.com/watch?v=${v.id}`,
+      thumbnail: v.thumbnails?.[0]?.url,
+    })),
+  };
+
+  sendQueueEmbed(guildId, playlistInfo, textChannelId, requestAuthor);
 };
