@@ -1,5 +1,6 @@
-import ytdl from '@distube/ytdl-core';
 import type { Guild, InternalDiscordGatewayAdapterCreator, User, VoiceBasedChannel } from 'discord.js';
+import { youtubeClient } from 'src/core/youtube';
+import { extractVideoId } from 'src/utils/youtubeUtils';
 
 import type { songInterface } from './interfaces';
 
@@ -10,24 +11,29 @@ export const extractSongData = async (
   isQueueStart: boolean,
   isComingFromPlaylist: boolean = false
 ): Promise<songInterface> => {
-  let info: Awaited<ReturnType<typeof ytdl.getInfo>>;
+  const videoId = extractVideoId(url);
+  let info: Awaited<ReturnType<typeof youtubeClient.getBasicInfo>>;
   try {
-    info = await ytdl.getInfo(url);
+    info = await youtubeClient.getBasicInfo(videoId);
   } catch (e) {
     throw new Error(`Failed to fetch video info: ${String(e)}`);
   }
-  const rawSongData = info.videoDetails;
 
-  const title = rawSongData.title || '';
-  const videoAuthor = rawSongData.author?.name || '';
-  const minutes = Math.floor(Number(rawSongData.lengthSeconds) / 60);
-  const seconds = Number(rawSongData.lengthSeconds) % 60;
+  const b = info.basic_info;
+  const title = b.title ?? '';
+  const videoAuthor = b.author ?? '';
+  const duration = b.duration ?? 0;
+  const minutes = Math.floor(duration / 60);
+  const seconds = duration % 60;
   const formattedTime = `${minutes}:${seconds < 10 ? `0${seconds}` : seconds}`;
+  const thumbnails = b.thumbnail ?? [];
+  const thumbnail = thumbnails.length > 0 ? thumbnails[thumbnails.length - 1].url : '';
+  const videoUrl = `https://www.youtube.com/watch?v=${b.id ?? videoId}`;
 
   return {
     title,
-    url: rawSongData.video_url,
-    thumbnail: rawSongData.thumbnails[rawSongData.thumbnails.length - 1].url,
+    url: videoUrl,
+    thumbnail,
     videoAuthor,
     videoLength: minutes === 0 && seconds === 0 ? '`Livestream`' : formattedTime,
     minutes,
