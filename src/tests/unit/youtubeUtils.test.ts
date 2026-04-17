@@ -1,4 +1,4 @@
-import { yt_validate, extractVideoId, parseCookiesTxt } from 'src/utils/youtubeUtils';
+import { extractVideoId, parseCookiesTxt, yt_validate } from 'src/utils/youtubeUtils';
 import { describe, expect, it } from 'vitest';
 
 describe('yt_validate', () => {

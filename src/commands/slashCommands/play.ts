@@ -11,15 +11,19 @@ export const data = new SlashCommandBuilder()
   .addStringOption((option) => option.setName('query').setDescription('The search or youtube url !').setRequired(true));
 
 export async function execute(interaction: CommandInteraction) {
+  await interaction.deferReply();
+
   const guild = await fetchGuild(interaction.guildId!);
 
   const channel = client.channels.cache.get(interaction.channelId!);
-  if (!(channel instanceof TextChannel))
-    return interaction.reply(
+  if (!(channel instanceof TextChannel)) {
+    await interaction.editReply(
       `${i18n.t('embedsText.errors.arguments.unknown.title')} ${i18n.t(
         'embedsText.errors.arguments.textChannelNotFound'
       )} !`
     );
+    return;
+  }
 
   const textChannel = channel as TextChannel;
   //@ts-expect-error : voiceChannel is not a property of interaction.member
@@ -27,29 +31,27 @@ export async function execute(interaction: CommandInteraction) {
   //@ts-expect-error : getString is not a property of interaction.options
   const query = interaction.options.getString('query');
 
-  if (!guild)
-    return interaction.reply(
+  if (!guild) {
+    await interaction.editReply(
       `${i18n.t('embedsText.errors.arguments.unknown.title')} ${i18n.t('embedsText.errors.arguments.guildNotFound')} !`
     );
-  if (!voiceChannel)
-    return interaction.reply(
+    return;
+  }
+  if (!voiceChannel) {
+    await interaction.editReply(
       `${i18n.t('embedsText.errors.arguments.unknown.title')} ${i18n.t(
         'embedsText.errors.arguments.voiceChannelNotFound'
       )} !`
     );
-  if (!textChannel)
-    return interaction.reply(
-      `${i18n.t('embedsText.errors.arguments.unknown.title')} ${i18n.t(
-        'embedsText.errors.arguments.textChannelNotFound'
-      )} !`
-    );
-  if (!query)
-    return interaction.reply(
+    return;
+  }
+  if (!query) {
+    await interaction.editReply(
       `${i18n.t('embedsText.errors.arguments.unknown.title')} ${i18n.t('embedsText.errors.arguments.queryNotFound')} !`
     );
+    return;
+  }
 
   await playCommand(['play', query], guild.guildId, textChannel, interaction.user, voiceChannel);
-  interaction.reply(`${i18n.t('global.understood')} !`);
-  interaction.deleteReply();
-  return;
+  await interaction.deleteReply();
 }

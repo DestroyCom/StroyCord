@@ -1,6 +1,6 @@
 import type { User, VoiceBasedChannel } from 'discord.js';
-import { youtubeClient } from 'src/core/youtube';
 import { sendErrorEmbed } from 'src/core/messages';
+import { youtubeClient } from 'src/core/youtube';
 
 import { songRequest } from './songRequest';
 

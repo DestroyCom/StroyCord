@@ -34,7 +34,7 @@ export const playlistHandler = async (
     url,
     title: playlist.info.title?.toString() ?? '',
     author: { name: playlist.info.author?.name?.toString() ?? '' },
-    items: playlist.videos.map(v => ({
+    items: playlist.videos.map((v) => ({
       url: `https://www.youtube.com/watch?v=${v.id}`,
       thumbnail: v.thumbnails?.[0]?.url,
     })),

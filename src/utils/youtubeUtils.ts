@@ -41,8 +41,8 @@ export function extractVideoId(urlOrId: string): string {
 export function parseCookiesTxt(content: string): string {
   return content
     .split('\n')
-    .filter(line => line.trim() && !line.startsWith('#'))
-    .map(line => {
+    .filter((line) => line.trim() && !line.startsWith('#'))
+    .map((line) => {
       const parts = line.split('\t');
       if (parts.length >= 7) return `${parts[5].trim()}=${parts[6].trim()}`;
       return null;
