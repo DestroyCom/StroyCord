@@ -11,8 +11,11 @@ import { sendErrorEmbed } from 'src/core/messages';
 import { emptyNextSongs, removeCurrentPlayingSong } from 'src/database/queries/guilds/delete';
 import { getCurrentVoiceChannel, getFirstSong, getNextSongs } from 'src/database/queries/guilds/get';
 import { shiftSongs } from 'src/database/queries/guilds/update';
-import { voiceConnectionErrorListener } from 'src/listeners/errorListeners';
-import { createAudioPlayerListener, removeAllAudioPlayerListener } from 'src/listeners/playerListerners';
+import {
+  createAudioPlayerListener,
+  removeAllAudioPlayerListener,
+  voiceConnectionErrorListener,
+} from 'src/listeners/playerListeners';
 import type { songInterface } from 'src/utils/interfaces';
 import ytdl from 'youtube-dl-exec';
 

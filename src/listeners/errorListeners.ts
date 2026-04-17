@@ -1,11 +1,9 @@
-import { getVoiceConnection, VoiceConnectionStatus } from '@discordjs/voice';
 import { type Client, Events, type Guild } from 'discord.js';
 import { activePlayers } from 'src/Bot';
 import { remove } from 'src/core/player';
 import { emptyAllGuild, removeGuild } from 'src/database/queries/guilds/delete';
-import { shiftSongs } from 'src/database/queries/guilds/update';
 
-import { removeAllAudioPlayerListener } from './playerListerners';
+import { removeAllAudioPlayerListener } from './playerListeners';
 
 export default (client: Client): void => {
   client.on(Events.Error, async () => {
@@ -22,20 +20,5 @@ export default (client: Client): void => {
     console.log(`Bot has been kicked from ${guild.name} (id:${guild.id})`);
     await remove(guild.id);
     await removeGuild(guild.id);
-  });
-};
-
-export const voiceConnectionErrorListener = (guildId: string) => {
-  getVoiceConnection(guildId)?.on('error', async () => {
-    console.log(`An error occured in voice connection for guild ${guildId}`);
-    await remove(guildId);
-  });
-
-  getVoiceConnection(guildId)?.on('stateChange', async (_, newState) => {
-    if (newState.status === VoiceConnectionStatus.Disconnected) {
-      console.log(`Voice connection has been destroyed for guild ${guildId}`);
-      await shiftSongs(guildId);
-      await remove(guildId);
-    }
   });
 };

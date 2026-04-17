@@ -1,7 +1,7 @@
-import { AudioPlayerStatus } from '@discordjs/voice';
-import type { AudioPlayer } from '@discordjs/voice';
+import { type AudioPlayer, AudioPlayerStatus, getVoiceConnection, VoiceConnectionStatus } from '@discordjs/voice';
 import { sendEmbed } from 'src/core/messages';
 import { remove, skipSong } from 'src/core/player';
+import { shiftSongs } from 'src/database/queries/guilds/update';
 
 export const createAudioPlayerListener = (audioPlayer: AudioPlayer, guildId: string) => {
   audioPlayer.on('stateChange', async (oldState, newState) => {
@@ -14,12 +14,10 @@ export const createAudioPlayerListener = (audioPlayer: AudioPlayer, guildId: str
     }
   });
 
-  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-  audioPlayer.on('error', (error: any) => {
+  audioPlayer.on('error', (error: unknown) => {
     try {
       remove(guildId);
-      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-    } catch (errorCatch: any) {
+    } catch (errorCatch: unknown) {
       console.error('error', error);
       console.error('errorCatch', errorCatch);
     }
@@ -28,4 +26,19 @@ export const createAudioPlayerListener = (audioPlayer: AudioPlayer, guildId: str
 
 export const removeAllAudioPlayerListener = (audioPlayer: AudioPlayer) => {
   audioPlayer.removeAllListeners();
+};
+
+export const voiceConnectionErrorListener = (guildId: string) => {
+  getVoiceConnection(guildId)?.on('error', async () => {
+    console.log(`An error occured in voice connection for guild ${guildId}`);
+    await remove(guildId);
+  });
+
+  getVoiceConnection(guildId)?.on('stateChange', async (_, newState) => {
+    if (newState.status === VoiceConnectionStatus.Disconnected) {
+      console.log(`Voice connection has been destroyed for guild ${guildId}`);
+      await shiftSongs(guildId);
+      await remove(guildId);
+    }
+  });
 };
