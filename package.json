@@ -1,6 +1,6 @@
 {
   "name": "stroycord",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "engines": {
     "node": ">=24"
   },
@@ -15,6 +15,7 @@
     "test:functional": "vitest run src/tests/functional",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "changeset": "changeset",
     "knip": "knip",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
@@ -40,6 +41,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.12",
+    "@changesets/cli": "^2.30.0",
     "@types/node": "25.6.0",
     "@vitest/coverage-v8": "4.1.4",
     "knip": "6.4.1",

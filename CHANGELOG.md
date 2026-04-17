@@ -1,0 +1,23 @@
+# stroycord
+
+## 1.5.0
+
+### Minor Changes
+
+- Migrate audio streaming to yt-dlp and add operational improvements.
+
+  **Audio streaming**
+
+  - Replace youtubei.js streaming with yt-dlp subprocess — works around YouTube BotGuard/PoToken restrictions that broke WEB client streaming
+  - youtubei.js is kept for metadata only (search, playlist, video info)
+
+  **Error handling**
+
+  - Notify the Discord channel when a video is unavailable or yt-dlp fails
+  - Fix `sendErrorEmbed` to fetch channels from API when not in Discord cache
+
+  **CI & quality**
+
+  - Add functional smoke tests that hit real YouTube (youtubei.js metadata + yt-dlp stream bytes)
+  - Add weekly scheduled CI workflow (unit tests, smoke tests, build check)
+  - Update Dependabot to track current critical dependencies

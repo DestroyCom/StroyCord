@@ -17,12 +17,11 @@ jobs:
           ref: release
           fetch-depth: 0
 
-      - name: Derive tag from commit message
+      - name: Derive tag from package.json version
         id: tag
         run: |
-          MESSAGE=$(git log -1 --pretty=format:'%s')
-          TAG=$(echo "$MESSAGE" | sed -e 's/[^a-zA-Z0-9.-]/-/g')
-          echo "value=$TAG" >> "$GITHUB_OUTPUT"
+          VERSION=$(node -p "require('./package.json').version")
+          echo "value=v${VERSION}" >> "$GITHUB_OUTPUT"
 
       - name: Push tag
         run: |
