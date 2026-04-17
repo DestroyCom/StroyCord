@@ -28,3 +28,25 @@ export function yt_validate(url: string): 'playlist' | 'video' | 'search' | fals
     else return 'playlist';
   }
 }
+
+export function extractVideoId(urlOrId: string): string {
+  const url = urlOrId.trim();
+  if (url.includes('youtu.be/')) return url.split('youtu.be/')[1].split(/[?&/]/)[0];
+  if (url.includes('watch?v=')) return url.split('watch?v=')[1].split(/[?&]/)[0];
+  const pathMatch = url.match(/(?:shorts|embed|live)\/([a-zA-Z\d_-]{11,12})/);
+  if (pathMatch) return pathMatch[1];
+  return url;
+}
+
+export function parseCookiesTxt(content: string): string {
+  return content
+    .split('\n')
+    .filter(line => line.trim() && !line.startsWith('#'))
+    .map(line => {
+      const parts = line.split('\t');
+      if (parts.length >= 7) return `${parts[5].trim()}=${parts[6].trim()}`;
+      return null;
+    })
+    .filter((c): c is string => c !== null)
+    .join('; ');
+}
