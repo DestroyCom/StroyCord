@@ -1,5 +1,6 @@
 import ytsr from '@distube/ytsr';
-import type { User, VoiceBasedChannel } from 'discord.js';
+import { User, VoiceBasedChannel } from 'discord.js';
+import { sendErrorEmbed } from 'src/core/messages';
 
 import { songRequest } from './songRequest';
 
@@ -13,5 +14,10 @@ export const searchSong = async (
   const searchedVideo = await ytsr(searchInput, { limit: 1 });
   const video = searchedVideo.items[0];
 
-  songRequest(video.url, guildId, requestAuthor, textChannelId, voiceChannel);
+  if (!video) {
+    await sendErrorEmbed(guildId, textChannelId, 'No results found for: ' + searchInput);
+    return;
+  }
+
+  await songRequest(video.url, guildId, requestAuthor, textChannelId, voiceChannel);
 };

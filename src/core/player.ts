@@ -7,6 +7,7 @@ import {
   StreamType,
 } from '@discordjs/voice';
 import { activePlayers, client } from 'src/Bot';
+import { sendErrorEmbed } from 'src/core/messages';
 import { emptyNextSongs, removeCurrentPlayingSong } from 'src/database/queries/guilds/delete';
 import { getCurrentVoiceChannel, getFirstSong, getNextSongs } from 'src/database/queries/guilds/get';
 import { shiftSongs } from 'src/database/queries/guilds/update';
@@ -50,7 +51,7 @@ export const songPlayer = async (guildId: string) => {
   }).stdout;
 
   if (!stream) {
-    console.log('Stream is undefined');
+    await sendErrorEmbed(guildId, nextSong.requestChannel, 'Failed to create audio stream for: ' + nextSong.title);
     return;
   }
 

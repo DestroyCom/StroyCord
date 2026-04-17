@@ -3,7 +3,7 @@ import { activePlayers } from 'src/Bot';
 import { pushSongs, updateVoiceChannel } from 'src/database/queries/guilds/update';
 import { extractSongData, extractVoiceChannelData } from 'src/utils/utils';
 
-import { sendEmbed } from '../messages';
+import { sendEmbed, sendErrorEmbed } from '../messages';
 import { songPlayer } from '../player';
 
 export const songRequest = async (
@@ -16,15 +16,19 @@ export const songRequest = async (
 ) => {
   const activePlayerGuild = activePlayers[guildId];
 
-  const parsedSong = await extractSongData(url, requestAuthor, textChannelId, !activePlayerGuild, isComingFromPlaylist);
-  const parsedVoiceChannel = await extractVoiceChannelData(voiceChannel!);
+  try {
+    const parsedSong = await extractSongData(url, requestAuthor, textChannelId, !activePlayerGuild, isComingFromPlaylist);
+    const parsedVoiceChannel = await extractVoiceChannelData(voiceChannel!);
 
-  await pushSongs(guildId, [parsedSong]);
-  await updateVoiceChannel(guildId, parsedVoiceChannel);
+    await pushSongs(guildId, [parsedSong]);
+    await updateVoiceChannel(guildId, parsedVoiceChannel);
 
-  if (!activePlayerGuild) {
-    await songPlayer(guildId);
-  } else if (!isComingFromPlaylist) {
-    await sendEmbed(guildId, false, false);
+    if (!activePlayerGuild) {
+      await songPlayer(guildId);
+    } else if (!isComingFromPlaylist) {
+      await sendEmbed(guildId, false, false);
+    }
+  } catch (error) {
+    await sendErrorEmbed(guildId, textChannelId, String(error));
   }
 };

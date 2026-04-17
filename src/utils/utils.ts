@@ -19,7 +19,12 @@ export const extractSongData = async (
   isQueueStart: boolean,
   isComingFromPlaylist: boolean = false
 ): Promise<songInterface> => {
-  const info = await ytdl.getInfo(url);
+  let info;
+  try {
+    info = await ytdl.getInfo(url);
+  } catch (e) {
+    throw new Error(`Failed to fetch video info: ${String(e)}`);
+  }
   const rawSongData = info.videoDetails;
 
   const title = rawSongData.title || '';
