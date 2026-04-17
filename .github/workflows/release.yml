@@ -1,29 +1,29 @@
-name: Create a release
+name: Create release
 
 on:
   workflow_call:
   workflow_dispatch:
 
+permissions:
+  contents: write
+  discussions: write
+
 jobs:
-  launch_release:
+  release:
+    name: GitHub Release
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      discussions: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           ref: master
           fetch-depth: 0
-      - name: Get Latest Tag
-        id: latest_tag
-        uses: WyriHaximus/github-action-get-previous-tag@v1
-      - name: Echo latest tag
-        run: echo '${{ steps.latest_tag.outputs.tag }}'
-      - name: Release
-        uses: softprops/action-gh-release@v1
+
+      - name: Get latest tag
+        id: tag
+        run: echo "value=$(git describe --tags --abbrev=0)" >> "$GITHUB_OUTPUT"
+
+      - uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
-          tag_name: ${{ steps.latest_tag.outputs.tag }}
-          name: ${{ steps.latest_tag.outputs.tag }}
+          tag_name: ${{ steps.tag.outputs.value }}
+          name: ${{ steps.tag.outputs.value }}
