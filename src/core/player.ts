@@ -101,9 +101,7 @@ export const songPlayer = async (guildId: string) => {
       await sendErrorEmbed(
         guildId,
         nextSong.requestChannel,
-        reason
-          ? `**${nextSong.title}** — ${reason}`
-          : `Could not play **${nextSong.title}** (yt-dlp exited ${code})`
+        reason ? `**${nextSong.title}** — ${reason}` : `Could not play **${nextSong.title}** (yt-dlp exited ${code})`
       );
     }
   });

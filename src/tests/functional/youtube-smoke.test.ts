@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
 import { dirname, join } from 'node:path';
-import { Innertube } from 'youtubei.js';
 import { describe, expect, it } from 'vitest';
+import { Innertube } from 'youtubei.js';
 
 const YTDLP_BIN = join(
   dirname(require.resolve('youtube-dl-exec/package.json')),
