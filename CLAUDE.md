@@ -89,6 +89,8 @@ To add a command: create the file, export from `src/commands/slashCommands/index
 
 All user-facing strings go through `i18n.t('...')` (see `src/config/i18n.ts`). Locales are in `src/config/locales/` as JSON files (`en-US.json`, `fr-FR.json`). The active locale is set from `secrets.LANGUAGE` at startup.
 
+When adding locale keys, they must be nested at the correct JSON path — top-level keys under `errors` won't resolve if the call uses `errors.play.missing.*`. Always verify the key path matches the nesting in the JSON file.
+
 ### Path Aliases
 
 `tsconfig.json` sets `baseUrl: "./"` — imports use `src/...` absolute paths (e.g. `import { client } from 'src/Bot'`). This is resolved by `tsx` at dev time and `tsup` at build time.
@@ -100,3 +102,8 @@ Copy `.env.dist` to `.env`. Required vars: `DISCORD_TOKEN`, `DISCORD_CLIENT_ID`,
 ## Release Pipeline
 
 GitHub Actions workflows chain in order: `create_tag.yml` → `build.yml` (Docker image to DockerHub as `destcom/stroycord`) → `deploy.yml` → `release.yml`. Tags are derived from the last commit message on the `release` branch.
+
+## Gotchas
+
+- **Docker Alpine image** needs both `ffmpeg` and `python3` (`RUN apk add --no-cache ffmpeg python3`) — `python3` is required by some `youtube-dl-exec` internals.
+- **`message.delete()` in `messageListener`** — always use a `DiscordAPIError`-aware catch; silently ignore codes `10008` (Unknown Message) and `50013` (Missing Permissions), log everything else.
