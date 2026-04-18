@@ -74,7 +74,7 @@ export default (client: Client): void => {
 
     if (handled) {
       setTimeout(() => {
-        message.delete();
+        message.delete().catch(() => undefined);
       }, 1000);
     }
   });

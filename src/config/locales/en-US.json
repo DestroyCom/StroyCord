@@ -90,7 +90,11 @@
         "missing": {
           "title": "Missing Argument",
           "description": "You must specify a search or URL to start playing"
-        }
+        },
+        "voiceChannelNotFound": "The voice channel was not found",
+        "textChannelNotFound": "The text channel was not found",
+        "guildNotFound": "The guild was not found",
+        "queryNotFound": "The query was not found"
       },
       "authorPresence": {
         "title": "You must be in a voice channel to",
@@ -108,11 +112,7 @@
       },
       "unknown": {
         "title": "AN ERROR OCCURRED"
-      },
-      "textChannelNotFound": "The text channel was not found",
-      "voiceChannelNotFound": "The voice channel was not found",
-      "guildNotFound": "The guild was not found",
-      "queryNotFound": "The query was not found"
+      }
     }
   }
 }
