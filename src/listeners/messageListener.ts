@@ -1,4 +1,4 @@
-import { type Client, Events } from 'discord.js';
+import { type Client, DiscordAPIError, Events } from 'discord.js';
 import { commands } from 'src/commands/slashCommands';
 import {
   currentCommand,
@@ -74,7 +74,10 @@ export default (client: Client): void => {
 
     if (handled) {
       setTimeout(() => {
-        message.delete().catch(() => undefined);
+        message.delete().catch((error: unknown) => {
+          if (error instanceof DiscordAPIError && (error.code === 10008 || error.code === 50013)) return;
+          console.error(`[messageListener] Failed to delete message ${message.id}:`, error);
+        });
       }, 1000);
     }
   });

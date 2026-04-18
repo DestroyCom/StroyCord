@@ -91,10 +91,10 @@
           "title": "Argument manquant",
           "description": "Vous devez spécifier une recherche ou une URL pour lancer une lecture"
         },
-        "voiceChannelNotFound": "Le salon vocal n'as pas été trouvé",
-        "textChannelNotFound": "Le salon textuel n'as pas été trouvé",
-        "guildNotFound": "Le serveur n'as pas été trouvé",
-        "queryNotFound": "Aucune recherche specifiée"
+        "voiceChannelNotFound": "Le salon vocal n'a pas été trouvé",
+        "textChannelNotFound": "Le salon textuel n'a pas été trouvé",
+        "guildNotFound": "Le serveur n'a pas été trouvé",
+        "queryNotFound": "Aucune recherche spécifiée"
       },
       "authorPresence": {
         "title": "Vous devez etre dans un salon vocal pour",
