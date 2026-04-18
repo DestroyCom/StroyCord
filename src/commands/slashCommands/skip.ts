@@ -40,7 +40,7 @@ export async function execute(interaction: CommandInteraction) {
     );
 
   await skipCommand(guild.guildId, textChannel, interaction.user, voiceChannel);
-  interaction.reply(`${i18n.t('global.understood')} !`);
-  interaction.deleteReply();
+  await interaction.reply(`${i18n.t('global.understood')} !`);
+  await interaction.deleteReply();
   return;
 }
