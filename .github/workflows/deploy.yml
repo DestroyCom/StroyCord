@@ -1,9 +1,7 @@
 name: Release pipeline
 
 on:
-  push:
-    branches:
-      - release
+  workflow_call:
   repository_dispatch:
     types: [trigger-release-pipeline]
   workflow_dispatch:

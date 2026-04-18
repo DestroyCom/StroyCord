@@ -22,15 +22,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: release
+          ref: master
           fetch-depth: 0
 
-      - name: Get latest tag
+      - name: Get version from package.json
         id: latest_tag
         run: |
-          git fetch --tags --no-recurse-submodules
-          TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          echo "value=${TAG}" >> "$GITHUB_OUTPUT"
+          VERSION=$(node -p "require('./package.json').version")
+          echo "value=v${VERSION}" >> "$GITHUB_OUTPUT"
 
       - uses: docker/setup-buildx-action@v3
 

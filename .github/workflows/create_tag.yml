@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: release
+          ref: master
           fetch-depth: 0
 
       - name: Derive tag from package.json version

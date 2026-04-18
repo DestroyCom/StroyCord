@@ -14,7 +14,8 @@ permissions:
 
 jobs:
   release:
-    name: Version or publish
+    name: Open Version PR
+    if: "!startsWith(github.event.head_commit.message, 'Version Packages')"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,9 +31,12 @@ jobs:
 
       - uses: changesets/action@v1
         with:
-          # Opens a "Version Packages" PR when changesets are present.
-          # Merging that PR bumps package.json + CHANGELOG and removes the changeset files.
-          # No npm publish — this is a private bot.
           version: npx changeset version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy:
+    name: Build & release
+    if: "startsWith(github.event.head_commit.message, 'Version Packages')"
+    uses: ./.github/workflows/deploy.yml
+    secrets: inherit
