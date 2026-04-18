@@ -1,5 +1,11 @@
 # stroycord
 
+## 1.5.1
+
+### Patch Changes
+
+- c0ac7b1: Fix InteractionNotReplied crash on slash commands (skip, pause, resume, redo, current, remove, queue) by awaiting `interaction.reply()` before calling `interaction.deleteReply()`.
+
 ## 1.5.0
 
 ### Minor Changes
