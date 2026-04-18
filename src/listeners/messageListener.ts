@@ -31,6 +31,7 @@ export default (client: Client): void => {
       splittedMessage = ['play', message.content];
     }
 
+    let handled = true;
     switch (command) {
       case 'play':
       case 'p':
@@ -64,15 +65,18 @@ export default (client: Client): void => {
         redoCommand(guild.guildId, textChannel, message.author, voiceChannel);
         break;
       default:
+        handled = false;
         message.channel.send({
           embeds: [unknownRequestEmbed()],
         });
         break;
     }
 
-    setTimeout(() => {
-      message.delete();
-    }, 1000);
+    if (handled) {
+      setTimeout(() => {
+        message.delete();
+      }, 1000);
+    }
   });
 
   client.on(Events.InteractionCreate, async (interaction) => {
