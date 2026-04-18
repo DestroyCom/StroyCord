@@ -1,5 +1,11 @@
 # stroycord
 
+## 1.5.2
+
+### Patch Changes
+
+- 9a1adf1: Fix message listener processing unrelated messages when DETECT_FROM_ALL_MESSAGES is set. Parse env var as boolean properly (string "false" no longer treated as truthy). Only delete messages for recognized commands.
+
 ## 1.5.1
 
 ### Patch Changes
