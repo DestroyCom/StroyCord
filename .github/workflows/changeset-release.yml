@@ -11,6 +11,8 @@ concurrency:
 permissions:
   contents: write
   pull-requests: write
+  discussions: write
+  packages: write
 
 jobs:
   release:
