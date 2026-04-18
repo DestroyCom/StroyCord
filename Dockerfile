@@ -13,7 +13,7 @@ FROM node:24-alpine
 ENV NODE_ENV=production
 
 WORKDIR /app
-RUN apk add --no-cache ffmpeg
+RUN apk add --no-cache ffmpeg python3
 
 COPY --from=build /build/dist ./dist
 COPY --from=build /build/node_modules ./node_modules
