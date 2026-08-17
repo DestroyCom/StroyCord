@@ -38,7 +38,7 @@
     "mongodb": "7.1.1",
     "mongoose": "9.4.1",
     "youtube-dl-exec": "^3.1.12",
-    "youtubei.js": "^17.2.0"
+    "youtubei.js": "^18.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.12",
