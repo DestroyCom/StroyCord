@@ -37,7 +37,7 @@
     "libsodium-wrappers": "0.8.3",
     "mongodb": "7.1.1",
     "mongoose": "9.4.1",
-    "youtube-dl-exec": "^3.1.11",
+    "youtube-dl-exec": "^3.1.12",
     "youtubei.js": "^17.2.0"
   },
   "devDependencies": {
