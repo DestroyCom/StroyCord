@@ -1,137 +1,156 @@
-# StroyCord
+# 🎵 StroyCord
+
+A self-hosted Discord music bot that plays YouTube in your voice channels, with a queue, per-server settings and listening statistics.
+
+- ▶️ Play a YouTube link, a playlist, or just a search
+- ⚙️ Configure everything per server with `/config`, no restart needed
+- 📊 See who listens to what with `/stats`
+- 🌍 English and French
 
 ---
 
-## How to use it ?
+## 📖 Commands
 
-The bot has 4 majors commands:
-_You have to add your prefix before each command (e.g. `&p [music]`)_
+Every command works as a **slash command** (`/play`) and as a **text command** with the server prefix (`&play`, default prefix `&`). Each server can disable one of the two in `/config`.
 
-- `play [music url or music name]` is used to start playing music (or `p`).
-- `redo` is used to replay the last music played.
-- `skip` is used to skip the current music (or `s`).
-- `pause` is used to pause the current music (or `pa`).
-- `resume` is used to resume the current music (or `re`).
-- `fuckoff` disconnects the bot and stops the music playing (or `fo`).
-- `queue` display the current music queue (or `q`).
-- `current` displays the music currently playing (or `c`).
+| Command | Alias | What it does |
+| --- | --- | --- |
+| `play <url or search>` | `p` | Play a song or playlist, or add it to the queue |
+| `skip` | `s` | Skip the current song |
+| `pause` | `pa` | Pause playback |
+| `resume` | `re` | Resume playback |
+| `queue` | `q` | Show the queue |
+| `current` | `c` | Show the song currently playing |
+| `redo` | | Replay the last song played |
+| `fuckoff` | `fo` | Stop the music and leave the voice channel |
 
-Every command also exists as a slash command (`/play`, `/skip`…), plus:
+Two more commands are slash-only:
 
-- `/config` (members with the _Manage Server_ permission only) opens the server settings panel: language, text command prefix, YouTube links without prefix, channels accepting commands, queue size and songs per member (the song currently playing counts in both limits), statistics on/off. Settings are stored per server and survive restarts.
-- `/stats server|top|user` shows listening statistics: total listening time, most played songs, artists and DJs, busiest hour, per member, over 7 days, 30 days or all time.
+- **`/stats server | top | user`**: total listening time, most played songs, artists and DJs, busiest hour, per member, over 7 days, 30 days or all time.
+- **`/config`** (members with the *Manage Server* permission only): opens the settings panel of the server.
 
----
+> 💡 When *YouTube links without prefix* is enabled, posting a bare YouTube link is enough to play it.
 
-## Deploys
+### ⚙️ What `/config` can change
 
-**You will need a _Discord Developper Application_ !!**
+| Setting | Default |
+| --- | --- |
+| Language (`en-US`, `fr-FR`) | `LANGUAGE` from `.env` |
+| Text command prefix | `PREFIX` from `.env` |
+| Accepted commands: prefix & slash, prefix only, slash only | both |
+| Channels accepting commands | all channels |
+| Bot replies channel | the channel of the command |
+| Bot replies (now playing, added, skip…). Queue, current song and errors are always shown | on |
+| Play bare YouTube links without prefix | `DETECT_FROM_ALL_MESSAGES` from `.env` |
+| Queue size, current song included (max 500) | `MAX_QUEUE_SIZE` from `.env` |
+| Songs per member, current song included | unlimited |
+| Listening statistics | on |
+| Blocked roles: members with these roles get no answer at all (admins keep `/config`) | none |
 
-### Deploy with docker and docker-compose
-
-#### Launch with a new mongodb server, a mongodb explorer
-
-- Clone the repository
-- Rename the file `.env.dist` to `.env` and fill it with the corrects informations.
-- Then simply pull the repository and run `docker-compose up -d` in the root folder.
-
-### Launch with a custom docker config
-
-- Clone the repository
-- Rename the file `.env.dist` to `.env` and fill it with the corrects informations.
-- Create your own `docker-compose.yml`.
-- Then simply pull the repository and run `docker-compose up -d` in the root folder.
-
-### Deploy on localhost
-
-_You will need a mongodb server_
-You can start this project in a few steps :
-
-- Clone this directory,
-- run the command npm install,
-- Then rename the file '.env.dist' into '.env',
-- Once you have your accounts and the keys, replace the variables in the '.env' with your own.
-
-You can now launch it with the command:
-
-- `npm run build` to compile the bot
-  then `npm run start` to start the bot
-- `npm run dev` to start the bot in watch mode
+Settings are stored per server and survive restarts.
 
 ---
 
-#### ENVIRONMENT VARIABLES
+## 🚀 Getting started
 
-| VARIABLE                   | REQUIRED | DEFAULT        | USED ONLY FOR DOCKER | DESCRIPTION                                               |
-| -------------------------- | -------- | -------------- | -------------------- | --------------------------------------------------------- |
-| DISCORD_TOKEN              | TRUE     |                | FALSE                | string - Your discord app token                           |
-| DISCORD_CLIENT_ID          | TRUE     |                | FALSE                | string - Your discord client id                           |
-| PREFIX                     | FALSE    | &              | FALSE                | string - Default bot prefix (each server can change it with /config) |
-| DETECT_FROM_ALL_MESSAGES   | FALSE    | false          | FALSE                | boolean - Default for playing bare YouTube links without prefix (/config) |
-| MAX_QUEUE_SIZE             | FALSE    | 100            | FALSE                | number - Default queue size, current song included (/config, max 500) |
-| -------------------------- | -------- | ------------   | -------------------- | ------------------------------------------                |
-| DATABASE_CONNECTION_STRING | TRUE     |                | FALSE                | string - Your mongodb uri string                          |
-| DATABASE_USER              | TRUE     |                | FALSE                | string - Your mongodb user name                           |
-| DATABASE_PASSWORD          | TRUE     |                | FALSE                | string - Your mongodb user password                       |
-| DATABASE_NAME              | FALSE    | stroycord      | FALSE                | string - Your mongodb database name                       |
-| STROYCORD_LOGO             | FALSE    | StroyCord Logo | FALSE                | string - The avatar url you want to give to the bot       |
-| LANGUAGE                   | FALSE    | en-US          | FALSE                | string - Default bot language, `en-US` or `fr-FR` (/config) |
-| -------------------------- | -------- | ------------   | -------------------- | ------------------------------------------                |
-| LOG_DIR                    | FALSE    | /log           | TRUE                 | string - Your logging directory path use for docker       |
-| TIMEZONE                   | FALSE    | Europe/Paris   | FALSE                | string - Timezone of the busiest hour in /stats |
-| DOCKER_DATABASE_CONNECTION_STRING | FALSE | mongodb://mongodb:27017 | TRUE | string - Mongodb uri used by the bot container (replaces DATABASE_CONNECTION_STRING in compose) |
-| -------------------------- | -------- | ------------   | -------------------- | ------------------------------------------                |
-| YOUTUBE_COOKIES_PATH       | FALSE    |                | FALSE                | string - Netscape cookies.txt used by yt-dlp (age-restricted videos) |
-| BGUTIL_BASE_URL            | FALSE    | http://bgutil-provider:4416 (compose) | FALSE | string - bgutil PoToken provider URL used by yt-dlp |
-| GLITCHTIP_DSN              | FALSE    |                | FALSE                | string - GlitchTip project DSN, enables error reporting    |
-| GLITCHTIP_ENVIRONMENT      | FALSE    | NODE_ENV       | FALSE                | string - Environment name shown in GlitchTip              |
-| GLITCHTIP_RELEASE          | FALSE    |                | FALSE                | string - Release name shown in GlitchTip                  |
+You need a [Discord application](https://discord.com/developers/applications) with a bot token.
 
+### 🐳 With Docker (recommended)
 
----
+The compose stack starts the bot, MongoDB, [mongo-express](http://localhost:8081) (database UI) and the YouTube PoToken provider.
 
-
-#### Docker compose configuration
-
-```yaml
-services:
-  stroycord:
-    container_name: stroycord
-    image: destcom/stroycord:latest
-    build:
-      context: .
-      dockerfile: StroyCord.Dockerfile
-    environment:
-      DISCORD_TOKEN: ${DISCORD_TOKEN}
-      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
-      PREFIX: ${PREFIX}
-      LANGUAGE: ${LANGUAGE}
-      LOG_DIR: ${LOG_DIR:-./logs}
-      TIMEZONE: ${TIMEZONE:-Europe/Paris}
-      DATABASE_CONNECTION_STRING: ${DOCKER_DATABASE_CONNECTION_STRING:-mongodb://mongodb:27017}
-      DATABASE_USER: ${DATABASE_USER}
-      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-      DATABASE_NAME: ${DATABASE_NAME}
-    restart: on-failure
-    volumes:
-      - ${LOG_DIR:-./logs}:/app/logs
-    networks:
-      - default
-    depends_on:
-      - mongodb
-  mongodb:
-    container_name: mongodb
-    image: mongo:latest
-    restart: on-failure
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-root}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-root}
-    ports:
-      - ${MONGO_PORT:-27017}:27017
-    volumes:
-      - ${MONGO_DATA_DIR:-./mongo/data/db}:/data/db
-    networks:
-      - default
+```bash
+git clone https://github.com/DestroyCom/StroyCord.git
+cd StroyCord
+cp .env.dist .env   # then fill in the required variables
+docker compose up -d
 ```
 
-_This repo was previously JE REVIENS OF DEVILKING_
+<details>
+<summary>Handy commands (<code>make</code> or <code>npm</code>)</summary>
+
+| Make | npm | What it does |
+| --- | --- | --- |
+| `make up` | `npm run docker:up` | Start the full stack |
+| `make rebuild` | `npm run docker:rebuild` | Rebuild the image and restart |
+| `make logs` | `npm run docker:logs` | Follow the bot logs |
+| `make down` | `npm run docker:down` | Stop the stack |
+| `make test-env` | `npm run docker:test-env` | Start MongoDB + mongo-express only, for local dev |
+| `make clean` | `npm run docker:clean` | Stop and **delete all data** |
+
+On Windows, run `make` from Git Bash, or use the npm column.
+
+</details>
+
+### 💻 Locally
+
+Requires Node.js 24, `ffmpeg` and a MongoDB server (`make test-env` starts one with Docker).
+
+```bash
+npm install
+cp .env.dist .env   # then fill in the required variables
+npm run dev         # watch mode
+```
+
+For production: `npm run build`, then `npm run start`.
+
+---
+
+## 🔧 Environment variables
+
+### Required
+
+| Variable | Description |
+| --- | --- |
+| `DISCORD_TOKEN` | Your Discord bot token |
+| `DISCORD_CLIENT_ID` | Your Discord application ID |
+| `DATABASE_CONNECTION_STRING` | MongoDB URI, e.g. `mongodb://localhost:27017` |
+| `DATABASE_USER` | MongoDB user |
+| `DATABASE_PASSWORD` | MongoDB password |
+
+### Server defaults (each server can override them with `/config`)
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `PREFIX` | `&` | Text command prefix |
+| `LANGUAGE` | `en-US` | `en-US` or `fr-FR` |
+| `DETECT_FROM_ALL_MESSAGES` | `false` | Play bare YouTube links posted without prefix |
+| `MAX_QUEUE_SIZE` | `100` | Queue size, current song included (max 500) |
+
+### Optional
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `DATABASE_NAME` | `stroycord` | MongoDB database name |
+| `STROYCORD_LOGO` | StroyCord logo | Image URL used in the embeds |
+| `TIMEZONE` | `Europe/Paris` | Timezone of the busiest hour in `/stats` |
+| `LOG_DIR` | `./logs` | Log directory |
+| `YOUTUBE_COOKIES_PATH` | | YouTube `cookies.txt` (Netscape format), for age-restricted videos |
+| `BGUTIL_BASE_URL` | `http://bgutil-provider:4416` in Docker | YouTube PoToken provider URL |
+| `GLITCHTIP_DSN` | | Enables error reporting to GlitchTip |
+| `GLITCHTIP_ENVIRONMENT` | `production` | Environment shown in GlitchTip |
+| `GLITCHTIP_RELEASE` | | Release shown in GlitchTip |
+
+### Docker only
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `DOCKER_DATABASE_CONNECTION_STRING` | `mongodb://mongodb:27017` | MongoDB URI used by the bot container. It replaces `DATABASE_CONNECTION_STRING`, which can then keep a `localhost` URI for `npm run dev` |
+| `MONGO_INITDB_ROOT_USERNAME` / `MONGO_INITDB_ROOT_PASSWORD` | `root` / `root` | MongoDB root account |
+| `MONGOEXPRESS_BASIC_AUTH_USERNAME` / `MONGOEXPRESS_BASIC_AUTH_PASSWORD` | `admin` / `admin123` | mongo-express login |
+| `MONGO_PORT` | `27017` | MongoDB port exposed on the host |
+
+---
+
+## 🧪 Development
+
+```bash
+npm test               # Vitest
+npm run test:coverage  # with coverage
+npm run lint           # Biome, with auto-fix
+npm run knip           # unused exports and files
+```
+
+---
+
+<sub>This repo was previously <i>JE REVIENS</i> by DEVILKING.</sub>
