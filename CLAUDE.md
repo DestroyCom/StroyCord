@@ -114,4 +114,5 @@ GitHub Actions workflows chain in order: `create_tag.yml` → `build.yml` (Docke
 ## Gotchas
 
 - **Docker Alpine image** needs `ffmpeg`, `python3` and `py3-pip` — yt-dlp is a pip install (see yt-dlp section). The build stage sets `YOUTUBE_DL_SKIP_DOWNLOAD=true` (youtube-dl-exec's postinstall hits GitHub API rate limits); do the same locally if `npm ci` fails on it.
+- **Opus encoder** — `@discordjs/opus` is an `optionalDependency`: it has no prebuilt binary for Node 24 on Alpine and its source build fails on arm64 (Apple Silicon / OrbStack). When it can't install, `prism-media` falls back to `opusscript` (pure JS/WASM, pinned to `0.0.8` to match prism-media's peer range). Don't move `@discordjs/opus` back to `dependencies`.
 - **`message.delete()` in `messageListener`** — always use a `DiscordAPIError`-aware catch; silently ignore codes `10008` (Unknown Message) and `50013` (Missing Permissions), log everything else.
