@@ -1,5 +1,4 @@
-import { type Client, DiscordAPIError, Events } from 'discord.js';
-import { commands } from 'src/commands/slashCommands';
+import { type Client, DiscordAPIError, Events, type Message } from 'discord.js';
 import {
   currentCommand,
   pauseCommand,
@@ -10,99 +9,101 @@ import {
   resumeCommand,
   skipCommand,
 } from 'src/commands/textCommands';
+import { runWithSettings } from 'src/config/guildContext';
 import { captureError } from 'src/config/monitoring';
-import { secrets } from 'src/config/secrets';
+import { isChannelAllowed } from 'src/config/settings';
+import { getGuildSettings } from 'src/core/settings';
 import { fetchGuild } from 'src/database/queries/guilds/get';
-import { unknownError, unknownRequestEmbed } from 'src/utils/embeds/errorsEmbed';
+import { unknownRequestEmbed } from 'src/utils/embeds/errorsEmbed';
 import { messageFormater } from 'src/utils/messageUtils';
 import { yt_validate } from 'src/utils/youtubeUtils';
 
+const isYoutubeLink = (content: string) => {
+  const trimmed = content.trim();
+  if (!/^https?:\/\//.test(trimmed)) return false;
+  const type = yt_validate(trimmed);
+  return type === 'video' || type === 'playlist';
+};
+
+const handleTextCommand = async (message: Message<true>, prefix: string, isBareLink: boolean) => {
+  const guild = await fetchGuild(message.guildId);
+  const voiceChannel = message.member?.voice.channel;
+  const textChannel = message.channel;
+  let { command, splittedMessage } = messageFormater(message.content, prefix);
+
+  if (isBareLink) {
+    command = 'play';
+    splittedMessage = ['play', message.content.trim()];
+  }
+
+  let handled = true;
+  switch (command) {
+    case 'play':
+    case 'p':
+      playCommand(splittedMessage, guild.guildId, textChannel, message.author, voiceChannel);
+      break;
+    case 'skip':
+    case 's':
+      skipCommand(guild.guildId, textChannel, message.author, voiceChannel);
+      break;
+    case 'fuckoff':
+    case 'fo':
+      removeCommand(guild.guildId, textChannel, message.author, voiceChannel);
+      break;
+    case 'pause':
+    case 'pa':
+      pauseCommand(guild.guildId, textChannel, message.author, voiceChannel);
+      break;
+    case 'resume':
+    case 're':
+      resumeCommand(guild.guildId, textChannel, message.author, voiceChannel);
+      break;
+    case 'queue':
+    case 'q':
+      queueCommand(guild.guildId, textChannel, message.author, voiceChannel);
+      break;
+    case 'c':
+    case 'current':
+      currentCommand(guild.guildId, textChannel, voiceChannel);
+      break;
+    case 'redo':
+      redoCommand(guild.guildId, textChannel, message.author, voiceChannel);
+      break;
+    default:
+      handled = false;
+      message.channel.send({
+        embeds: [unknownRequestEmbed()],
+      });
+      break;
+  }
+
+  if (handled) {
+    setTimeout(() => {
+      message.delete().catch((error: unknown) => {
+        if (error instanceof DiscordAPIError && (error.code === 10008 || error.code === 50013)) return;
+        console.error(`[messageListener] Failed to delete message ${message.id}:`, error);
+      });
+    }, 1000);
+  }
+};
+
 export default (client: Client): void => {
   client.on(Events.MessageCreate, async (message) => {
-    if (message.author.bot) return;
-    if (!secrets.DETECT_FROM_ALL_MESSAGES && !message.content.startsWith(secrets.PREFIX)) return;
+    if (message.author.bot || !message.inGuild()) return;
 
-    const guild = await fetchGuild(message.guildId!);
-    const voiceChannel = message.member?.voice.channel;
-    const textChannel = message.channel;
-    let { command, splittedMessage } = messageFormater(message.content);
+    try {
+      const settings = await getGuildSettings(message.guildId);
+      const hasPrefix = message.content.startsWith(settings.prefix);
+      // Without the prefix, only a bare YouTube link is a request (and only if the guild enabled it)
+      const isBareLink = !hasPrefix && settings.detectFromAllMessages && isYoutubeLink(message.content);
+      if (!hasPrefix && !isBareLink) return;
+      // Outside the allowed channels, stay silent: answering would be the flood the restriction prevents
+      if (!isChannelAllowed(settings, message.channelId, message.channel.parentId)) return;
 
-    if (yt_validate(message.content) && !message.content.startsWith(secrets.PREFIX)) {
-      command = 'play';
-      splittedMessage = ['play', message.content];
-    }
-
-    let handled = true;
-    switch (command) {
-      case 'play':
-      case 'p':
-        playCommand(splittedMessage, guild.guildId, textChannel, message.author, voiceChannel);
-        break;
-      case 'skip':
-      case 's':
-        skipCommand(guild.guildId, textChannel, message.author, voiceChannel);
-        break;
-      case 'fuckoff':
-      case 'fo':
-        removeCommand(guild.guildId, textChannel, message.author, voiceChannel);
-        break;
-      case 'pause':
-      case 'pa':
-        pauseCommand(guild.guildId, textChannel, message.author, voiceChannel);
-        break;
-      case 'resume':
-      case 're':
-        resumeCommand(guild.guildId, textChannel, message.author, voiceChannel);
-        break;
-      case 'queue':
-      case 'q':
-        queueCommand(guild.guildId, textChannel, message.author, voiceChannel);
-        break;
-      case 'c':
-      case 'current':
-        currentCommand(guild.guildId, textChannel, voiceChannel);
-        break;
-      case 'redo':
-        redoCommand(guild.guildId, textChannel, message.author, voiceChannel);
-        break;
-      default:
-        handled = false;
-        message.channel.send({
-          embeds: [unknownRequestEmbed()],
-        });
-        break;
-    }
-
-    if (handled) {
-      setTimeout(() => {
-        message.delete().catch((error: unknown) => {
-          if (error instanceof DiscordAPIError && (error.code === 10008 || error.code === 50013)) return;
-          console.error(`[messageListener] Failed to delete message ${message.id}:`, error);
-        });
-      }, 1000);
-    }
-  });
-
-  client.on(Events.InteractionCreate, async (interaction) => {
-    if (!interaction.isChatInputCommand()) {
-      return;
-    }
-    const { commandName } = interaction;
-    if (commands[commandName as keyof typeof commands]) {
-      try {
-        await commands[commandName as keyof typeof commands].execute(interaction);
-      } catch (error) {
-        console.error(`[interaction] /${commandName} failed:`, error);
-        captureError(error, { guildId: interaction.guildId ?? undefined, command: commandName });
-        // Tell the user instead of leaving the interaction unanswered ("The application did not respond")
-        const response = { embeds: [unknownError(`\`/${commandName}\` failed: ${String(error)}`)] };
-        const send = interaction.deferred
-          ? interaction.editReply(response)
-          : interaction.replied
-            ? interaction.followUp(response)
-            : interaction.reply(response);
-        await send.catch((e: unknown) => console.error(`[interaction] /${commandName} error reply failed:`, e));
-      }
+      await runWithSettings(settings, () => handleTextCommand(message, settings.prefix, isBareLink));
+    } catch (error) {
+      console.error('[messageListener] failed to handle message:', error);
+      captureError(error, { guildId: message.guildId, step: 'messageCreate' });
     }
   });
 };

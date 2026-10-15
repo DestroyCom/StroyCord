@@ -1,5 +1,6 @@
 import { EmbedBuilder } from 'discord.js';
 import { client } from 'src/Bot';
+import { getPrefix } from 'src/config/guildContext';
 import i18n from 'src/config/i18n';
 import { secrets } from 'src/config/secrets';
 
@@ -69,7 +70,7 @@ export const newSongEmbed = (song: songInterface): EmbedBuilder => {
       },
       {
         name: `${i18n.t('embedsText.global.findWith')} :`,
-        value: `${secrets.PREFIX}p ${song.url}`,
+        value: `${getPrefix()}p ${song.url}`,
         inline: true,
       },
       {
@@ -110,7 +111,7 @@ export const addSongEmbed = (song: songInterface): EmbedBuilder => {
       },
       {
         name: `${i18n.t('embedsText.global.findWith')} :`,
-        value: `${secrets.PREFIX}p ${song.url}`,
+        value: `${getPrefix()}p ${song.url}`,
         inline: true,
       },
       {

@@ -13,6 +13,8 @@ const {
   STROYCORD_LOGO = 'https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png',
   LANGUAGE = 'en-US',
   DETECT_FROM_ALL_MESSAGES,
+  MAX_QUEUE_SIZE,
+  TIMEZONE = 'Europe/Paris',
 } = process.env;
 
 if (!DISCORD_TOKEN) throw new Error('No token provided');
@@ -31,6 +33,15 @@ if (!DATABASE_NAME) throw new Error('No database name provided');
 
 if (!STROYCORD_LOGO) throw new Error('No logo provided');
 
+function isValidTimeZone(timeZone: string) {
+  try {
+    new Intl.DateTimeFormat('en', { timeZone });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export const secrets = {
   DISCORD_TOKEN,
   DISCORD_CLIENT_ID,
@@ -42,4 +53,8 @@ export const secrets = {
   STROYCORD_LOGO,
   LANGUAGE,
   DETECT_FROM_ALL_MESSAGES: DETECT_FROM_ALL_MESSAGES === 'true',
+  // Default queue limit for guilds that didn't set one with /config
+  MAX_QUEUE_SIZE: Number.parseInt(MAX_QUEUE_SIZE ?? '', 10) || 100,
+  // Used to compute the busiest hour in /stats
+  TIMEZONE: isValidTimeZone(TIMEZONE) ? TIMEZONE : 'UTC',
 };

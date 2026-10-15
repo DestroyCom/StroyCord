@@ -114,5 +114,8 @@
         "title": "AN ERROR OCCURRED"
       }
     }
+  },
+  "channels": {
+    "notAllowed": "Commands are only accepted in:"
   }
 }

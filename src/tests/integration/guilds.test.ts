@@ -158,7 +158,9 @@ describe('play history', () => {
     for (let i = 0; i < songs.length; i++) await shiftSongs(GUILD_ID);
     const guild = await fetchGuild(GUILD_ID);
     expect(guild.previouslyPlayedSongs).toHaveLength(HISTORY_SIZE);
-    expect((guild.previouslyPlayedSongs?.at(-1) as ReturnType<typeof mockSong> | undefined)?.title).toBe(`s${HISTORY_SIZE + 4}`);
+    expect((guild.previouslyPlayedSongs?.at(-1) as ReturnType<typeof mockSong> | undefined)?.title).toBe(
+      `s${HISTORY_SIZE + 4}`
+    );
   });
 });
 

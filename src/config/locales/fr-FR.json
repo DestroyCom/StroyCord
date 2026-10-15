@@ -114,5 +114,8 @@
         "title": "UNE ERREUR S'EST PRODUITE"
       }
     }
+  },
+  "channels": {
+    "notAllowed": "Les commandes ne sont acceptées que dans :"
   }
 }
