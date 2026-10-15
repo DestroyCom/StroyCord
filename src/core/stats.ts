@@ -6,7 +6,7 @@ import type { songInterface } from 'src/utils/interfaces';
 import { extractVideoId } from 'src/utils/youtubeUtils';
 
 // Shorter plays are failed starts or instant skips: they would skew "most played"
-export const MIN_LISTEN_MS = 5000;
+const MIN_LISTEN_MS = 5000;
 // Below this share of the video, the song counts as skipped
 const SKIP_THRESHOLD = 0.9;
 

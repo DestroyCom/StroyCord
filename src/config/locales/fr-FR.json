@@ -186,5 +186,42 @@
       "settingsReset": "Réglages réinitialisés",
       "statsReset": "Statistiques supprimées"
     }
+  },
+  "stats": {
+    "disabled": "Les statistiques sont désactivées sur ce serveur (un admin peut les activer avec /config).",
+    "empty": "Aucune écoute enregistrée sur cette période. Lancez de la musique !",
+    "userDescription": "Titres demandés par ce membre.",
+    "units": {
+      "days": "j",
+      "hours": "h",
+      "minutes": "min",
+      "play": "écoute",
+      "plays": "écoutes"
+    },
+    "periods": {
+      "7d": "7 derniers jours",
+      "30d": "30 derniers jours",
+      "all": "Depuis le début"
+    },
+    "titles": {
+      "server": "Stats d'écoute de",
+      "user": "Stats d'écoute de",
+      "top": {
+        "tracks": "Titres les plus joués",
+        "artists": "Artistes les plus joués",
+        "djs": "Top DJs (titres ajoutés)"
+      }
+    },
+    "fields": {
+      "listeningTime": "Temps d'écoute",
+      "plays": "Écoutes",
+      "uniqueTracks": "Titres différents",
+      "skipRate": "Taux de skip",
+      "peakHour": "Heure la plus active",
+      "topTrack": "Titre le plus joué",
+      "topArtist": "Artiste préféré",
+      "topDj": "Top DJ",
+      "favoriteTracks": "Titres préférés"
+    }
   }
 }

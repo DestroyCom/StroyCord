@@ -7,6 +7,7 @@ import * as redo from './redo';
 import * as remove from './remove';
 import * as resume from './resume';
 import * as skip from './skip';
+import * as stats from './stats';
 
 export const commands = {
   play,
@@ -18,4 +19,5 @@ export const commands = {
   current,
   redo,
   config,
+  stats,
 };

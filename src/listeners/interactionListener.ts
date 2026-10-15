@@ -1,6 +1,7 @@
 import { type ChatInputCommandInteraction, type Client, Events, type Interaction, MessageFlags } from 'discord.js';
 import { commands } from 'src/commands/slashCommands';
 import { handleConfigInteraction } from 'src/commands/slashCommands/config';
+import { handleStatsInteraction } from 'src/commands/slashCommands/stats';
 import { runWithSettings } from 'src/config/guildContext';
 import i18n from 'src/config/i18n';
 import { captureError } from 'src/config/monitoring';
@@ -60,6 +61,9 @@ export default (client: Client): void => {
         else if (interaction.isMessageComponent() || interaction.isModalSubmit()) {
           // Components are routed by customId prefix, without collectors: panels keep working after a restart
           if (interaction.customId.startsWith('cfg:')) await handleConfigInteraction(interaction);
+          else if (interaction.customId.startsWith('stats:') && interaction.isButton()) {
+            await handleStatsInteraction(interaction);
+          }
         }
       });
     } catch (error) {
