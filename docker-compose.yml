@@ -10,7 +10,9 @@ services:
       DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
       PREFIX: ${PREFIX:-&}
       LANGUAGE: ${LANGUAGE:-en-US}
-      DATABASE_CONNECTION_STRING: ${DATABASE_CONNECTION_STRING:-mongodb://mongodb:27017}
+      # Separate var so .env can keep a localhost URI for `npm run dev`: inside the
+      # container, localhost is the bot itself, not the mongodb service
+      DATABASE_CONNECTION_STRING: ${DOCKER_DATABASE_CONNECTION_STRING:-mongodb://mongodb:27017}
       DATABASE_USER: ${DATABASE_USER}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
       DATABASE_NAME: ${DATABASE_NAME:-stroycord}
