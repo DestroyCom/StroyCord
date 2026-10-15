@@ -33,7 +33,8 @@ services:
   # YouTube PoToken provider used by the yt-dlp bgutil plugin (same as StroyGetter)
   bgutil-provider:
     container_name: bgutil-provider
-    image: brainicism/bgutil-ytdlp-pot-provider:latest
+    # Keep in sync with BGUTIL_VERSION in the Dockerfile (plugin and server must match)
+    image: brainicism/bgutil-ytdlp-pot-provider:2.0.2
     restart: unless-stopped
     networks:
       - stroycord-network
