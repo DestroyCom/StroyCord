@@ -1,5 +1,6 @@
 import { type ChatInputCommandInteraction, type Client, Events, type Interaction, MessageFlags } from 'discord.js';
 import { commands } from 'src/commands/slashCommands';
+import { handleConfigInteraction } from 'src/commands/slashCommands/config';
 import { runWithSettings } from 'src/config/guildContext';
 import i18n from 'src/config/i18n';
 import { captureError } from 'src/config/monitoring';
@@ -31,12 +32,14 @@ const handleChatInput = async (interaction: ChatInputCommandInteraction<'cached'
 const replyWithError = async (interaction: Interaction, label: string, error: unknown) => {
   if (!interaction.isRepliable()) return;
   // Tell the user instead of leaving the interaction unanswered ("The application did not respond")
-  const response = { embeds: [unknownError(`\`${label}\` failed: ${String(error)}`)] };
+  const embeds = [unknownError(`\`${label}\` failed: ${String(error)}`)];
+  // Components belong to ephemeral panels: keep the error private too
+  const flags = interaction.isChatInputCommand() ? undefined : MessageFlags.Ephemeral;
   const send = interaction.deferred
-    ? interaction.editReply(response)
+    ? interaction.editReply({ embeds })
     : interaction.replied
-      ? interaction.followUp(response)
-      : interaction.reply(response);
+      ? interaction.followUp({ embeds, flags })
+      : interaction.reply({ embeds, flags });
   await send.catch((e: unknown) => console.error(`[interaction] ${label} error reply failed:`, e));
 };
 
@@ -54,6 +57,10 @@ export default (client: Client): void => {
       const settings = await getGuildSettings(interaction.guildId);
       await runWithSettings(settings, async () => {
         if (interaction.isChatInputCommand()) await handleChatInput(interaction, settings);
+        else if (interaction.isMessageComponent() || interaction.isModalSubmit()) {
+          // Components are routed by customId prefix, without collectors: panels keep working after a restart
+          if (interaction.customId.startsWith('cfg:')) await handleConfigInteraction(interaction);
+        }
       });
     } catch (error) {
       console.error(`[interaction] ${label} failed:`, error);

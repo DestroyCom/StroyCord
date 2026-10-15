@@ -132,5 +132,59 @@
       "queueFull": "queue full",
       "userLimit": "per-member limit reached"
     }
+  },
+  "config": {
+    "title": "StroyCord configuration",
+    "description": "Settings for this server. Values marked *(default)* follow the bot instance configuration.",
+    "default": "default",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "unlimited": "Unlimited",
+    "channelsPlaceholder": "Command channels (none selected = all channels)",
+    "fields": {
+      "prefix": "Text command prefix",
+      "language": "Language",
+      "detect": "YouTube links without prefix",
+      "channels": "Channels accepting commands",
+      "allChannels": "All channels",
+      "maxQueueSize": "Queue size (current song included)",
+      "maxSongsPerUser": "Songs per member (current incl.)",
+      "stats": "Listening statistics"
+    },
+    "buttons": {
+      "edit": "Prefix & limits",
+      "detect": "Links without prefix",
+      "stats": "Statistics",
+      "resetSettings": "Reset settings",
+      "resetStats": "Delete statistics",
+      "confirm": "Confirm",
+      "cancel": "Cancel"
+    },
+    "confirm": {
+      "settings": {
+        "title": "Reset all settings?",
+        "description": "Every setting goes back to the bot instance defaults. Statistics are kept."
+      },
+      "stats": {
+        "title": "Delete all statistics?",
+        "description": "Every recorded listen of this server is permanently deleted. This cannot be undone."
+      }
+    },
+    "modal": {
+      "title": "Prefix & queue limits",
+      "prefixHint": "1 to 5 characters, no space, not starting with /. Empty = default.",
+      "maxQueueSizeHint": "Songs in the queue, current song included (1–%{max}). Empty = default.",
+      "maxSongsPerUserHint": "Songs per member, current song included (0–%{max}). Empty or 0 = unlimited."
+    },
+    "errors": {
+      "forbidden": "Only members with the \"Manage Server\" permission can change the configuration.",
+      "prefix": "The prefix must be 1 to 5 characters, without spaces, and cannot start with /.",
+      "limit": "Limits must be whole numbers within the allowed range."
+    },
+    "notices": {
+      "saved": "Settings saved",
+      "settingsReset": "Settings reset to defaults",
+      "statsReset": "Statistics deleted"
+    }
   }
 }

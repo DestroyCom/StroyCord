@@ -1,3 +1,4 @@
+import * as config from './config';
 import * as current from './current';
 import * as pause from './pause';
 import * as play from './play';
@@ -16,4 +17,5 @@ export const commands = {
   queue,
   current,
   redo,
+  config,
 };

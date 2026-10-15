@@ -132,5 +132,59 @@
       "queueFull": "file pleine",
       "userLimit": "limite par membre atteinte"
     }
+  },
+  "config": {
+    "title": "Configuration de StroyCord",
+    "description": "Réglages de ce serveur. Les valeurs marquées *(par défaut)* suivent la configuration de l'instance du bot.",
+    "default": "par défaut",
+    "enabled": "Activé",
+    "disabled": "Désactivé",
+    "unlimited": "Illimité",
+    "channelsPlaceholder": "Salons des commandes (aucun sélectionné = tous)",
+    "fields": {
+      "prefix": "Préfixe des commandes texte",
+      "language": "Langue",
+      "detect": "Liens YouTube sans préfixe",
+      "channels": "Salons acceptant les commandes",
+      "allChannels": "Tous les salons",
+      "maxQueueSize": "Taille de la file (titre en cours inclus)",
+      "maxSongsPerUser": "Titres par membre (en cours inclus)",
+      "stats": "Statistiques d'écoute"
+    },
+    "buttons": {
+      "edit": "Préfixe & limites",
+      "detect": "Liens sans préfixe",
+      "stats": "Statistiques",
+      "resetSettings": "Réinitialiser les réglages",
+      "resetStats": "Supprimer les statistiques",
+      "confirm": "Confirmer",
+      "cancel": "Annuler"
+    },
+    "confirm": {
+      "settings": {
+        "title": "Réinitialiser tous les réglages ?",
+        "description": "Tous les réglages reviennent aux valeurs par défaut de l'instance. Les statistiques sont conservées."
+      },
+      "stats": {
+        "title": "Supprimer toutes les statistiques ?",
+        "description": "Toutes les écoutes enregistrées sur ce serveur sont définitivement supprimées. Impossible de revenir en arrière."
+      }
+    },
+    "modal": {
+      "title": "Préfixe & limites de la file",
+      "prefixHint": "1 à 5 caractères, sans espace, sans / au début. Vide = par défaut.",
+      "maxQueueSizeHint": "Titres dans la file, titre en cours inclus (1–%{max}). Vide = par défaut.",
+      "maxSongsPerUserHint": "Titres par membre, titre en cours inclus (0–%{max}). Vide ou 0 = illimité."
+    },
+    "errors": {
+      "forbidden": "Seuls les membres ayant la permission « Gérer le serveur » peuvent modifier la configuration.",
+      "prefix": "Le préfixe doit faire 1 à 5 caractères, sans espace, et ne peut pas commencer par /.",
+      "limit": "Les limites doivent être des nombres entiers dans la plage autorisée."
+    },
+    "notices": {
+      "saved": "Réglages enregistrés",
+      "settingsReset": "Réglages réinitialisés",
+      "statsReset": "Statistiques supprimées"
+    }
   }
 }
