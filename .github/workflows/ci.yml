@@ -26,6 +26,9 @@ jobs:
           cache: npm
 
       - run: npm ci
+        env:
+          # youtube-dl-exec's postinstall calls the GitHub API: authenticate to avoid rate limits
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - run: npm run lint:ci
 

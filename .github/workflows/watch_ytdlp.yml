@@ -7,13 +7,16 @@ on:
     - cron: '0 6 * * *'
   workflow_dispatch:
 
+# Least privilege by default; only the version-check job may push
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   check:
     name: Check yt-dlp version
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # commits the bumped .ytdlp-version to master
     outputs:
       updated: ${{ steps.check.outputs.updated }}
     steps:
@@ -47,5 +50,7 @@ jobs:
     name: Rebuild Docker image
     needs: check
     if: needs.check.outputs.updated == 'true'
+    permissions:
+      contents: read # build.yml only checks out and pushes to Docker Hub
     uses: ./.github/workflows/build.yml
     secrets: inherit

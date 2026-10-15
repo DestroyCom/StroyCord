@@ -18,6 +18,7 @@ services:
       BGUTIL_BASE_URL: ${BGUTIL_BASE_URL:-http://bgutil-provider:4416}
       GLITCHTIP_DSN: ${GLITCHTIP_DSN:-}
       GLITCHTIP_ENVIRONMENT: ${GLITCHTIP_ENVIRONMENT:-production}
+      GLITCHTIP_RELEASE: ${GLITCHTIP_RELEASE:-}
     volumes:
       - ${YOUTUBE_COOKIES_PATH_HOST:-/dev/null}:/app/cookies.txt:ro
     restart: on-failure

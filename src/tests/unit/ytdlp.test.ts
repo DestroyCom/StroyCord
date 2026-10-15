@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -27,7 +27,7 @@ describe('buildYtdlpArgs', () => {
 
     expect(args[0]).toBe(URL);
     expect(args).toEqual(expect.arrayContaining(['--output', '-', '--no-playlist']));
-    expect(args[args.indexOf('--format') + 1]).toBe('bestaudio/best');
+    expect(args[args.indexOf('--format') + 1]).toBe('bestaudio[acodec=opus]/bestaudio/best');
     expect(args[args.indexOf('--js-runtimes') + 1]).toBe(`node:${process.execPath}`);
     expect(args).not.toContain('--cookies');
     expect(args).not.toContain('--extractor-args');
@@ -43,25 +43,64 @@ describe('buildYtdlpArgs', () => {
     );
   });
 
-  it('uses a writable copy of the cookies file', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'stroycord-test-'));
-    const cookies = join(dir, 'cookies.txt');
-    writeFileSync(cookies, '# Netscape HTTP Cookie File\n');
-    vi.stubEnv('YOUTUBE_COOKIES_PATH', cookies);
-
+  it('passes the cookies file when given', async () => {
     const { buildYtdlpArgs } = await loadModule();
-    const args = buildYtdlpArgs(URL);
-    const used = args[args.indexOf('--cookies') + 1];
+    const args = buildYtdlpArgs(URL, '/tmp/x/cookies.txt');
 
-    expect(used).not.toBe(cookies);
-    expect(readFileSync(used, 'utf8')).toBe('# Netscape HTTP Cookie File\n');
+    expect(args[args.indexOf('--cookies') + 1]).toBe('/tmp/x/cookies.txt');
+  });
+});
+
+describe('createCookiesCopy', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
-  it('ignores a cookies path that does not exist', async () => {
-    vi.stubEnv('YOUTUBE_COOKIES_PATH', '/does/not/exist/cookies.txt');
-    const { buildYtdlpArgs } = await loadModule();
+  const writeCookies = (content: string) => {
+    const file = join(mkdtempSync(join(tmpdir(), 'stroycord-test-')), 'cookies.txt');
+    writeFileSync(file, content);
+    return file;
+  };
 
-    expect(buildYtdlpArgs(URL)).not.toContain('--cookies');
+  it('returns null when no cookies file is configured or it does not exist', async () => {
+    const { createCookiesCopy } = await loadModule();
+    vi.stubEnv('YOUTUBE_COOKIES_PATH', '');
+    expect(createCookiesCopy()).toBeNull();
+    vi.stubEnv('YOUTUBE_COOKIES_PATH', '/does/not/exist/cookies.txt');
+    expect(createCookiesCopy()).toBeNull();
+  });
+
+  it('creates a private 0600 copy per call and deletes it on cleanup', async () => {
+    vi.stubEnv('YOUTUBE_COOKIES_PATH', writeCookies('# Netscape HTTP Cookie File\n'));
+    const { createCookiesCopy } = await loadModule();
+
+    const first = createCookiesCopy();
+    const second = createCookiesCopy();
+    if (!first || !second) throw new Error('expected cookie copies');
+
+    expect(first.path).not.toBe(second.path);
+    expect(readFileSync(first.path, 'utf8')).toBe('# Netscape HTTP Cookie File\n');
+    expect(statSync(first.path).mode & 0o777).toBe(0o600);
+
+    first.cleanup();
+    expect(existsSync(first.path)).toBe(false);
+    expect(existsSync(second.path)).toBe(true);
+    second.cleanup();
+  });
+
+  it('picks up a refreshed source file on the next copy', async () => {
+    const source = writeCookies('old');
+    vi.stubEnv('YOUTUBE_COOKIES_PATH', source);
+    const { createCookiesCopy } = await loadModule();
+
+    const before = createCookiesCopy();
+    writeFileSync(source, 'new');
+    const after = createCookiesCopy();
+    if (!before || !after) throw new Error('expected cookie copies');
+
+    expect(readFileSync(after.path, 'utf8')).toBe('new');
+    before.cleanup();
+    after.cleanup();
   });
 });
 

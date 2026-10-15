@@ -3,9 +3,9 @@ import {
   AudioPlayerStatus,
   createAudioPlayer,
   createAudioResource,
+  demuxProbe,
   getVoiceConnection,
   joinVoiceChannel,
-  StreamType,
 } from '@discordjs/voice';
 import { activePlayers, client } from 'src/Bot';
 import { captureError, captureMessage } from 'src/config/monitoring';
@@ -23,6 +23,9 @@ import type { songInterface } from 'src/utils/interfaces';
 
 // Current yt-dlp process per guild, killed on skip/stop so it doesn't linger in the background
 const ytdlpProcesses = new Map<string, ChildProcess>();
+
+// Bytes read to detect a WebM/Ogg Opus header before falling back to ffmpeg
+const PROBE_SIZE = 64 * 1024;
 
 const killYtdlp = (guildId: string) => {
   const proc = ytdlpProcesses.get(guildId);
@@ -92,9 +95,26 @@ export const songPlayer = async (guildId: string) => {
     }
   });
 
-  console.log(`[player] streaming ${nextSong.url} via yt-dlp`);
-  const audioStream = createAudioResource(ytdlp.stdout, {
-    inputType: StreamType.Arbitrary,
+  // WebM/Opus (YouTube's usual best audio) is sent to Discord as-is; anything
+  // else goes through ffmpeg + an Opus encoder (StreamType.Arbitrary).
+  let probe: Awaited<ReturnType<typeof demuxProbe>>;
+  try {
+    probe = await demuxProbe(ytdlp.stdout, PROBE_SIZE);
+  } catch (e) {
+    if (ytdlpProcesses.get(guildId) !== ytdlp) return; // skipped / stopped meanwhile
+    console.error('[player] stream probe error:', e);
+    captureError(e, { guildId, url: nextSong.url, step: 'demuxProbe' });
+    killYtdlp(guildId);
+    await sendErrorEmbed(guildId, nextSong.requestChannel, `Could not play **${nextSong.title}**`);
+    await skipSong(guildId);
+    return;
+  }
+  // Skipped or stopped while probing: a newer song (or nothing) owns the player now
+  if (ytdlpProcesses.get(guildId) !== ytdlp) return;
+
+  console.log(`[player] streaming ${nextSong.url} via yt-dlp (${probe.type})`);
+  const audioStream = createAudioResource(probe.stream, {
+    inputType: probe.type,
   });
 
   audioPlayer.play(audioStream);
@@ -116,24 +136,27 @@ export const skipSong = async (guildId: string) => {
 };
 
 export const remove = async (guildId: string, isFromSkip: boolean = false) => {
-  if (isFromSkip) {
-    await removeCurrentPlayingSong(guildId);
-  } else {
-    await emptyNextSongs(guildId);
+  try {
+    if (isFromSkip) {
+      await removeCurrentPlayingSong(guildId);
+    } else {
+      await emptyNextSongs(guildId);
+    }
+  } finally {
+    // Always release yt-dlp, the player and the voice connection, even if the DB update failed.
+    // Listeners are removed before stop() so it can't trigger another skip.
+    killYtdlp(guildId);
+
+    if (activePlayers[guildId]?.audioPlayer) {
+      removeAllAudioPlayerListener(activePlayers[guildId].audioPlayer);
+      activePlayers[guildId].audioPlayer.stop();
+      delete activePlayers[guildId];
+    }
+
+    getVoiceConnection(guildId)?.disconnect();
+    getVoiceConnection(guildId)?.destroy();
+    getVoiceConnection(guildId)?.removeAllListeners();
   }
-
-  killYtdlp(guildId);
-
-  if (activePlayers[guildId]?.audioPlayer) {
-    removeAllAudioPlayerListener(activePlayers[guildId].audioPlayer);
-    activePlayers[guildId].audioPlayer.stop();
-    delete activePlayers[guildId];
-  }
-
-  getVoiceConnection(guildId)?.disconnect();
-  getVoiceConnection(guildId)?.destroy();
-  getVoiceConnection(guildId)?.removeAllListeners();
-  return;
 };
 
 export const pause = async (guildId: string) => {

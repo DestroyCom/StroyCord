@@ -54,13 +54,13 @@ Three handlers resolve the input type before calling into the player:
 - Fetches the first song from MongoDB (`nextSongs[0]`)
 - Joins the voice channel stored in DB
 - Creates/reuses an `AudioPlayer` stored in the in-memory `activePlayers` map (exported from `Bot.ts`)
-- Streams audio via yt-dlp (`src/core/ytdlp.ts`) piped to `createAudioResource`; the yt-dlp process per guild is killed on skip/stop
+- Streams audio via yt-dlp (`src/core/ytdlp.ts`, Opus preferred) → `demuxProbe` → `createAudioResource`. WebM/Opus (YouTube's usual best audio) goes to Discord as-is, with no ffmpeg or Opus encoding; other formats fall back to `StreamType.Arbitrary` (ffmpeg + Opus encoder). The yt-dlp process per guild is killed on skip/stop
 
 `activePlayers` is an in-memory map `{ [guildId]: { audioPlayer } }` — the single source of truth for whether a guild is currently playing.
 
 ### yt-dlp (`src/core/ytdlp.ts`)
 
-Same setup as StroyGetter. `buildYtdlpArgs()` always passes `--js-runtimes node:<execPath>` — YouTube requires JS challenge solving, and without a runtime stream URLs return **HTTP 403**. In Docker, yt-dlp is installed from PyPI (`yt-dlp[default]`, includes the `yt-dlp-ejs` solver) at the version pinned in `.ytdlp-version` (bumped daily by `watch_ytdlp.yml`), along with the `bgutil-ytdlp-pot-provider` plugin, and copied over `node_modules/youtube-dl-exec/bin/yt-dlp`. Optional: `YOUTUBE_COOKIES_PATH` (copied to a writable temp file), `BGUTIL_BASE_URL` (docker-compose runs a `bgutil-provider` service).
+Same setup as StroyGetter. `buildYtdlpArgs()` always passes `--js-runtimes node:<execPath>` — YouTube requires JS challenge solving, and without a runtime stream URLs return **HTTP 403**. In Docker, yt-dlp is installed from PyPI (`yt-dlp[default]`, includes the `yt-dlp-ejs` solver) at the version pinned in `.ytdlp-version` (bumped daily by `watch_ytdlp.yml`), along with the `bgutil-ytdlp-pot-provider` plugin, and copied over `node_modules/youtube-dl-exec/bin/yt-dlp`. Optional: `YOUTUBE_COOKIES_PATH` (a private 0600 copy per yt-dlp process, deleted when it exits), `BGUTIL_BASE_URL` (docker-compose runs a `bgutil-provider` service).
 
 ### Error reporting (`src/config/monitoring.ts`)
 
