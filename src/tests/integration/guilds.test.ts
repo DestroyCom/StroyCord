@@ -68,8 +68,8 @@ describe('pushSongs', () => {
     await pushSongs(GUILD_ID, [songA, songB]);
     const guild = await fetchGuild(GUILD_ID);
     expect(guild.nextSongs).toHaveLength(2);
-    expect((guild.nextSongs[0] as typeof songA).title).toBe('songA');
-    expect((guild.nextSongs[1] as typeof songB).title).toBe('songB');
+    expect((guild.nextSongs?.[0] as typeof songA | undefined)?.title).toBe('songA');
+    expect((guild.nextSongs?.[1] as typeof songB | undefined)?.title).toBe('songB');
   });
 
   it('appends to an existing queue', async () => {
@@ -124,9 +124,9 @@ describe('shiftSongs', () => {
     await shiftSongs(GUILD_ID);
     const guild = await fetchGuild(GUILD_ID);
     expect(guild.nextSongs).toHaveLength(1);
-    expect((guild.nextSongs[0] as ReturnType<typeof mockSong>).title).toBe('second');
+    expect((guild.nextSongs?.[0] as ReturnType<typeof mockSong> | undefined)?.title).toBe('second');
     expect(guild.previouslyPlayedSongs).toHaveLength(1);
-    expect((guild.previouslyPlayedSongs[0] as ReturnType<typeof mockSong>).title).toBe('first');
+    expect((guild.previouslyPlayedSongs?.[0] as ReturnType<typeof mockSong> | undefined)?.title).toBe('first');
   });
 
   it('empties nextSongs gracefully when queue is already empty', async () => {
@@ -156,9 +156,9 @@ describe('removeCurrentPlayingSong', () => {
     await removeCurrentPlayingSong(GUILD_ID);
     const guild = await fetchGuild(GUILD_ID);
     expect(guild.nextSongs).toHaveLength(1);
-    expect((guild.nextSongs[0] as ReturnType<typeof mockSong>).title).toBe('next');
+    expect((guild.nextSongs?.[0] as ReturnType<typeof mockSong> | undefined)?.title).toBe('next');
     expect(guild.previouslyPlayedSongs).toHaveLength(1);
-    expect((guild.previouslyPlayedSongs[0] as ReturnType<typeof mockSong>).title).toBe('current');
+    expect((guild.previouslyPlayedSongs?.[0] as ReturnType<typeof mockSong> | undefined)?.title).toBe('current');
   });
 
   it('empties nextSongs gracefully when queue is already empty', async () => {

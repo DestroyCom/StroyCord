@@ -101,7 +101,7 @@ When adding locale keys, they must be nested at the correct JSON path — top-le
 
 ### Path Aliases
 
-`tsconfig.json` sets `baseUrl: "./"` — imports use `src/...` absolute paths (e.g. `import { client } from 'src/Bot'`). This is resolved by `tsx` at dev time and `tsup` at build time.
+`tsconfig.json` maps `"paths": { "src/*": ["./src/*"] }` (TypeScript 7 removed `baseUrl`) — imports use `src/...` absolute paths (e.g. `import { client } from 'src/Bot'`). This is resolved by `tsx` at dev time and `tsup` at build time.
 
 ## Environment Variables
 
