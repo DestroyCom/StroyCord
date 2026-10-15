@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { copyFileSync, existsSync } from 'node:fs';
+import { chmodSync, constants, copyFileSync, existsSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
@@ -23,8 +23,10 @@ const resolveCookiesFile = (): string | null => {
   cookiesFile = null;
   if (!source || !existsSync(source)) return cookiesFile;
   try {
-    const copy = join(tmpdir(), 'stroycord-cookies.txt');
-    copyFileSync(source, copy);
+    // Private dir (0700, unpredictable name) + 0600 file: the cookies hold a YouTube session
+    const copy = join(mkdtempSync(join(tmpdir(), 'stroycord-')), 'cookies.txt');
+    copyFileSync(source, copy, constants.COPYFILE_EXCL);
+    chmodSync(copy, 0o600);
     cookiesFile = copy;
   } catch (e) {
     console.error('[ytdlp] failed to copy cookies file, using it read-only:', e);
