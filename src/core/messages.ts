@@ -1,4 +1,4 @@
-import type { TextChannel, User } from 'discord.js';
+import type { EmbedBuilder, TextChannel, User } from 'discord.js';
 import { client } from 'src/Bot';
 import { getFirstSong, getNextSongs } from 'src/database/queries/guilds/get';
 import { unknownError } from 'src/utils/embeds/errorsEmbed';
@@ -62,12 +62,12 @@ export const sendQueueEmbed = async (
   });
 };
 
-export const sendErrorEmbed = async (guildId: string, textChannelId: string, errorMsg: string) => {
+export const sendEmbedToChannel = async (guildId: string, textChannelId: string, embed: EmbedBuilder) => {
   let guild: Awaited<ReturnType<typeof client.guilds.fetch>>;
   try {
     guild = await client.guilds.fetch(guildId);
   } catch (e) {
-    console.error(`[messages] sendErrorEmbed: failed to fetch guild ${guildId}:`, e);
+    console.error(`[messages] failed to fetch guild ${guildId}:`, e);
     return;
   }
   const messageChannel =
@@ -75,11 +75,12 @@ export const sendErrorEmbed = async (guildId: string, textChannelId: string, err
     ((await guild.channels.fetch(textChannelId).catch(() => null)) as TextChannel | null);
 
   if (!messageChannel) {
-    console.error(`[messages] sendErrorEmbed: channel ${textChannelId} not found in guild ${guildId}`);
+    console.error(`[messages] channel ${textChannelId} not found in guild ${guildId}`);
     return;
   }
 
-  return await messageChannel.send({
-    embeds: [unknownError(errorMsg)],
-  });
+  return await messageChannel.send({ embeds: [embed] });
 };
+
+export const sendErrorEmbed = (guildId: string, textChannelId: string, errorMsg: string) =>
+  sendEmbedToChannel(guildId, textChannelId, unknownError(errorMsg));

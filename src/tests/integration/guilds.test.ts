@@ -7,7 +7,7 @@ import {
   removeDuplicateGuilds,
 } from 'src/database/queries/guilds/delete';
 import { fetchGuild, getFirstSong, getLastPlayedSong, getNextSongs } from 'src/database/queries/guilds/get';
-import { pushSongs, shiftSongs } from 'src/database/queries/guilds/update';
+import { pushSongIfAllowed, pushSongs, shiftSongs } from 'src/database/queries/guilds/update';
 import { guild_model, HISTORY_SIZE } from 'src/database/schema/guild';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
@@ -27,7 +27,7 @@ afterEach(async () => {
   await guild_model.deleteMany({});
 });
 
-const mockSong = (title: string) => ({
+const mockSong = (title: string, userId = 'u1') => ({
   title,
   url: `https://youtube.com/watch?v=${title}`,
   thumbnail: 'https://example.com/thumb.jpg',
@@ -36,7 +36,7 @@ const mockSong = (title: string) => ({
   minutes: 3,
   seconds: 30,
   requestDateTimestamp: Date.now(),
-  requestAuthor: { id: 'u1', username: 'test' },
+  requestAuthor: { id: userId, username: 'test' },
   requestChannel: 'ch1',
   isQueueStart: true,
   isComingFromPlaylist: false,
@@ -89,6 +89,41 @@ describe('pushSongs', () => {
     await pushSongs(GUILD_ID, [mockSong('second')]);
     const guild = await fetchGuild(GUILD_ID);
     expect(guild.nextSongs).toHaveLength(2);
+  });
+});
+
+describe('pushSongIfAllowed', () => {
+  const limits = { maxQueueSize: 3, maxSongsPerUser: 0 };
+
+  it('counts the song currently playing in the queue limit', async () => {
+    await fetchGuild(GUILD_ID);
+    await pushSongs(GUILD_ID, [mockSong('playing'), mockSong('next')]);
+    expect(await pushSongIfAllowed(GUILD_ID, mockSong('third'), limits)).toBe('queued');
+    expect(await pushSongIfAllowed(GUILD_ID, mockSong('fourth'), limits)).toBe('queueFull');
+    expect((await fetchGuild(GUILD_ID)).nextSongs).toHaveLength(3);
+  });
+
+  it('enforces the per-member limit without blocking other members', async () => {
+    const perUser = { maxQueueSize: 10, maxSongsPerUser: 2 };
+    await fetchGuild(GUILD_ID);
+    expect(await pushSongIfAllowed(GUILD_ID, mockSong('a1', 'alice'), perUser)).toBe('queued');
+    expect(await pushSongIfAllowed(GUILD_ID, mockSong('a2', 'alice'), perUser)).toBe('queued');
+    expect(await pushSongIfAllowed(GUILD_ID, mockSong('a3', 'alice'), perUser)).toBe('userLimit');
+    expect(await pushSongIfAllowed(GUILD_ID, mockSong('b1', 'bob'), perUser)).toBe('queued');
+  });
+
+  it('never overflows the queue under concurrent requests', async () => {
+    await fetchGuild(GUILD_ID);
+    const results = await Promise.all(
+      Array.from({ length: 10 }, (_, i) => pushSongIfAllowed(GUILD_ID, mockSong(`s${i}`), limits))
+    );
+    expect(results.filter((r) => r === 'queued')).toHaveLength(3);
+    expect((await fetchGuild(GUILD_ID)).nextSongs).toHaveLength(3);
+  });
+
+  it('creates the guild document when it does not exist yet', async () => {
+    expect(await pushSongIfAllowed('new-guild', mockSong('first'), limits)).toBe('queued');
+    expect((await fetchGuild('new-guild')).nextSongs).toHaveLength(1);
   });
 });
 

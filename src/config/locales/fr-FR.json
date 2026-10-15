@@ -77,7 +77,8 @@
         "fields": {
           "playListName": "Nom de la playlist",
           "playlistCreatedBy": "Playlist crée par",
-          "putInQueue": "Mis en file d'attente"
+          "putInQueue": "Mis en file d'attente",
+          "skipped": "Non ajoutées"
         }
       }
     },
@@ -117,5 +118,19 @@
   },
   "channels": {
     "notAllowed": "Les commandes ne sont acceptées que dans :"
+  },
+  "queueLimits": {
+    "queueFull": {
+      "title": "La file d'attente est pleine",
+      "description": "La file est limitée à %{max} musiques, titre en cours inclus. Attendez la fin d'un titre ou passez-en un."
+    },
+    "userLimit": {
+      "title": "Vous avez atteint votre limite",
+      "description": "Chaque membre peut avoir au maximum %{max} musiques dans la file, titre en cours inclus."
+    },
+    "short": {
+      "queueFull": "file pleine",
+      "userLimit": "limite par membre atteinte"
+    }
   }
 }

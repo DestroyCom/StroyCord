@@ -85,9 +85,18 @@ export const playlistEmbed = async (author: User, playlistData: PlaylistInfo): P
       },
       {
         name: `${i18n.t('embedsText.lists.playlist.fields.putInQueue')} :`,
-        value: `${playlistData.items.length > 30 ? 30 : playlistData.items.length}${i18n.t('embedsText.global.musics')}`,
+        value: `${playlistData.addedCount} ${i18n.t('embedsText.global.musics')}`,
       }
     );
+
+  if (playlistData.skippedCount > 0) {
+    msg.addFields({
+      name: `${i18n.t('embedsText.lists.playlist.fields.skipped')} :`,
+      value:
+        `${playlistData.skippedCount} ${i18n.t('embedsText.global.musics')}` +
+        (playlistData.limitReached ? ` (${i18n.t(`queueLimits.short.${playlistData.limitReached}`)})` : ''),
+    });
+  }
 
   if (playlistData.items.length > 0 && playlistData.items[0].thumbnail) {
     msg.setThumbnail(playlistData.items[0].thumbnail);

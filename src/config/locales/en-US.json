@@ -77,7 +77,8 @@
         "fields": {
           "playListName": "Playlist Name",
           "playlistCreatedBy": "Playlist created by",
-          "putInQueue": "Added to queue"
+          "putInQueue": "Added to queue",
+          "skipped": "Not queued"
         }
       }
     },
@@ -117,5 +118,19 @@
   },
   "channels": {
     "notAllowed": "Commands are only accepted in:"
+  },
+  "queueLimits": {
+    "queueFull": {
+      "title": "The queue is full",
+      "description": "The queue is limited to %{max} songs, including the one playing. Wait for a song to finish or skip one."
+    },
+    "userLimit": {
+      "title": "You have reached your limit",
+      "description": "Each member can have at most %{max} songs in the queue, including the one playing."
+    },
+    "short": {
+      "queueFull": "queue full",
+      "userLimit": "per-member limit reached"
+    }
   }
 }

@@ -41,4 +41,8 @@ export interface PlaylistInfo {
   title: string;
   author: { name: string };
   items: Array<{ url: string; thumbnail?: string }>;
+  addedCount: number;
+  /** Songs not queued (queue limit reached or unavailable video) */
+  skippedCount: number;
+  limitReached?: 'queueFull' | 'userLimit';
 }

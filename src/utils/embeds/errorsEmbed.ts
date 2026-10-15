@@ -124,3 +124,19 @@ export const unknownError = (errorMsg: string): EmbedBuilder => {
     .setColor('#37123C')
     .setTimestamp();
 };
+
+export const queueLimitEmbed = (
+  reason: 'queueFull' | 'userLimit',
+  limits: { maxQueueSize: number; maxSongsPerUser: number }
+): EmbedBuilder => {
+  const max = reason === 'queueFull' ? limits.maxQueueSize : limits.maxSongsPerUser;
+  return new EmbedBuilder()
+    .setTitle(`⚠️ ${i18n.t(`queueLimits.${reason}.title`)} !`)
+    .setDescription(i18n.t(`queueLimits.${reason}.description`, { max }))
+    .setAuthor({
+      name: 'Stroycord',
+      iconURL: secrets.STROYCORD_LOGO,
+    })
+    .setColor('#37123C')
+    .setTimestamp();
+};

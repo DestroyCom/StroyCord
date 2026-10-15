@@ -1,10 +1,12 @@
 import type { User, VoiceBasedChannel } from 'discord.js';
 import { activePlayers } from 'src/Bot';
 import { captureError } from 'src/config/monitoring';
-import { pushSongs, updateVoiceChannel } from 'src/database/queries/guilds/update';
+import { getGuildSettings } from 'src/core/settings';
+import { pushSongIfAllowed, type QueueLimitReason, updateVoiceChannel } from 'src/database/queries/guilds/update';
+import { queueLimitEmbed } from 'src/utils/embeds/errorsEmbed';
 import { extractSongData, extractVoiceChannelData } from 'src/utils/songUtils';
 
-import { sendEmbed, sendErrorEmbed } from '../messages';
+import { sendEmbed, sendEmbedToChannel, sendErrorEmbed } from '../messages';
 import { songPlayer } from '../player';
 
 export const songRequest = async (
@@ -14,7 +16,7 @@ export const songRequest = async (
   textChannelId: string,
   voiceChannel?: VoiceBasedChannel | null,
   isComingFromPlaylist: boolean = false
-) => {
+): Promise<'queued' | QueueLimitReason | 'error'> => {
   const activePlayerGuild = activePlayers[guildId];
 
   try {
@@ -30,7 +32,13 @@ export const songRequest = async (
     }
     const parsedVoiceChannel = await extractVoiceChannelData(voiceChannel);
 
-    await pushSongs(guildId, [parsedSong]);
+    const settings = await getGuildSettings(guildId);
+    const result = await pushSongIfAllowed(guildId, parsedSong, settings);
+    if (result !== 'queued') {
+      // A playlist reports the skipped songs once, in its own embed
+      if (!isComingFromPlaylist) await sendEmbedToChannel(guildId, textChannelId, queueLimitEmbed(result, settings));
+      return result;
+    }
     await updateVoiceChannel(guildId, parsedVoiceChannel);
 
     if (!activePlayerGuild) {
@@ -38,8 +46,10 @@ export const songRequest = async (
     } else if (!isComingFromPlaylist) {
       await sendEmbed(guildId, false, false);
     }
+    return 'queued';
   } catch (error) {
     captureError(error, { guildId, url, step: 'songRequest' });
     await sendErrorEmbed(guildId, textChannelId, String(error));
+    return 'error';
   }
 };
