@@ -1,4 +1,5 @@
 import { EmbedBuilder, type User } from 'discord.js';
+import { getPrefix } from 'src/config/guildContext';
 import i18n from 'src/config/i18n';
 import { secrets } from 'src/config/secrets';
 import { getFirstSong, getLastPlayedSong } from 'src/database/queries/guilds/get';
@@ -11,7 +12,7 @@ export const pauseEmbed = (author: User) => {
   return new EmbedBuilder()
     .setTitle(`⏸ ${author.username} ${i18n.t('embedsText.player.pause.title')} !`)
     .setDescription(
-      `${i18n.t('embedsText.global.youCanUse')} ${secrets.PREFIX}` +
+      `${i18n.t('embedsText.global.youCanUse')} ${getPrefix()}` +
         '`re` ' +
         `${i18n.t('embedsText.player.pause.description')} !`
     )
@@ -27,7 +28,7 @@ export const resumeEmbed = (author: User) => {
   return new EmbedBuilder()
     .setTitle(`▶ ${author.username} ${i18n.t('embedsText.player.resume.title')} !`)
     .setDescription(
-      `${i18n.t('embedsText.global.youCanUse')} ${secrets.PREFIX}` +
+      `${i18n.t('embedsText.global.youCanUse')} ${getPrefix()}` +
         '`pa` ' +
         `${i18n.t('embedsText.player.resume.description')} !`
     )
@@ -46,7 +47,7 @@ export const skipEmbed = async (author: User, guildId: string) => {
   return new EmbedBuilder()
     .setTitle(`⏭ ${author.username} ${i18n.t('embedsText.player.skip.title')} !`)
     .setDescription(
-      `${i18n.t('embedsText.global.youCanUse')} ${secrets.PREFIX}` +
+      `${i18n.t('embedsText.global.youCanUse')} ${getPrefix()}` +
         '`fo` ' +
         `${i18n.t('embedsText.player.skip.description')} !`
     )
@@ -78,7 +79,7 @@ export const removeEmbed = (author: User) => {
   return new EmbedBuilder()
     .setTitle(`❌ ${author.username} ${i18n.t('embedsText.player.remove.title')} !`)
     .setDescription(
-      `${i18n.t('embedsText.global.youCanUse')} ${secrets.PREFIX}` +
+      `${i18n.t('embedsText.global.youCanUse')} ${getPrefix()}` +
         '`p [args]`' +
         `${i18n.t('embedsText.global.toLaunchANewMusic')} !`
     )

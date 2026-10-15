@@ -77,7 +77,8 @@
         "fields": {
           "playListName": "Nom de la playlist",
           "playlistCreatedBy": "Playlist crée par",
-          "putInQueue": "Mis en file d'attente"
+          "putInQueue": "Mis en file d'attente",
+          "skipped": "Non ajoutées"
         }
       }
     },
@@ -114,5 +115,135 @@
         "title": "UNE ERREUR S'EST PRODUITE"
       }
     }
+  },
+  "channels": {
+    "notAllowed": "Les commandes ne sont acceptées que dans :"
+  },
+  "queueLimits": {
+    "queueFull": {
+      "title": "La file d'attente est pleine",
+      "description": "La file est limitée à %{max} musiques, titre en cours inclus. Attendez la fin d'un titre ou passez-en un."
+    },
+    "userLimit": {
+      "title": "Vous avez atteint votre limite",
+      "description": "Chaque membre peut avoir au maximum %{max} musiques dans la file, titre en cours inclus."
+    },
+    "short": {
+      "queueFull": "file pleine",
+      "userLimit": "limite par membre atteinte"
+    }
+  },
+  "config": {
+    "title": "Configuration de StroyCord",
+    "description": "Réglages de ce serveur. Les valeurs marquées *(par défaut)* suivent la configuration de l'instance du bot.",
+    "default": "par défaut",
+    "enabled": "Activé",
+    "disabled": "Désactivé",
+    "unlimited": "Illimité",
+    "channelsPlaceholder": "Salons des commandes (aucun sélectionné = tous)",
+    "fields": {
+      "prefix": "Préfixe des commandes texte",
+      "language": "Langue",
+      "detect": "Liens YouTube sans préfixe",
+      "channels": "Salons acceptant les commandes",
+      "allChannels": "Tous les salons",
+      "maxQueueSize": "Taille de la file (titre en cours inclus)",
+      "maxSongsPerUser": "Titres par membre (en cours inclus)",
+      "stats": "Statistiques d'écoute",
+      "replyChannel": "Salon des réponses du bot",
+      "commandChannel": "Salon de la commande",
+      "replies": "Réponses du bot (lecture, ajout, skip…)",
+      "commandMode": "Commandes acceptées",
+      "blockedRoles": "Rôles bloqués",
+      "noBlockedRoles": "Aucun"
+    },
+    "buttons": {
+      "edit": "Préfixe & limites",
+      "detect": "Liens sans préfixe",
+      "stats": "Statistiques",
+      "resetSettings": "Réinitialiser les réglages",
+      "resetStats": "Supprimer les statistiques",
+      "confirm": "Confirmer",
+      "cancel": "Annuler",
+      "replies": "Réponses du bot",
+      "commandMode": "Commandes",
+      "blockedRoles": "Rôles bloqués"
+    },
+    "confirm": {
+      "settings": {
+        "title": "Réinitialiser tous les réglages ?",
+        "description": "Tous les réglages reviennent aux valeurs par défaut de l'instance. Les statistiques sont conservées."
+      },
+      "stats": {
+        "title": "Supprimer toutes les statistiques ?",
+        "description": "Toutes les écoutes enregistrées sur ce serveur sont définitivement supprimées. Impossible de revenir en arrière."
+      }
+    },
+    "modal": {
+      "title": "Préfixe & limites de la file",
+      "prefixHint": "1 à 5 caractères, sans espace, sans / au début. Vide = par défaut.",
+      "maxQueueSizeHint": "Titres dans la file, titre en cours inclus (1–%{max}). Vide = par défaut.",
+      "maxSongsPerUserHint": "Titres par membre, titre en cours inclus (0–%{max}). Vide ou 0 = illimité."
+    },
+    "errors": {
+      "forbidden": "Seuls les membres ayant la permission « Gérer le serveur » peuvent modifier la configuration.",
+      "prefix": "Le préfixe doit faire 1 à 5 caractères, sans espace, et ne peut pas commencer par /.",
+      "limit": "Les limites doivent être des nombres entiers dans la plage autorisée."
+    },
+    "notices": {
+      "saved": "Réglages enregistrés",
+      "settingsReset": "Réglages réinitialisés",
+      "statsReset": "Statistiques supprimées"
+    },
+    "replyChannelPlaceholder": "Salon des réponses du bot (aucun = salon de la commande)",
+    "commandModes": {
+      "both": "Préfixe & slash",
+      "text": "Préfixe uniquement",
+      "slash": "Slash uniquement"
+    },
+    "blockedRolesModal": {
+      "title": "Rôles bloqués",
+      "hint": "Les membres ayant un de ces rôles sont ignorés par le bot. Les admins gardent accès à /config."
+    }
+  },
+  "stats": {
+    "disabled": "Les statistiques sont désactivées sur ce serveur (un admin peut les activer avec /config).",
+    "empty": "Aucune écoute enregistrée sur cette période. Lancez de la musique !",
+    "userDescription": "Titres demandés par ce membre.",
+    "units": {
+      "days": "j",
+      "hours": "h",
+      "minutes": "min",
+      "play": "écoute",
+      "plays": "écoutes"
+    },
+    "periods": {
+      "7d": "7 derniers jours",
+      "30d": "30 derniers jours",
+      "all": "Depuis le début"
+    },
+    "titles": {
+      "server": "Stats d'écoute de",
+      "user": "Stats d'écoute de",
+      "top": {
+        "tracks": "Titres les plus joués",
+        "artists": "Artistes les plus joués",
+        "djs": "Top DJs (titres ajoutés)"
+      }
+    },
+    "fields": {
+      "listeningTime": "Temps d'écoute",
+      "plays": "Écoutes",
+      "uniqueTracks": "Titres différents",
+      "skipRate": "Taux de skip",
+      "peakHour": "Heure la plus active",
+      "topTrack": "Titre le plus joué",
+      "topArtist": "Artiste préféré",
+      "topDj": "Top DJ",
+      "favoriteTracks": "Titres préférés"
+    }
+  },
+  "commandMode": {
+    "slashDisabled": "Les commandes slash sont désactivées sur ce serveur, utilise les commandes texte (ex. `%{prefix}play`)."
   }
 }

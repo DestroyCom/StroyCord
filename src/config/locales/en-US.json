@@ -77,7 +77,8 @@
         "fields": {
           "playListName": "Playlist Name",
           "playlistCreatedBy": "Playlist created by",
-          "putInQueue": "Added to queue"
+          "putInQueue": "Added to queue",
+          "skipped": "Not queued"
         }
       }
     },
@@ -114,5 +115,135 @@
         "title": "AN ERROR OCCURRED"
       }
     }
+  },
+  "channels": {
+    "notAllowed": "Commands are only accepted in:"
+  },
+  "queueLimits": {
+    "queueFull": {
+      "title": "The queue is full",
+      "description": "The queue is limited to %{max} songs, including the one playing. Wait for a song to finish or skip one."
+    },
+    "userLimit": {
+      "title": "You have reached your limit",
+      "description": "Each member can have at most %{max} songs in the queue, including the one playing."
+    },
+    "short": {
+      "queueFull": "queue full",
+      "userLimit": "per-member limit reached"
+    }
+  },
+  "config": {
+    "title": "StroyCord configuration",
+    "description": "Settings for this server. Values marked *(default)* follow the bot instance configuration.",
+    "default": "default",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "unlimited": "Unlimited",
+    "channelsPlaceholder": "Command channels (none selected = all channels)",
+    "fields": {
+      "prefix": "Text command prefix",
+      "language": "Language",
+      "detect": "YouTube links without prefix",
+      "channels": "Channels accepting commands",
+      "allChannels": "All channels",
+      "maxQueueSize": "Queue size (current song included)",
+      "maxSongsPerUser": "Songs per member (current incl.)",
+      "stats": "Listening statistics",
+      "replyChannel": "Bot replies channel",
+      "commandChannel": "Channel of the command",
+      "replies": "Bot replies (now playing, added, skip…)",
+      "commandMode": "Accepted commands",
+      "blockedRoles": "Blocked roles",
+      "noBlockedRoles": "None"
+    },
+    "buttons": {
+      "edit": "Prefix & limits",
+      "detect": "Links without prefix",
+      "stats": "Statistics",
+      "resetSettings": "Reset settings",
+      "resetStats": "Delete statistics",
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "replies": "Bot replies",
+      "commandMode": "Commands",
+      "blockedRoles": "Blocked roles"
+    },
+    "confirm": {
+      "settings": {
+        "title": "Reset all settings?",
+        "description": "Every setting goes back to the bot instance defaults. Statistics are kept."
+      },
+      "stats": {
+        "title": "Delete all statistics?",
+        "description": "Every recorded listen of this server is permanently deleted. This cannot be undone."
+      }
+    },
+    "modal": {
+      "title": "Prefix & queue limits",
+      "prefixHint": "1 to 5 characters, no space, not starting with /. Empty = default.",
+      "maxQueueSizeHint": "Songs in the queue, current song included (1–%{max}). Empty = default.",
+      "maxSongsPerUserHint": "Songs per member, current song included (0–%{max}). Empty or 0 = unlimited."
+    },
+    "errors": {
+      "forbidden": "Only members with the \"Manage Server\" permission can change the configuration.",
+      "prefix": "The prefix must be 1 to 5 characters, without spaces, and cannot start with /.",
+      "limit": "Limits must be whole numbers within the allowed range."
+    },
+    "notices": {
+      "saved": "Settings saved",
+      "settingsReset": "Settings reset to defaults",
+      "statsReset": "Statistics deleted"
+    },
+    "replyChannelPlaceholder": "Bot replies channel (none selected = channel of the command)",
+    "commandModes": {
+      "both": "Prefix & slash",
+      "text": "Prefix only",
+      "slash": "Slash only"
+    },
+    "blockedRolesModal": {
+      "title": "Blocked roles",
+      "hint": "Members with one of these roles are ignored by the bot. Admins can still use /config."
+    }
+  },
+  "stats": {
+    "disabled": "Statistics are disabled on this server (an admin can enable them with /config).",
+    "empty": "No listening recorded yet for this period. Play some music!",
+    "userDescription": "Songs requested by this member.",
+    "units": {
+      "days": "d",
+      "hours": "h",
+      "minutes": "min",
+      "play": "play",
+      "plays": "plays"
+    },
+    "periods": {
+      "7d": "Last 7 days",
+      "30d": "Last 30 days",
+      "all": "All time"
+    },
+    "titles": {
+      "server": "Listening stats of",
+      "user": "Listening stats of",
+      "top": {
+        "tracks": "Most played songs",
+        "artists": "Most played artists",
+        "djs": "Top DJs (songs added)"
+      }
+    },
+    "fields": {
+      "listeningTime": "Listening time",
+      "plays": "Plays",
+      "uniqueTracks": "Different songs",
+      "skipRate": "Skip rate",
+      "peakHour": "Busiest hour",
+      "topTrack": "Most played song",
+      "topArtist": "Favorite artist",
+      "topDj": "Top DJ",
+      "favoriteTracks": "Favorite songs"
+    }
+  },
+  "commandMode": {
+    "slashDisabled": "Slash commands are disabled on this server, use the text commands instead (e.g. `%{prefix}play`)."
   }
 }

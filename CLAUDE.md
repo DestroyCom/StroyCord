@@ -33,10 +33,10 @@ npm run docker:clean           # Full teardown including volumes
 
 ### Request Flow
 
-A user command goes through one of two entry points in `src/listeners/messageListener.ts`:
+A user command goes through one of two entry points:
 
-1. **Text command** (`&play ...`) → `messageListener` parses the prefix+command, routes via `switch` to a function in `src/commands/textCommands.ts`
-2. **Slash command** (`/play`) → `InteractionCreate` event routes to `src/commands/slashCommands/<name>.ts` via the `commands` map in `src/commands/slashCommands/index.ts`
+1. **Text command** (`&play ...`) → `src/listeners/messageListener.ts` loads the guild settings (prefix, allowed channels, bare-link detection), parses the prefix+command, routes via `switch` to a function in `src/commands/textCommands.ts`
+2. **Slash command** (`/play`) → `src/listeners/interactionListener.ts` checks the allowed channels (except `/config`) and routes to `src/commands/slashCommands/<name>.ts` via the `commands` map in `src/commands/slashCommands/index.ts`. Buttons/selects/modals are routed by `customId` prefix (`cfg:` → `/config`, `stats:` → `/stats` pagination) — no collectors, so they survive restarts
 
 Both paths ultimately call the same functions in `textCommands.ts`, which call into `src/core/requestHandlers/`.
 
@@ -62,6 +62,24 @@ Three handlers resolve the input type before calling into the player:
 
 Same setup as StroyGetter. `buildYtdlpArgs()` always passes `--js-runtimes node:<execPath>` — YouTube requires JS challenge solving, and without a runtime stream URLs return **HTTP 403**. In Docker, yt-dlp is installed from PyPI (`yt-dlp[default]`, includes the `yt-dlp-ejs` solver) at the version pinned in `.ytdlp-version` (bumped daily by `watch_ytdlp.yml`), along with the `bgutil-ytdlp-pot-provider` plugin, and copied over `node_modules/youtube-dl-exec/bin/yt-dlp`. Optional: `YOUTUBE_COOKIES_PATH` (a private 0600 copy per yt-dlp process, deleted when it exits), `BGUTIL_BASE_URL` (docker-compose runs a `bgutil-provider` service).
 
+### Per-guild settings (`/config`)
+
+- `src/config/settings.ts` — `StoredSettings` (null = instance default from `.env`), `resolveSettings()`, parsers, `isChannelAllowed()`. Settings: prefix, language, detectFromAllMessages, commandChannelIds (empty = all), maxQueueSize / maxSongsPerUser (**song currently playing included**, capped at 500), statsEnabled, replyChannelId / replyMessagesEnabled, commandMode (`both` / `text` / `slash`), blockedRoleIds
+- **Blocked roles**: both listeners return silently (no reply at all) when `isMemberBlocked()`, right after loading the settings. Only exception: a member with `ManageGuild` keeps `/config` and its `cfg:` components, so an admin can always undo a block. The role picker is a modal (`blockedRolesModal`): the panel already uses Discord's 5 rows
+- **Bot messages** go through `sendBotMessage(guildId, commandChannelId, embed, kind)` (`src/core/messages.ts`), never `textChannel.send` directly. `resolveMessageChannel()` picks the channel: `info` (queue, current) and `announce` (now playing, added, skip, pause…) go to the reply channel, `announce` is dropped when replies are disabled, `error` always stays in the command channel. An unavailable reply channel falls back to the command channel
+- **Command mode**: `slash` makes `messageListener` ignore prefix commands (bare-link detection keeps its own toggle). `text` removes slash commands from the guild on redeploy (`deployCommands` filters with `isSlashCommandEnabled`), except `/config` and `/stats`; changing the mode in `/config` redeploys
+- `src/core/settings.ts` — in-memory write-through cache over the `GuildSettings` collection (`getGuildSettings`, `updateGuildSettings`)
+- `src/config/guildContext.ts` — `AsyncLocalStorage` holding the settings of the guild being handled. `i18n.t()` and `getPrefix()` read it (instance defaults outside a context). Entry points wrap their work in `runWithSettings` / `withGuildSettings`; the audio player listeners must too, since `@discordjs/voice` emits from a global loop. **Never set `i18n.locale`.** Business logic (limits, stats) reads `getGuildSettings(guildId)` explicitly
+- `/config` (`src/commands/slashCommands/config.ts`, panel in `src/utils/embeds/configEmbed.ts`) is admin-only: default member permission `ManageGuild` + re-check on every component and modal
+
+### Queue limits
+
+`pushSongIfAllowed` (`src/database/queries/guilds/update.ts`) pushes with an atomic `$expr`/`$size` condition, returning `'queued' | 'queueFull' | 'userLimit'`. `songRequest` returns that result; `playlistHandler` stops at the first limit.
+
+### Statistics (`/stats`)
+
+`Play` collection, one document per listened song (`src/core/stats.ts`). `createAudioResource` carries the song as `metadata`; `trackPlay` runs when the player's resource changes (song ended → Idle, skipped → Buffering of the next one) and in `remove()` before `stop()` (listeners are already detached there). Duration = `resource.playbackDuration` (pauses excluded); plays < 5 s are ignored. Aggregations in `src/database/queries/plays.ts`.
+
 ### Error reporting (`src/config/monitoring.ts`)
 
 GlitchTip via `@sentry/node`, enabled only when `GLITCHTIP_DSN` is set. Imported first in `Bot.ts`. Use `captureError(err, { guildId, ... })` / `captureMessage(msg, context, level)` — keep variable data (urls, ids) in the context so GlitchTip groups issues by message.
@@ -72,20 +90,22 @@ GlitchTip via `@sentry/node`, enabled only when `GLITCHTIP_DSN` is set. Imported
 |---|---|
 | Is playing / AudioPlayer ref | `activePlayers` (in-memory, `Bot.ts`) |
 | Song queue (`nextSongs`) | MongoDB `Guild` document |
-| Play history (`previouslyPlayedSongs`) | MongoDB `Guild` document |
+| Play history (`previouslyPlayedSongs`, last 50) | MongoDB `Guild` document |
 | Current voice channel | MongoDB `Guild` document |
+| Guild settings | MongoDB `GuildSettings` collection (+ in-memory cache) |
+| Listening stats | MongoDB `Play` collection |
 
-On startup, `connectToDatabase` calls `emptyAllGuild()` — this wipes all queues and voice channel state from every guild, since in-memory `activePlayers` is always empty on a fresh start.
+On startup, `connectToDatabase` removes duplicate `Guild` documents, builds indexes (`autoIndex` is off), then calls `emptyAllGuild()` — this wipes queues and voice channel state (runtime only), since in-memory `activePlayers` is always empty on a fresh start. **Settings and stats must never be stored in `Guild`**: they live in their own collections, untouched by that reset. When the bot is kicked (`GuildDelete`; outages emit `GuildUnavailable`), the `Guild` document is deleted and settings + stats are marked `deletedAt`, then purged after 30 days by `src/core/guildLifecycle.ts` (rejoining restores them).
 
 ### MongoDB Schema (`src/database/schema/guild.ts`)
 
-Single `Guild` collection per Discord server:
+`Guild` collection, one document per Discord server (unique `guildId`, `fetchGuild` is an atomic upsert):
 - `guildId` — Discord guild ID (lookup key)
 - `nextSongs[]` — ordered queue of `songInterface` objects
 - `previouslyPlayedSongs[]` — history (used by `/redo`)
 - `currentVoiceChannel` — serialized voice channel data
 
-All DB access goes through `src/database/queries/guilds/{get,update,delete}.ts`.
+All DB access goes through `src/database/queries/guilds/{get,update,delete}.ts`, `src/database/queries/settings.ts` and `src/database/queries/plays.ts`. New models must be added to the `createIndexes()` list in `databaseConnect.ts`.
 
 ### Slash Command Structure
 
@@ -95,7 +115,7 @@ To add a command: create the file, export from `src/commands/slashCommands/index
 
 ### i18n
 
-All user-facing strings go through `i18n.t('...')` (see `src/config/i18n.ts`). Locales are in `src/config/locales/` as JSON files (`en-US.json`, `fr-FR.json`). The active locale is set from `secrets.LANGUAGE` at startup.
+All user-facing strings go through `i18n.t('...')` (see `src/config/i18n.ts`). Locales are in `src/config/locales/` as JSON files (`en-US.json`, `fr-FR.json`), with the same keys in both. The locale comes from the guild context (see Per-guild settings), defaulting to `secrets.LANGUAGE`. Slash command descriptions use `setDescriptionLocalizations` (Discord client language).
 
 When adding locale keys, they must be nested at the correct JSON path — top-level keys under `errors` won't resolve if the call uses `errors.play.missing.*`. Always verify the key path matches the nesting in the JSON file.
 
@@ -105,7 +125,7 @@ When adding locale keys, they must be nested at the correct JSON path — top-le
 
 ## Environment Variables
 
-Copy `.env.dist` to `.env`. Required vars: `DISCORD_TOKEN`, `DISCORD_CLIENT_ID`, `DATABASE_CONNECTION_STRING`, `DATABASE_USER`, `DATABASE_PASSWORD`. Optional: `PREFIX` (default `&`), `LANGUAGE` (default `en-US`), `DETECT_FROM_ALL_MESSAGES` (default `false` — if `true`, bot responds to YouTube URLs in any message without prefix), `DATABASE_NAME` (default `stroycord`), `LOG_DIR` (default `./logs`), `TIMEZONE` (default `Europe/Paris`, Docker only). `DOCKER_DATABASE_CONNECTION_STRING` (default `mongodb://mongodb:27017`, Docker only) — compose passes it to the bot as `DATABASE_CONNECTION_STRING`, so `.env` can keep a `localhost` URI for `npm run dev` (inside the container, `localhost` is the bot itself). `YOUTUBE_COOKIES_PATH` — path to a Netscape-format `cookies.txt` exported from YouTube; passed to yt-dlp for age-restricted videos. `BGUTIL_BASE_URL` — bgutil PoToken provider URL. `GLITCHTIP_DSN` / `GLITCHTIP_ENVIRONMENT` / `GLITCHTIP_RELEASE` — error reporting.
+Copy `.env.dist` to `.env`. Required vars: `DISCORD_TOKEN`, `DISCORD_CLIENT_ID`, `DATABASE_CONNECTION_STRING`, `DATABASE_USER`, `DATABASE_PASSWORD`. Optional: `PREFIX` (default `&`), `LANGUAGE` (default `en-US`), `DETECT_FROM_ALL_MESSAGES` (default `false` — if `true`, bot plays bare YouTube links posted without prefix), `MAX_QUEUE_SIZE` (default `100`) — these four are only defaults, each server can override them with `/config`. `TIMEZONE` (default `Europe/Paris`, busiest hour in `/stats`), `DATABASE_NAME` (default `stroycord`), `LOG_DIR` (default `./logs`). `DOCKER_DATABASE_CONNECTION_STRING` (default `mongodb://mongodb:27017`, Docker only) — compose passes it to the bot as `DATABASE_CONNECTION_STRING`, so `.env` can keep a `localhost` URI for `npm run dev` (inside the container, `localhost` is the bot itself). `YOUTUBE_COOKIES_PATH` — path to a Netscape-format `cookies.txt` exported from YouTube; passed to yt-dlp for age-restricted videos. `BGUTIL_BASE_URL` — bgutil PoToken provider URL. `GLITCHTIP_DSN` / `GLITCHTIP_ENVIRONMENT` / `GLITCHTIP_RELEASE` — error reporting.
 
 ## Release Pipeline
 

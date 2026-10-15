@@ -3,12 +3,19 @@ import { guild_model } from 'src/database/schema/guild';
 export const fetchGuild = async (guildId: string) => {
   if (!guildId) throw new Error('GuildID not specified !');
 
-  const guild = await guild_model.findOne({ guildId });
-  if (guild) return guild;
-  const query = new guild_model({ guildId });
-  await query.save();
-
-  return query;
+  // Atomic upsert: two concurrent calls can't create two documents for the same guild
+  const upsert = () =>
+    guild_model.findOneAndUpdate({ guildId }, { $setOnInsert: { guildId } }, { upsert: true, returnDocument: 'after' });
+  let guild: Awaited<ReturnType<typeof upsert>>;
+  try {
+    guild = await upsert();
+  } catch (error) {
+    // Concurrent upserts can still race on the unique index: the other insert won, read it back
+    if ((error as { code?: number }).code !== 11000) throw error;
+    guild = await upsert();
+  }
+  if (!guild) throw new Error(`Guild ${guildId} could not be created`);
+  return guild;
 };
 
 /* export const getSongs = async (guildId: string) => {

@@ -1,3 +1,4 @@
+import * as config from './config';
 import * as current from './current';
 import * as pause from './pause';
 import * as play from './play';
@@ -6,6 +7,7 @@ import * as redo from './redo';
 import * as remove from './remove';
 import * as resume from './resume';
 import * as skip from './skip';
+import * as stats from './stats';
 
 export const commands = {
   play,
@@ -16,4 +18,6 @@ export const commands = {
   queue,
   current,
   redo,
+  config,
+  stats,
 };

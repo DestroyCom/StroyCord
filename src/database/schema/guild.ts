@@ -1,11 +1,15 @@
 import mongoose from 'mongoose';
 
+// Songs kept in previouslyPlayedSongs (used by /redo); older entries are dropped
+export const HISTORY_SIZE = 50;
+
 export const guild_model = mongoose.model(
   'Guild',
   new mongoose.Schema({
     guildId: {
       type: String,
       required: true,
+      unique: true,
     },
     registeredAt: {
       type: Date,

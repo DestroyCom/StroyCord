@@ -1,4 +1,5 @@
 import { EmbedBuilder } from 'discord.js';
+import { getPrefix } from 'src/config/guildContext';
 import i18n from 'src/config/i18n';
 import { secrets } from 'src/config/secrets';
 
@@ -18,7 +19,7 @@ export const noMusicCurrentlyPlayingEmbed = (): EmbedBuilder => {
   return new EmbedBuilder()
     .setTitle(`⚠️ ${i18n.t('embedsText.errors.noMusicPlaying.title')} !`)
     .setDescription(
-      `${i18n.t('embedsText.global.youCanUse')} ${secrets.PREFIX}` +
+      `${i18n.t('embedsText.global.youCanUse')} ${getPrefix()}` +
         '`p [args]`' +
         `${i18n.t('embedsText.global.toLaunchANewMusic')} !`
     )
@@ -65,42 +66,42 @@ export const unknownRequestEmbed = (): EmbedBuilder => {
       },
       {
         name: 'play',
-        value: `${secrets.PREFIX}p [url/${i18n.t('global.search')}]`,
+        value: `${getPrefix()}p [url/${i18n.t('global.search')}]`,
         inline: true,
       },
       {
         name: 'redo',
-        value: `${secrets.PREFIX}redo`,
+        value: `${getPrefix()}redo`,
         inline: true,
       },
       {
         name: 'skip',
-        value: `${secrets.PREFIX}s`,
+        value: `${getPrefix()}s`,
         inline: true,
       },
       {
         name: 'stop',
-        value: `${secrets.PREFIX}fo`,
+        value: `${getPrefix()}fo`,
         inline: true,
       },
       {
         name: 'pause',
-        value: `${secrets.PREFIX}pa`,
+        value: `${getPrefix()}pa`,
         inline: true,
       },
       {
         name: 'resume',
-        value: `${secrets.PREFIX}re`,
+        value: `${getPrefix()}re`,
         inline: true,
       },
       {
         name: 'queue',
-        value: `${secrets.PREFIX}q`,
+        value: `${getPrefix()}q`,
         inline: true,
       },
       {
         name: 'current',
-        value: `${secrets.PREFIX}c`,
+        value: `${getPrefix()}c`,
         inline: true,
       }
     )
@@ -116,6 +117,22 @@ export const unknownError = (errorMsg: string): EmbedBuilder => {
   return new EmbedBuilder()
     .setTitle(`⚠️ ${i18n.t('embedsText.errors.unknown.title').toUpperCase()} !`)
     .setDescription(errorMsg)
+    .setAuthor({
+      name: 'Stroycord',
+      iconURL: secrets.STROYCORD_LOGO,
+    })
+    .setColor('#37123C')
+    .setTimestamp();
+};
+
+export const queueLimitEmbed = (
+  reason: 'queueFull' | 'userLimit',
+  limits: { maxQueueSize: number; maxSongsPerUser: number }
+): EmbedBuilder => {
+  const max = reason === 'queueFull' ? limits.maxQueueSize : limits.maxSongsPerUser;
+  return new EmbedBuilder()
+    .setTitle(`⚠️ ${i18n.t(`queueLimits.${reason}.title`)} !`)
+    .setDescription(i18n.t(`queueLimits.${reason}.description`, { max }))
     .setAuthor({
       name: 'Stroycord',
       iconURL: secrets.STROYCORD_LOGO,

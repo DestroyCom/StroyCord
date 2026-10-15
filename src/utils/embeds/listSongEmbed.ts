@@ -1,4 +1,5 @@
 import { EmbedBuilder, type User } from 'discord.js';
+import { getPrefix } from 'src/config/guildContext';
 import i18n from 'src/config/i18n';
 import { secrets } from 'src/config/secrets';
 
@@ -9,7 +10,7 @@ export const queueEmbed = async (nextSongs: songInterface[]): Promise<EmbedBuild
     return new EmbedBuilder()
       .setTitle(`🤔 ${i18n.t('embedsText.lists.emptyQueue.title')}...`)
       .setDescription(
-        `${i18n.t('embedsText.global.youCanUse')} ${secrets.PREFIX}` +
+        `${i18n.t('embedsText.global.youCanUse')} ${getPrefix()}` +
           '`p [args]`' +
           `${i18n.t('embedsText.global.toLaunchANewMusic')} !`
       )
@@ -70,7 +71,7 @@ export const playlistEmbed = async (author: User, playlistData: PlaylistInfo): P
     .addFields(
       {
         name: `${i18n.t('embedsText.global.findWith')} :`,
-        value: `${secrets.PREFIX}p ${playlistData.url}`,
+        value: `${getPrefix()}p ${playlistData.url}`,
       },
       {
         name: `${i18n.t('embedsText.lists.playlist.fields.playListName')} :`,
@@ -84,9 +85,18 @@ export const playlistEmbed = async (author: User, playlistData: PlaylistInfo): P
       },
       {
         name: `${i18n.t('embedsText.lists.playlist.fields.putInQueue')} :`,
-        value: `${playlistData.items.length > 30 ? 30 : playlistData.items.length}${i18n.t('embedsText.global.musics')}`,
+        value: `${playlistData.addedCount} ${i18n.t('embedsText.global.musics')}`,
       }
     );
+
+  if (playlistData.skippedCount > 0) {
+    msg.addFields({
+      name: `${i18n.t('embedsText.lists.playlist.fields.skipped')} :`,
+      value:
+        `${playlistData.skippedCount} ${i18n.t('embedsText.global.musics')}` +
+        (playlistData.limitReached ? ` (${i18n.t(`queueLimits.short.${playlistData.limitReached}`)})` : ''),
+    });
+  }
 
   if (playlistData.items.length > 0 && playlistData.items[0].thumbnail) {
     msg.setThumbnail(playlistData.items[0].thumbnail);

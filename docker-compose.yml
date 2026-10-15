@@ -10,6 +10,11 @@ services:
       DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
       PREFIX: ${PREFIX:-&}
       LANGUAGE: ${LANGUAGE:-en-US}
+      DETECT_FROM_ALL_MESSAGES: ${DETECT_FROM_ALL_MESSAGES:-false}
+      MAX_QUEUE_SIZE: ${MAX_QUEUE_SIZE:-100}
+      # Never empty: an empty value would stop the bot at startup ("No logo provided")
+      STROYCORD_LOGO: ${STROYCORD_LOGO:-https://destroykeaum.alwaysdata.net/assets/other/stroybot_logo.png}
+      TIMEZONE: ${TIMEZONE:-Europe/Paris}
       # Separate var so .env can keep a localhost URI for `npm run dev`: inside the
       # container, localhost is the bot itself, not the mongodb service
       DATABASE_CONNECTION_STRING: ${DOCKER_DATABASE_CONNECTION_STRING:-mongodb://mongodb:27017}
@@ -66,10 +71,9 @@ services:
     image: mongo-express:1
     restart: unless-stopped
     environment:
-      ME_CONFIG_MONGODB_SERVER: ${MONGO_HOST:-mongodb}
+      # mongo-express 1.x ignores ME_CONFIG_MONGODB_SERVER and defaults to mongodb://mongo:27017
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_INITDB_ROOT_USERNAME:-root}:${MONGO_INITDB_ROOT_PASSWORD:-root}@${MONGO_HOST:-mongodb}:27017/
       ME_CONFIG_MONGODB_ENABLE_ADMIN: ${MONGOEXPRESS_ENABLE_ADMIN:-true}
-      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_INITDB_ROOT_USERNAME:-root}
-      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-root}
       ME_CONFIG_BASICAUTH_USERNAME: ${MONGOEXPRESS_BASIC_AUTH_USERNAME:-admin}
       ME_CONFIG_BASICAUTH_PASSWORD: ${MONGOEXPRESS_BASIC_AUTH_PASSWORD:-admin123}
     ports:
@@ -80,7 +84,7 @@ services:
       mongodb:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://${ME_CONFIG_BASICAUTH_USERNAME:-admin}:${ME_CONFIG_BASICAUTH_PASSWORD:-admin123}@localhost:8081"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://${MONGOEXPRESS_BASIC_AUTH_USERNAME:-admin}:${MONGOEXPRESS_BASIC_AUTH_PASSWORD:-admin123}@localhost:8081"]
       interval: 30s
       timeout: 10s
       retries: 3
