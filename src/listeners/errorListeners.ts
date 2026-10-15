@@ -1,13 +1,15 @@
 import { type Client, Events, type Guild } from 'discord.js';
 import { activePlayers } from 'src/Bot';
+import { captureError } from 'src/config/monitoring';
 import { remove } from 'src/core/player';
 import { emptyAllGuild, removeGuild } from 'src/database/queries/guilds/delete';
 
 import { removeAllAudioPlayerListener } from './playerListeners';
 
 export default (client: Client): void => {
-  client.on(Events.Error, async () => {
-    console.log('An error occured');
+  client.on(Events.Error, async (error) => {
+    console.error('An error occured', error);
+    captureError(error, { step: 'discordClient' });
     await emptyAllGuild();
     //Remove all listerners from all audio players
     for (const guildId in activePlayers) {

@@ -1,13 +1,6 @@
-import { spawn } from 'node:child_process';
-import { dirname, join } from 'node:path';
+import { createYtdlpStream } from 'src/core/ytdlp';
 import { describe, expect, it } from 'vitest';
 import { Innertube } from 'youtubei.js';
-
-const YTDLP_BIN = join(
-  dirname(require.resolve('youtube-dl-exec/package.json')),
-  'bin',
-  process.platform === 'win32' ? 'yt-dlp.exe' : 'yt-dlp'
-);
 
 const TEST_VIDEO_ID = 'dQw4w9WgXcQ';
 const TEST_VIDEO_URL = `https://www.youtube.com/watch?v=${TEST_VIDEO_ID}`;
@@ -39,15 +32,8 @@ describe('YouTube smoke tests', () => {
     'yt-dlp streams audio bytes from YouTube',
     () =>
       new Promise<void>((resolve, reject) => {
-        const proc = spawn(YTDLP_BIN, [
-          TEST_VIDEO_URL,
-          '--output',
-          '-',
-          '--format',
-          'bestaudio',
-          '--quiet',
-          '--no-warnings',
-        ]);
+        // Same arguments as the player uses in production
+        const proc = createYtdlpStream(TEST_VIDEO_URL);
 
         let received = 0;
         let done = false;

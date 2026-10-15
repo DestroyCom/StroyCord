@@ -1,0 +1,51 @@
+name: Watch yt-dlp & rebuild
+
+# YouTube changes often break old yt-dlp releases: bump .ytdlp-version daily
+# and rebuild the Docker image when a new release is published.
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    name: Check yt-dlp version
+    runs-on: ubuntu-latest
+    outputs:
+      updated: ${{ steps.check.outputs.updated }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Check & update yt-dlp version
+        id: check
+        run: |
+          LATEST=$(curl -sf "https://pypi.org/pypi/yt-dlp/json" | jq -r '.info.version')
+          CURRENT=$(tr -d '[:space:]' < .ytdlp-version 2>/dev/null || echo "")
+          echo "Latest: $LATEST — Current: $CURRENT"
+          if [ -n "$LATEST" ] && [ "$LATEST" != "$CURRENT" ]; then
+            echo "$LATEST" > .ytdlp-version
+            git add .ytdlp-version
+            git commit -m "chore: update yt-dlp to $LATEST"
+            git push
+            echo "updated=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "updated=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    name: Rebuild Docker image
+    needs: check
+    if: needs.check.outputs.updated == 'true'
+    uses: ./.github/workflows/build.yml
+    secrets: inherit

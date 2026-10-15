@@ -10,6 +10,7 @@ import {
   resumeCommand,
   skipCommand,
 } from 'src/commands/textCommands';
+import { captureError } from 'src/config/monitoring';
 import { secrets } from 'src/config/secrets';
 import { fetchGuild } from 'src/database/queries/guilds/get';
 import { unknownRequestEmbed } from 'src/utils/embeds/errorsEmbed';
@@ -88,7 +89,12 @@ export default (client: Client): void => {
     }
     const { commandName } = interaction;
     if (commands[commandName as keyof typeof commands]) {
-      commands[commandName as keyof typeof commands].execute(interaction);
+      try {
+        await commands[commandName as keyof typeof commands].execute(interaction);
+      } catch (error) {
+        console.error(`[interaction] /${commandName} failed:`, error);
+        captureError(error, { guildId: interaction.guildId ?? undefined, command: commandName });
+      }
     }
   });
 };
