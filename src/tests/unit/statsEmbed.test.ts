@@ -66,6 +66,18 @@ describe('top pagination', () => {
 });
 
 describe('stats embeds', () => {
+  it('escapes YouTube titles so they cannot break or forge masked links', () => {
+    const view = topView('tracks', 'all', 0, {
+      entries: [
+        { key: 'v1', label: 'Hit](https://evil.example) **bold**', detail: 'A_B', plays: 1, listenedMs: 60_000 },
+      ],
+      total: 1,
+    });
+    const description = view.embeds[0].toJSON().description ?? '';
+    expect(description).toContain('[Hit\\]\\(https://evil.example\\) \\*\\*bold\\*\\*](https://youtu.be/v1)');
+    expect(description).toContain('A\\_B');
+  });
+
   it('builds a valid server embed', () => {
     const embed = serverStatsEmbed(
       'My server',

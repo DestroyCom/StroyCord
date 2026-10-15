@@ -1,11 +1,11 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, type User } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, escapeMarkdown, type User } from 'discord.js';
 import i18n from 'src/config/i18n';
 import { secrets } from 'src/config/secrets';
 import type { StatsSummary, TopEntry, TopKind } from 'src/database/queries/plays';
 
 export const STATS_PERIODS = ['7d', '30d', 'all'] as const;
 export type StatsPeriod = (typeof STATS_PERIODS)[number];
-export const TOP_KINDS: readonly TopKind[] = ['tracks', 'artists', 'djs'];
+const TOP_KINDS: readonly TopKind[] = ['tracks', 'artists', 'djs'];
 export const TOP_PAGE_SIZE = 10;
 
 const PERIOD_DAYS: Record<StatsPeriod, number | null> = { '7d': 7, '30d': 30, all: null };
@@ -32,12 +32,16 @@ export const formatDuration = (ms: number) => {
 
 const plays = (count: number) => `${count} ${i18n.t(count > 1 ? 'stats.units.plays' : 'stats.units.play')}`;
 
+// Titles and channel names come from YouTube: escape markdown, and brackets/parentheses
+// so a title can't close the masked link or forge another one
+const safeText = (text: string) => escapeMarkdown(text).replace(/[[\]()]/g, '\\$&');
+
 const describeEntry = (kind: TopKind, entry: TopEntry) => {
   switch (kind) {
     case 'tracks':
-      return `[${entry.label}](https://youtu.be/${entry.key})${entry.detail ? ` — ${entry.detail}` : ''}`;
+      return `[${safeText(entry.label)}](https://youtu.be/${encodeURIComponent(entry.key)})${entry.detail ? ` — ${safeText(entry.detail)}` : ''}`;
     case 'artists':
-      return entry.label;
+      return safeText(entry.label);
     case 'djs':
       return `<@${entry.key}>`;
   }
@@ -88,7 +92,7 @@ export const serverStatsEmbed = (guildName: string, summary: StatsSummary, perio
   if (summary.topArtist) {
     embed.addFields({
       name: `🎤 ${i18n.t('stats.fields.topArtist')}`,
-      value: `${summary.topArtist.label} (${plays(summary.topArtist.plays)})`,
+      value: `${describeEntry('artists', summary.topArtist)} (${plays(summary.topArtist.plays)})`,
       inline: true,
     });
   }
@@ -113,7 +117,7 @@ export const userStatsEmbed = (user: User, summary: StatsSummary, topTracks: Top
   if (summary.topArtist) {
     embed.addFields({
       name: `🎤 ${i18n.t('stats.fields.topArtist')}`,
-      value: `${summary.topArtist.label} (${plays(summary.topArtist.plays)})`,
+      value: `${describeEntry('artists', summary.topArtist)} (${plays(summary.topArtist.plays)})`,
     });
   }
   if (topTracks.length > 0) {

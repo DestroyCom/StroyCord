@@ -16,6 +16,11 @@ _You have to add your prefix before each command (e.g. `&p [music]`)_
 - `queue` display the current music queue (or `q`).
 - `current` displays the music currently playing (or `c`).
 
+Every command also exists as a slash command (`/play`, `/skip`…), plus:
+
+- `/config` (members with the _Manage Server_ permission only) opens the server settings panel: language, text command prefix, YouTube links without prefix, channels accepting commands, queue size and songs per member (the song currently playing counts in both limits), statistics on/off. Settings are stored per server and survive restarts.
+- `/stats server|top|user` shows listening statistics: total listening time, most played songs, artists and DJs, busiest hour, per member, over 7 days, 30 days or all time.
+
 ---
 
 ## Deploys
@@ -61,18 +66,19 @@ You can now launch it with the command:
 | -------------------------- | -------- | -------------- | -------------------- | --------------------------------------------------------- |
 | DISCORD_TOKEN              | TRUE     |                | FALSE                | string - Your discord app token                           |
 | DISCORD_CLIENT_ID          | TRUE     |                | FALSE                | string - Your discord client id                           |
-| PREFIX                     | FALSE    | &              | FALSE                | string - Your bot prefix                                  |
-| DETECT_FROM_ALL_MESSAGES   | FALSE    | false          | FALSE                | boolean - Used to directly detect and play a youtube link |
+| PREFIX                     | FALSE    | &              | FALSE                | string - Default bot prefix (each server can change it with /config) |
+| DETECT_FROM_ALL_MESSAGES   | FALSE    | false          | FALSE                | boolean - Default for playing bare YouTube links without prefix (/config) |
+| MAX_QUEUE_SIZE             | FALSE    | 100            | FALSE                | number - Default queue size, current song included (/config, max 500) |
 | -------------------------- | -------- | ------------   | -------------------- | ------------------------------------------                |
 | DATABASE_CONNECTION_STRING | TRUE     |                | FALSE                | string - Your mongodb uri string                          |
 | DATABASE_USER              | TRUE     |                | FALSE                | string - Your mongodb user name                           |
 | DATABASE_PASSWORD          | TRUE     |                | FALSE                | string - Your mongodb user password                       |
 | DATABASE_NAME              | FALSE    | stroycord      | FALSE                | string - Your mongodb database name                       |
 | STROYCORD_LOGO             | FALSE    | StroyCord Logo | FALSE                | string - The avatar url you want to give to the bot       |
-| LANGUAGE                   | FALSE    | en-US          | FALSE                | string - The bot language                                 |
+| LANGUAGE                   | FALSE    | en-US          | FALSE                | string - Default bot language, `en-US` or `fr-FR` (/config) |
 | -------------------------- | -------- | ------------   | -------------------- | ------------------------------------------                |
 | LOG_DIR                    | FALSE    | /log           | TRUE                 | string - Your logging directory path use for docker       |
-| TIMEZONE                   | FALSE    | Europe/Paris   | TRUE                 | string - Your container timezone                          |
+| TIMEZONE                   | FALSE    | Europe/Paris   | FALSE                | string - Timezone of the busiest hour in /stats |
 | DOCKER_DATABASE_CONNECTION_STRING | FALSE | mongodb://mongodb:27017 | TRUE | string - Mongodb uri used by the bot container (replaces DATABASE_CONNECTION_STRING in compose) |
 | -------------------------- | -------- | ------------   | -------------------- | ------------------------------------------                |
 | YOUTUBE_COOKIES_PATH       | FALSE    |                | FALSE                | string - Netscape cookies.txt used by yt-dlp (age-restricted videos) |
