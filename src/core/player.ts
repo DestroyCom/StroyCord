@@ -10,6 +10,7 @@ import {
 import { activePlayers, client } from 'src/Bot';
 import { captureError, captureMessage } from 'src/config/monitoring';
 import { sendErrorEmbed } from 'src/core/messages';
+import { trackPlay } from 'src/core/stats';
 import { createYtdlpStream, extractYtdlpError } from 'src/core/ytdlp';
 import { emptyNextSongs, removeCurrentPlayingSong } from 'src/database/queries/guilds/delete';
 import { getCurrentVoiceChannel, getFirstSong, getNextSongs } from 'src/database/queries/guilds/get';
@@ -115,6 +116,8 @@ export const songPlayer = async (guildId: string) => {
   console.log(`[player] streaming ${nextSong.url} via yt-dlp (${probe.type})`);
   const audioStream = createAudioResource(probe.stream, {
     inputType: probe.type,
+    // Read back by the stats when the song ends
+    metadata: nextSong,
   });
 
   audioPlayer.play(audioStream);
@@ -148,6 +151,9 @@ export const remove = async (guildId: string, isFromSkip: boolean = false) => {
     killYtdlp(guildId);
 
     if (activePlayers[guildId]?.audioPlayer) {
+      // Listeners are removed below, so the state change can't record the song being stopped
+      const { state } = activePlayers[guildId].audioPlayer;
+      trackPlay(guildId, 'resource' in state ? state.resource : undefined);
       removeAllAudioPlayerListener(activePlayers[guildId].audioPlayer);
       activePlayers[guildId].audioPlayer.stop();
       delete activePlayers[guildId];

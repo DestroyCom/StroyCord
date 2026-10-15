@@ -9,6 +9,7 @@ import { captureError } from 'src/config/monitoring';
 import { sendEmbed } from 'src/core/messages';
 import { remove, skipSong } from 'src/core/player';
 import { withGuildSettings } from 'src/core/settings';
+import { trackPlay } from 'src/core/stats';
 import { shiftSongs } from 'src/database/queries/guilds/update';
 
 export const createAudioPlayerListener = (audioPlayer: AudioPlayer, guildId: string) => {
@@ -31,6 +32,11 @@ export const createAudioPlayerListener = (audioPlayer: AudioPlayer, guildId: str
 };
 
 const handleStateChange = async (guildId: string, oldState: AudioPlayerState, newState: AudioPlayerState) => {
+  // The resource changes when a song ends (→ Idle) and when it's skipped (play() of the next one: → Buffering)
+  const oldResource = 'resource' in oldState ? oldState.resource : undefined;
+  const newResource = 'resource' in newState ? newState.resource : undefined;
+  if (oldResource && oldResource !== newResource) trackPlay(guildId, oldResource);
+
   // Playing → Idle: track finished. Buffering → Idle: the stream ended before
   // playback started (e.g. yt-dlp failed) — move on instead of stalling the queue.
   if (
