@@ -34,7 +34,7 @@ const plays = (count: number) => `${count} ${i18n.t(count > 1 ? 'stats.units.pla
 
 // Titles and channel names come from YouTube: escape markdown, and brackets/parentheses
 // so a title can't close the masked link or forge another one
-const safeText = (text: string) => escapeMarkdown(text).replace(/[[\]()]/g, '\\$&');
+const safeText = (text: string) => escapeMarkdown(text).replace(/[\\[\]()]/g, '\\$&');
 
 const describeEntry = (kind: TopKind, entry: TopEntry) => {
   switch (kind) {
