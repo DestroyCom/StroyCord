@@ -1,4 +1,4 @@
-import { guild_model } from 'src/database/schema/guild';
+import { guild_model, HISTORY_SIZE } from 'src/database/schema/guild';
 
 import { emptyNextSongs } from './delete';
 import { fetchGuild } from './get';
@@ -17,7 +17,7 @@ export const shiftSongs = async (guildId: string) => {
   return await guild_model.updateOne(
     { guildId },
     {
-      $push: { previouslyPlayedSongs: firstSong },
+      $push: { previouslyPlayedSongs: { $each: [firstSong], $slice: -HISTORY_SIZE } },
       $pop: { nextSongs: -1 },
     }
   );

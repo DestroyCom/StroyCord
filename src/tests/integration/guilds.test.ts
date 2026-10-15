@@ -1,9 +1,14 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
-import { emptyAllGuild, emptyNextSongs, removeCurrentPlayingSong } from 'src/database/queries/guilds/delete';
+import {
+  emptyAllGuild,
+  emptyNextSongs,
+  removeCurrentPlayingSong,
+  removeDuplicateGuilds,
+} from 'src/database/queries/guilds/delete';
 import { fetchGuild, getFirstSong, getLastPlayedSong, getNextSongs } from 'src/database/queries/guilds/get';
 import { pushSongs, shiftSongs } from 'src/database/queries/guilds/update';
-import { guild_model } from 'src/database/schema/guild';
+import { guild_model, HISTORY_SIZE } from 'src/database/schema/guild';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 let mongod: MongoMemoryServer;
@@ -53,6 +58,12 @@ describe('fetchGuild', () => {
     expect(guild2.guildId).toBe(GUILD_ID);
     const count = await guild_model.countDocuments({ guildId: GUILD_ID });
     expect(count).toBe(1);
+  });
+
+  it('creates a single document when called concurrently', async () => {
+    await guild_model.init();
+    await Promise.all(Array.from({ length: 10 }, () => fetchGuild(GUILD_ID)));
+    expect(await guild_model.countDocuments({ guildId: GUILD_ID })).toBe(1);
   });
 
   it('throws when guildId is empty', async () => {
@@ -136,6 +147,37 @@ describe('shiftSongs', () => {
     const guild = await fetchGuild(GUILD_ID);
     expect(guild.nextSongs).toEqual([]);
     expect(guild.previouslyPlayedSongs).toEqual([]);
+  });
+});
+
+describe('play history', () => {
+  it('keeps only the last HISTORY_SIZE songs', async () => {
+    await fetchGuild(GUILD_ID);
+    const songs = Array.from({ length: HISTORY_SIZE + 5 }, (_, i) => mockSong(`s${i}`));
+    await pushSongs(GUILD_ID, songs);
+    for (let i = 0; i < songs.length; i++) await shiftSongs(GUILD_ID);
+    const guild = await fetchGuild(GUILD_ID);
+    expect(guild.previouslyPlayedSongs).toHaveLength(HISTORY_SIZE);
+    expect((guild.previouslyPlayedSongs?.at(-1) as ReturnType<typeof mockSong> | undefined)?.title).toBe(`s${HISTORY_SIZE + 4}`);
+  });
+});
+
+describe('removeDuplicateGuilds', () => {
+  it('keeps the oldest document of each guild', async () => {
+    await guild_model.collection.dropIndexes().catch(() => undefined);
+    const [first] = await guild_model.collection
+      .insertMany([
+        { guildId: 'dup', nextSongs: [], previouslyPlayedSongs: [] },
+        { guildId: 'dup', nextSongs: [], previouslyPlayedSongs: [] },
+        { guildId: 'other', nextSongs: [], previouslyPlayedSongs: [] },
+      ])
+      .then((res) => Object.values(res.insertedIds));
+    expect(await removeDuplicateGuilds()).toBe(1);
+    const remaining = await guild_model.find({ guildId: 'dup' });
+    expect(remaining).toHaveLength(1);
+    expect(String(remaining[0]._id)).toBe(String(first));
+    expect(await guild_model.countDocuments({ guildId: 'other' })).toBe(1);
+    await guild_model.syncIndexes();
   });
 });
 
