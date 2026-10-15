@@ -1,3 +1,6 @@
+// Must stay the first import: initialises GlitchTip before anything can throw
+import './config/monitoring';
+
 import { Client, GatewayIntentBits } from 'discord.js';
 
 import i18n from './config/i18n';

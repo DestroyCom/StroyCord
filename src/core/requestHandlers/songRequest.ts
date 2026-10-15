@@ -1,5 +1,6 @@
 import type { User, VoiceBasedChannel } from 'discord.js';
 import { activePlayers } from 'src/Bot';
+import { captureError } from 'src/config/monitoring';
 import { pushSongs, updateVoiceChannel } from 'src/database/queries/guilds/update';
 import { extractSongData, extractVoiceChannelData } from 'src/utils/songUtils';
 
@@ -38,6 +39,7 @@ export const songRequest = async (
       await sendEmbed(guildId, false, false);
     }
   } catch (error) {
+    captureError(error, { guildId, url, step: 'songRequest' });
     await sendErrorEmbed(guildId, textChannelId, String(error));
   }
 };

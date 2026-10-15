@@ -10,11 +10,17 @@ services:
       DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
       PREFIX: ${PREFIX:-&}
       LANGUAGE: ${LANGUAGE:-en-US}
-      DATABASE_CONNECTION_STRING: ${DATABASE_CONNECTION_STRING:-mongodb://mongodb:27017}
+      # Separate var so .env can keep a localhost URI for `npm run dev`: inside the
+      # container, localhost is the bot itself, not the mongodb service
+      DATABASE_CONNECTION_STRING: ${DOCKER_DATABASE_CONNECTION_STRING:-mongodb://mongodb:27017}
       DATABASE_USER: ${DATABASE_USER}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
       DATABASE_NAME: ${DATABASE_NAME:-stroycord}
       YOUTUBE_COOKIES_PATH: ${YOUTUBE_COOKIES_PATH:-}
+      BGUTIL_BASE_URL: ${BGUTIL_BASE_URL:-http://bgutil-provider:4416}
+      GLITCHTIP_DSN: ${GLITCHTIP_DSN:-}
+      GLITCHTIP_ENVIRONMENT: ${GLITCHTIP_ENVIRONMENT:-production}
+      GLITCHTIP_RELEASE: ${GLITCHTIP_RELEASE:-}
     volumes:
       - ${YOUTUBE_COOKIES_PATH_HOST:-/dev/null}:/app/cookies.txt:ro
     restart: on-failure
@@ -23,6 +29,17 @@ services:
     depends_on:
       mongodb:
         condition: service_healthy
+      bgutil-provider:
+        condition: service_started
+
+  # YouTube PoToken provider used by the yt-dlp bgutil plugin (same as StroyGetter)
+  bgutil-provider:
+    container_name: bgutil-provider
+    # Keep in sync with BGUTIL_VERSION in the Dockerfile (plugin and server must match)
+    image: brainicism/bgutil-ytdlp-pot-provider:2.0.2
+    restart: unless-stopped
+    networks:
+      - stroycord-network
 
   mongodb:
     container_name: mongodb

@@ -54,9 +54,17 @@ Three handlers resolve the input type before calling into the player:
 - Fetches the first song from MongoDB (`nextSongs[0]`)
 - Joins the voice channel stored in DB
 - Creates/reuses an `AudioPlayer` stored in the in-memory `activePlayers` map (exported from `Bot.ts`)
-- Streams audio via `youtube-dl-exec` piped to `createAudioResource`
+- Streams audio via yt-dlp (`src/core/ytdlp.ts`, Opus preferred) → `demuxProbe` → `createAudioResource`. WebM/Opus (YouTube's usual best audio) goes to Discord as-is, with no ffmpeg or Opus encoding; other formats fall back to `StreamType.Arbitrary` (ffmpeg + Opus encoder). The yt-dlp process per guild is killed on skip/stop
 
 `activePlayers` is an in-memory map `{ [guildId]: { audioPlayer } }` — the single source of truth for whether a guild is currently playing.
+
+### yt-dlp (`src/core/ytdlp.ts`)
+
+Same setup as StroyGetter. `buildYtdlpArgs()` always passes `--js-runtimes node:<execPath>` — YouTube requires JS challenge solving, and without a runtime stream URLs return **HTTP 403**. In Docker, yt-dlp is installed from PyPI (`yt-dlp[default]`, includes the `yt-dlp-ejs` solver) at the version pinned in `.ytdlp-version` (bumped daily by `watch_ytdlp.yml`), along with the `bgutil-ytdlp-pot-provider` plugin, and copied over `node_modules/youtube-dl-exec/bin/yt-dlp`. Optional: `YOUTUBE_COOKIES_PATH` (a private 0600 copy per yt-dlp process, deleted when it exits), `BGUTIL_BASE_URL` (docker-compose runs a `bgutil-provider` service).
+
+### Error reporting (`src/config/monitoring.ts`)
+
+GlitchTip via `@sentry/node`, enabled only when `GLITCHTIP_DSN` is set. Imported first in `Bot.ts`. Use `captureError(err, { guildId, ... })` / `captureMessage(msg, context, level)` — keep variable data (urls, ids) in the context so GlitchTip groups issues by message.
 
 ### State: In-Memory vs. Database
 
@@ -93,11 +101,11 @@ When adding locale keys, they must be nested at the correct JSON path — top-le
 
 ### Path Aliases
 
-`tsconfig.json` sets `baseUrl: "./"` — imports use `src/...` absolute paths (e.g. `import { client } from 'src/Bot'`). This is resolved by `tsx` at dev time and `tsup` at build time.
+`tsconfig.json` maps `"paths": { "src/*": ["./src/*"] }` (TypeScript 7 removed `baseUrl`) — imports use `src/...` absolute paths (e.g. `import { client } from 'src/Bot'`). This is resolved by `tsx` at dev time and `tsup` at build time.
 
 ## Environment Variables
 
-Copy `.env.dist` to `.env`. Required vars: `DISCORD_TOKEN`, `DISCORD_CLIENT_ID`, `DATABASE_CONNECTION_STRING`, `DATABASE_USER`, `DATABASE_PASSWORD`. Optional: `PREFIX` (default `&`), `LANGUAGE` (default `en-US`), `DETECT_FROM_ALL_MESSAGES` (default `false` — if `true`, bot responds to YouTube URLs in any message without prefix), `DATABASE_NAME` (default `stroycord`), `LOG_DIR` (default `./logs`), `TIMEZONE` (default `Europe/Paris`, Docker only). `YOUTUBE_COOKIES_PATH` — path to a Netscape-format `cookies.txt` exported from YouTube; used alongside the auto-generated PoToken for age-restricted video access.
+Copy `.env.dist` to `.env`. Required vars: `DISCORD_TOKEN`, `DISCORD_CLIENT_ID`, `DATABASE_CONNECTION_STRING`, `DATABASE_USER`, `DATABASE_PASSWORD`. Optional: `PREFIX` (default `&`), `LANGUAGE` (default `en-US`), `DETECT_FROM_ALL_MESSAGES` (default `false` — if `true`, bot responds to YouTube URLs in any message without prefix), `DATABASE_NAME` (default `stroycord`), `LOG_DIR` (default `./logs`), `TIMEZONE` (default `Europe/Paris`, Docker only). `DOCKER_DATABASE_CONNECTION_STRING` (default `mongodb://mongodb:27017`, Docker only) — compose passes it to the bot as `DATABASE_CONNECTION_STRING`, so `.env` can keep a `localhost` URI for `npm run dev` (inside the container, `localhost` is the bot itself). `YOUTUBE_COOKIES_PATH` — path to a Netscape-format `cookies.txt` exported from YouTube; passed to yt-dlp for age-restricted videos. `BGUTIL_BASE_URL` — bgutil PoToken provider URL. `GLITCHTIP_DSN` / `GLITCHTIP_ENVIRONMENT` / `GLITCHTIP_RELEASE` — error reporting.
 
 ## Release Pipeline
 
@@ -105,5 +113,7 @@ GitHub Actions workflows chain in order: `create_tag.yml` → `build.yml` (Docke
 
 ## Gotchas
 
-- **Docker Alpine image** needs both `ffmpeg` and `python3` (`RUN apk add --no-cache ffmpeg python3`) — `python3` is required by some `youtube-dl-exec` internals.
+- **Docker Alpine image** needs `ffmpeg`, `python3` and `py3-pip` — yt-dlp is a pip install (see yt-dlp section). The build stage sets `YOUTUBE_DL_SKIP_DOWNLOAD=true` (youtube-dl-exec's postinstall hits GitHub API rate limits); do the same locally if `npm ci` fails on it.
+- **Docker HEALTHCHECK** — the bot has no HTTP server: `src/core/healthcheck.ts` rewrites `/tmp/stroycord-healthy` every 30 s while the gateway is `Ready`; the image is unhealthy when the file is older than 90 s. Base image is pinned to `node:24-alpine3.24`, and `BGUTIL_VERSION` (Dockerfile) must match the `bgutil-provider` image tag in docker-compose.
+- **Opus encoder** — `@discordjs/opus` is an `optionalDependency`: it has no prebuilt binary for Node 24 on Alpine and its source build fails on arm64 (Apple Silicon / OrbStack). When it can't install, `prism-media` falls back to `opusscript` (pure JS/WASM, pinned to `0.0.8` to match prism-media's peer range). Don't move `@discordjs/opus` back to `dependencies`.
 - **`message.delete()` in `messageListener`** — always use a `DiscordAPIError`-aware catch; silently ignore codes `10008` (Unknown Message) and `50013` (Missing Permissions), log everything else.

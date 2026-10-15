@@ -1,12 +1,11 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "module": "commonjs",
+    "module": "preserve",
     "rootDir": "./src/",
     "outDir": "./dist/",
     "strict": true,
-    "moduleResolution": "node",
-    "importHelpers": true,
+    "moduleResolution": "bundler",
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -16,10 +15,11 @@
     "removeComments": true,
     "typeRoots": ["node_modules/@types"],
     "sourceMap": false,
-    "baseUrl": "./",
-    "ignoreDeprecations": "6.0"
+    "paths": {
+      "src/*": ["./src/*"]
+    }
   },
   "files": ["src/Bot.ts"],
-  "include": ["./**/*.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

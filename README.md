@@ -73,6 +73,13 @@ You can now launch it with the command:
 | -------------------------- | -------- | ------------   | -------------------- | ------------------------------------------                |
 | LOG_DIR                    | FALSE    | /log           | TRUE                 | string - Your logging directory path use for docker       |
 | TIMEZONE                   | FALSE    | Europe/Paris   | TRUE                 | string - Your container timezone                          |
+| DOCKER_DATABASE_CONNECTION_STRING | FALSE | mongodb://mongodb:27017 | TRUE | string - Mongodb uri used by the bot container (replaces DATABASE_CONNECTION_STRING in compose) |
+| -------------------------- | -------- | ------------   | -------------------- | ------------------------------------------                |
+| YOUTUBE_COOKIES_PATH       | FALSE    |                | FALSE                | string - Netscape cookies.txt used by yt-dlp (age-restricted videos) |
+| BGUTIL_BASE_URL            | FALSE    | http://bgutil-provider:4416 (compose) | FALSE | string - bgutil PoToken provider URL used by yt-dlp |
+| GLITCHTIP_DSN              | FALSE    |                | FALSE                | string - GlitchTip project DSN, enables error reporting    |
+| GLITCHTIP_ENVIRONMENT      | FALSE    | NODE_ENV       | FALSE                | string - Environment name shown in GlitchTip              |
+| GLITCHTIP_RELEASE          | FALSE    |                | FALSE                | string - Release name shown in GlitchTip                  |
 
 
 ---
@@ -95,7 +102,7 @@ services:
       LANGUAGE: ${LANGUAGE}
       LOG_DIR: ${LOG_DIR:-./logs}
       TIMEZONE: ${TIMEZONE:-Europe/Paris}
-      DATABASE_CONNECTION_STRING: ${DATABASE_CONNECTION_STRING}
+      DATABASE_CONNECTION_STRING: ${DOCKER_DATABASE_CONNECTION_STRING:-mongodb://mongodb:27017}
       DATABASE_USER: ${DATABASE_USER}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
       DATABASE_NAME: ${DATABASE_NAME}

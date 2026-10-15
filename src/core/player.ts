@@ -1,15 +1,16 @@
-import { spawn } from 'node:child_process';
-import { dirname, join } from 'node:path';
+import type { ChildProcess } from 'node:child_process';
 import {
   AudioPlayerStatus,
   createAudioPlayer,
   createAudioResource,
+  demuxProbe,
   getVoiceConnection,
   joinVoiceChannel,
-  StreamType,
 } from '@discordjs/voice';
 import { activePlayers, client } from 'src/Bot';
+import { captureError, captureMessage } from 'src/config/monitoring';
 import { sendErrorEmbed } from 'src/core/messages';
+import { createYtdlpStream, extractYtdlpError } from 'src/core/ytdlp';
 import { emptyNextSongs, removeCurrentPlayingSong } from 'src/database/queries/guilds/delete';
 import { getCurrentVoiceChannel, getFirstSong, getNextSongs } from 'src/database/queries/guilds/get';
 import { shiftSongs } from 'src/database/queries/guilds/update';
@@ -20,41 +21,17 @@ import {
 } from 'src/listeners/playerListeners';
 import type { songInterface } from 'src/utils/interfaces';
 
-// yt-dlp binary path managed by youtube-dl-exec (downloaded automatically on first use)
-const YTDLP_BIN = join(
-  dirname(require.resolve('youtube-dl-exec/package.json')),
-  'bin',
-  process.platform === 'win32' ? 'yt-dlp.exe' : 'yt-dlp'
-);
+// Current yt-dlp process per guild, killed on skip/stop so it doesn't linger in the background
+const ytdlpProcesses = new Map<string, ChildProcess>();
 
-/**
- * Spawns yt-dlp and pipes its stdout directly to Discord's audio player.
- *
- * Why yt-dlp instead of youtubei.js download():
- * YouTube (2025) requires BotGuard-attested PoTokens for WEB client streaming.
- * Generating a valid BotGuard PoToken in Node.js without a real browser is not
- * possible — jsdom fails the APF runtime assertion. Alternative clients
- * (iOS, ANDROID, WEB_REMIX) all produce rqh=1 URLs that YouTube rejects when
- * fetched outside the expected client headers.
- *
- * yt-dlp handles YouTube authentication internally and is continuously updated
- * by the community to match YouTube's evolving restrictions. No PoToken
- * or cookie setup is required on our end.
- *
- * Note: youtube-dl-exec downloads the yt-dlp binary automatically on first run.
- */
-function createYtdlpStream(url: string) {
-  // spawn is safe: arguments are passed as an array (no shell, no injection)
-  return spawn(YTDLP_BIN, [
-    url,
-    '--output',
-    '-', // pipe audio to stdout
-    '--format',
-    'bestaudio', // best available audio-only format
-    '--quiet',
-    '--no-warnings',
-  ]);
-}
+// Bytes read to detect a WebM/Ogg Opus header before falling back to ffmpeg
+const PROBE_SIZE = 64 * 1024;
+
+const killYtdlp = (guildId: string) => {
+  const proc = ytdlpProcesses.get(guildId);
+  ytdlpProcesses.delete(guildId);
+  if (proc && proc.exitCode === null && !proc.killed) proc.kill();
+};
 
 export const songPlayer = async (guildId: string) => {
   const voiceChannel = await getCurrentVoiceChannel(guildId);
@@ -81,7 +58,9 @@ export const songPlayer = async (guildId: string) => {
     createAudioPlayerListener(audioPlayer, guildId);
   }
 
+  killYtdlp(guildId);
   const ytdlp = createYtdlpStream(nextSong.url);
+  ytdlpProcesses.set(guildId, ytdlp);
 
   let stderrBuf = '';
   ytdlp.stderr.on('data', (chunk: Buffer) => {
@@ -90,14 +69,24 @@ export const songPlayer = async (guildId: string) => {
 
   ytdlp.on('error', async (e) => {
     console.error('[player] yt-dlp spawn error:', e);
+    captureError(e, { guildId, url: nextSong.url, step: 'yt-dlp spawn' });
     await sendErrorEmbed(guildId, nextSong.requestChannel, `Failed to start playback for: **${nextSong.title}**`);
   });
 
   ytdlp.on('close', async (code) => {
+    if (ytdlpProcesses.get(guildId) === ytdlp) ytdlpProcesses.delete(guildId);
     const msg = stderrBuf.trim();
     if (msg) console.error(`[player] yt-dlp: ${msg}`);
+    // code === null means the process was killed (skip / stop) — not an error
     if (code !== 0 && code !== null) {
-      const reason = msg.includes('ERROR:') ? msg.split('ERROR:').pop()?.trim() : undefined;
+      const reason = extractYtdlpError(msg);
+      captureMessage(`yt-dlp failed: ${reason ?? `exit code ${code}`}`, {
+        guildId,
+        url: nextSong.url,
+        title: nextSong.title,
+        exitCode: code,
+        stderr: msg.slice(-4000),
+      });
       await sendErrorEmbed(
         guildId,
         nextSong.requestChannel,
@@ -106,9 +95,26 @@ export const songPlayer = async (guildId: string) => {
     }
   });
 
-  console.log(`[player] streaming ${nextSong.url} via yt-dlp`);
-  const audioStream = createAudioResource(ytdlp.stdout, {
-    inputType: StreamType.Arbitrary,
+  // WebM/Opus (YouTube's usual best audio) is sent to Discord as-is; anything
+  // else goes through ffmpeg + an Opus encoder (StreamType.Arbitrary).
+  let probe: Awaited<ReturnType<typeof demuxProbe>>;
+  try {
+    probe = await demuxProbe(ytdlp.stdout, PROBE_SIZE);
+  } catch (e) {
+    if (ytdlpProcesses.get(guildId) !== ytdlp) return; // skipped / stopped meanwhile
+    console.error('[player] stream probe error:', e);
+    captureError(e, { guildId, url: nextSong.url, step: 'demuxProbe' });
+    killYtdlp(guildId);
+    await sendErrorEmbed(guildId, nextSong.requestChannel, `Could not play **${nextSong.title}**`);
+    await skipSong(guildId);
+    return;
+  }
+  // Skipped or stopped while probing: a newer song (or nothing) owns the player now
+  if (ytdlpProcesses.get(guildId) !== ytdlp) return;
+
+  console.log(`[player] streaming ${nextSong.url} via yt-dlp (${probe.type})`);
+  const audioStream = createAudioResource(probe.stream, {
+    inputType: probe.type,
   });
 
   audioPlayer.play(audioStream);
@@ -130,22 +136,27 @@ export const skipSong = async (guildId: string) => {
 };
 
 export const remove = async (guildId: string, isFromSkip: boolean = false) => {
-  if (isFromSkip) {
-    await removeCurrentPlayingSong(guildId);
-  } else {
-    await emptyNextSongs(guildId);
-  }
+  try {
+    if (isFromSkip) {
+      await removeCurrentPlayingSong(guildId);
+    } else {
+      await emptyNextSongs(guildId);
+    }
+  } finally {
+    // Always release yt-dlp, the player and the voice connection, even if the DB update failed.
+    // Listeners are removed before stop() so it can't trigger another skip.
+    killYtdlp(guildId);
 
-  if (activePlayers[guildId]?.audioPlayer) {
-    removeAllAudioPlayerListener(activePlayers[guildId].audioPlayer);
-    activePlayers[guildId].audioPlayer.stop();
-    delete activePlayers[guildId];
-  }
+    if (activePlayers[guildId]?.audioPlayer) {
+      removeAllAudioPlayerListener(activePlayers[guildId].audioPlayer);
+      activePlayers[guildId].audioPlayer.stop();
+      delete activePlayers[guildId];
+    }
 
-  getVoiceConnection(guildId)?.disconnect();
-  getVoiceConnection(guildId)?.destroy();
-  getVoiceConnection(guildId)?.removeAllListeners();
-  return;
+    getVoiceConnection(guildId)?.disconnect();
+    getVoiceConnection(guildId)?.destroy();
+    getVoiceConnection(guildId)?.removeAllListeners();
+  }
 };
 
 export const pause = async (guildId: string) => {

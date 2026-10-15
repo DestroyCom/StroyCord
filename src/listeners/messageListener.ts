@@ -10,9 +10,10 @@ import {
   resumeCommand,
   skipCommand,
 } from 'src/commands/textCommands';
+import { captureError } from 'src/config/monitoring';
 import { secrets } from 'src/config/secrets';
 import { fetchGuild } from 'src/database/queries/guilds/get';
-import { unknownRequestEmbed } from 'src/utils/embeds/errorsEmbed';
+import { unknownError, unknownRequestEmbed } from 'src/utils/embeds/errorsEmbed';
 import { messageFormater } from 'src/utils/messageUtils';
 import { yt_validate } from 'src/utils/youtubeUtils';
 
@@ -88,7 +89,20 @@ export default (client: Client): void => {
     }
     const { commandName } = interaction;
     if (commands[commandName as keyof typeof commands]) {
-      commands[commandName as keyof typeof commands].execute(interaction);
+      try {
+        await commands[commandName as keyof typeof commands].execute(interaction);
+      } catch (error) {
+        console.error(`[interaction] /${commandName} failed:`, error);
+        captureError(error, { guildId: interaction.guildId ?? undefined, command: commandName });
+        // Tell the user instead of leaving the interaction unanswered ("The application did not respond")
+        const response = { embeds: [unknownError(`\`/${commandName}\` failed: ${String(error)}`)] };
+        const send = interaction.deferred
+          ? interaction.editReply(response)
+          : interaction.replied
+            ? interaction.followUp(response)
+            : interaction.reply(response);
+        await send.catch((e: unknown) => console.error(`[interaction] /${commandName} error reply failed:`, e));
+      }
     }
   });
 };
