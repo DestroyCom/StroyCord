@@ -7,6 +7,7 @@ import {
   EmbedBuilder,
   LabelBuilder,
   ModalBuilder,
+  RoleSelectMenuBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
   TextInputBuilder,
@@ -17,6 +18,7 @@ import { secrets } from 'src/config/secrets';
 import {
   type GuildSettings,
   type Language,
+  MAX_BLOCKED_ROLES,
   MAX_COMMAND_CHANNELS,
   QUEUE_LIMIT_CAP,
   resolveSettings,
@@ -32,6 +34,11 @@ export const CONFIG_IDS = {
   modal: 'cfg:modal',
   toggleDetect: 'cfg:toggle:detect',
   toggleStats: 'cfg:toggle:stats',
+  replyChannel: 'cfg:replyChannel',
+  toggleReplies: 'cfg:toggle:replies',
+  cycleCommandMode: 'cfg:cycle:commandMode',
+  blockedRoles: 'cfg:blockedRoles',
+  blockedRolesModal: 'cfg:blockedRoles:modal',
   resetSettings: 'cfg:reset:settings',
   resetStats: 'cfg:reset:stats',
   confirmResetSettings: 'cfg:confirm:settings',
@@ -43,6 +50,7 @@ export const CONFIG_MODAL_FIELDS = {
   prefix: 'prefix',
   maxQueueSize: 'maxQueueSize',
   maxSongsPerUser: 'maxSongsPerUser',
+  blockedRoles: 'blockedRoles',
 } as const;
 
 const DEFAULT_LANGUAGE_VALUE = 'default';
@@ -98,7 +106,25 @@ const configEmbed = (stored: StoredSettings, settings: GuildSettings, notice?: s
         value: settings.maxSongsPerUser === 0 ? i18n.t('config.unlimited') : String(settings.maxSongsPerUser),
         inline: true,
       },
-      { name: i18n.t('config.fields.stats'), value: onOff(settings.statsEnabled), inline: true }
+      { name: i18n.t('config.fields.stats'), value: onOff(settings.statsEnabled), inline: true },
+      {
+        name: i18n.t('config.fields.replyChannel'),
+        value: settings.replyChannelId ? `<#${settings.replyChannelId}>` : i18n.t('config.fields.commandChannel'),
+        inline: true,
+      },
+      { name: i18n.t('config.fields.replies'), value: onOff(settings.replyMessagesEnabled), inline: true },
+      {
+        name: i18n.t('config.fields.commandMode'),
+        value: i18n.t(`config.commandModes.${settings.commandMode}`),
+        inline: true,
+      },
+      {
+        name: i18n.t('config.fields.blockedRoles'),
+        value:
+          settings.blockedRoleIds.length === 0
+            ? i18n.t('config.fields.noBlockedRoles')
+            : settings.blockedRoleIds.map((id) => `<@&${id}>`).join(', '),
+      }
     )
     .setAuthor({ name: 'Stroycord', iconURL: secrets.STROYCORD_LOGO })
     .setColor('#37123C')
@@ -139,6 +165,15 @@ export const configPanel = (stored: StoredSettings, existingChannelIds?: Set<str
   const preselected = settings.commandChannelIds.filter((id) => !existingChannelIds || existingChannelIds.has(id));
   if (preselected.length > 0) channels.setDefaultChannels(preselected);
 
+  const replyChannel = new ChannelSelectMenuBuilder()
+    .setCustomId(CONFIG_IDS.replyChannel)
+    .setPlaceholder(i18n.t('config.replyChannelPlaceholder'))
+    .setChannelTypes(ALLOWED_CHANNEL_TYPES)
+    .setMinValues(0)
+    .setMaxValues(1);
+  if (settings.replyChannelId && (!existingChannelIds || existingChannelIds.has(settings.replyChannelId)))
+    replyChannel.setDefaultChannels(settings.replyChannelId);
+
   const toggles = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
       .setCustomId(CONFIG_IDS.edit)
@@ -152,10 +187,23 @@ export const configPanel = (stored: StoredSettings, existingChannelIds?: Set<str
     new ButtonBuilder()
       .setCustomId(CONFIG_IDS.toggleStats)
       .setLabel(i18n.t('config.buttons.stats'))
-      .setStyle(settings.statsEnabled ? ButtonStyle.Success : ButtonStyle.Secondary)
+      .setStyle(settings.statsEnabled ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId(CONFIG_IDS.toggleReplies)
+      .setLabel(i18n.t('config.buttons.replies'))
+      .setStyle(settings.replyMessagesEnabled ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId(CONFIG_IDS.cycleCommandMode)
+      .setLabel(`${i18n.t('config.buttons.commandMode')} : ${i18n.t(`config.commandModes.${settings.commandMode}`)}`)
+      .setStyle(ButtonStyle.Primary)
   );
 
   const resets = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId(CONFIG_IDS.blockedRoles)
+      .setLabel(i18n.t('config.buttons.blockedRoles'))
+      .setEmoji('🚫')
+      .setStyle(ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId(CONFIG_IDS.resetSettings)
       .setLabel(i18n.t('config.buttons.resetSettings'))
@@ -171,6 +219,7 @@ export const configPanel = (stored: StoredSettings, existingChannelIds?: Set<str
     components: [
       new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(language),
       new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(channels),
+      new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(replyChannel),
       toggles,
       resets,
     ],
@@ -243,5 +292,25 @@ export const configModal = (stored: StoredSettings) => {
             i18n.t('config.unlimited')
           )
         )
+    );
+};
+
+// The panel has no room left for a sixth row: the role picker lives in its own modal
+export const blockedRolesModal = (stored: StoredSettings) => {
+  const roles = new RoleSelectMenuBuilder()
+    .setCustomId(CONFIG_MODAL_FIELDS.blockedRoles)
+    .setRequired(false)
+    .setMinValues(0)
+    .setMaxValues(MAX_BLOCKED_ROLES);
+  if (stored.blockedRoleIds.length > 0) roles.setDefaultRoles(stored.blockedRoleIds);
+
+  return new ModalBuilder()
+    .setCustomId(CONFIG_IDS.blockedRolesModal)
+    .setTitle(i18n.t('config.blockedRolesModal.title'))
+    .addLabelComponents(
+      new LabelBuilder()
+        .setLabel(i18n.t('config.fields.blockedRoles'))
+        .setDescription(i18n.t('config.blockedRolesModal.hint'))
+        .setRoleSelectMenuComponent(roles)
     );
 };

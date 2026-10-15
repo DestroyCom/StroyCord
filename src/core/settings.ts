@@ -2,6 +2,7 @@ import { runWithSettings } from 'src/config/guildContext';
 import {
   DEFAULT_STORED_SETTINGS,
   type GuildSettings,
+  isCommandMode,
   isSupportedLanguage,
   resolveSettings,
   type StoredSettings,
@@ -22,6 +23,10 @@ const toStoredSettings = (doc: SettingsDocument): StoredSettings => ({
   maxQueueSize: typeof doc?.maxQueueSize === 'number' ? doc.maxQueueSize : null,
   maxSongsPerUser: typeof doc?.maxSongsPerUser === 'number' ? doc.maxSongsPerUser : 0,
   statsEnabled: typeof doc?.statsEnabled === 'boolean' ? doc.statsEnabled : true,
+  replyChannelId: typeof doc?.replyChannelId === 'string' ? doc.replyChannelId : null,
+  replyMessagesEnabled: typeof doc?.replyMessagesEnabled === 'boolean' ? doc.replyMessagesEnabled : true,
+  commandMode: isCommandMode(doc?.commandMode) ? doc.commandMode : 'both',
+  blockedRoleIds: Array.isArray(doc?.blockedRoleIds) ? doc.blockedRoleIds.map(String) : [],
 });
 
 export const getStoredSettings = async (guildId: string): Promise<StoredSettings> => {

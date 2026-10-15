@@ -5,11 +5,16 @@ vi.mock('src/config/secrets', () => ({
 }));
 
 import {
+  acceptsTextCommands,
   DEFAULT_STORED_SETTINGS,
   isChannelAllowed,
+  isMemberBlocked,
+  isSlashCommandEnabled,
+  nextCommandMode,
   parseLimit,
   parsePrefix,
   QUEUE_LIMIT_CAP,
+  resolveMessageChannel,
   resolveSettings,
 } from 'src/config/settings';
 
@@ -23,6 +28,10 @@ describe('resolveSettings', () => {
       maxQueueSize: 100,
       maxSongsPerUser: 0,
       statsEnabled: true,
+      replyChannelId: null,
+      replyMessagesEnabled: true,
+      commandMode: 'both',
+      blockedRoleIds: [],
     });
   });
 
@@ -85,5 +94,71 @@ describe('isChannelAllowed', () => {
     expect(isChannelAllowed(settings(['music']), 'music')).toBe(true);
     expect(isChannelAllowed(settings(['music']), 'thread', 'music')).toBe(true);
     expect(isChannelAllowed(settings(['music']), 'general', 'category')).toBe(false);
+  });
+});
+
+describe('resolveMessageChannel', () => {
+  const settings = (overrides: Partial<ReturnType<typeof resolveSettings>> = {}) => ({
+    ...resolveSettings(),
+    ...overrides,
+  });
+
+  it('answers in the command channel when no reply channel is configured', () => {
+    expect(resolveMessageChannel(settings(), 'cmd', 'info')).toBe('cmd');
+    expect(resolveMessageChannel(settings(), 'cmd', 'announce')).toBe('cmd');
+  });
+
+  it('sends info and announcements to the reply channel', () => {
+    const withReply = settings({ replyChannelId: 'replies' });
+    expect(resolveMessageChannel(withReply, 'cmd', 'info')).toBe('replies');
+    expect(resolveMessageChannel(withReply, 'cmd', 'announce')).toBe('replies');
+  });
+
+  it('keeps errors in the command channel', () => {
+    expect(resolveMessageChannel(settings({ replyChannelId: 'replies' }), 'cmd', 'error')).toBe('cmd');
+  });
+
+  it('drops only announcements when replies are disabled', () => {
+    const muted = settings({ replyChannelId: 'replies', replyMessagesEnabled: false });
+    expect(resolveMessageChannel(muted, 'cmd', 'announce')).toBeNull();
+    expect(resolveMessageChannel(muted, 'cmd', 'info')).toBe('replies');
+    expect(resolveMessageChannel(muted, 'cmd', 'error')).toBe('cmd');
+  });
+});
+
+describe('command mode', () => {
+  const settings = (commandMode: 'both' | 'text' | 'slash') => ({ ...resolveSettings(), commandMode });
+
+  it('cycles through both, text and slash', () => {
+    expect(nextCommandMode('both')).toBe('text');
+    expect(nextCommandMode('text')).toBe('slash');
+    expect(nextCommandMode('slash')).toBe('both');
+  });
+
+  it('ignores prefix commands in slash mode only', () => {
+    expect(acceptsTextCommands(settings('both'))).toBe(true);
+    expect(acceptsTextCommands(settings('text'))).toBe(true);
+    expect(acceptsTextCommands(settings('slash'))).toBe(false);
+  });
+
+  it('keeps /config and /stats in text mode', () => {
+    expect(isSlashCommandEnabled(settings('text'), 'play')).toBe(false);
+    expect(isSlashCommandEnabled(settings('text'), 'config')).toBe(true);
+    expect(isSlashCommandEnabled(settings('text'), 'stats')).toBe(true);
+    expect(isSlashCommandEnabled(settings('both'), 'play')).toBe(true);
+    expect(isSlashCommandEnabled(settings('slash'), 'play')).toBe(true);
+  });
+});
+
+describe('isMemberBlocked', () => {
+  const settings = (blockedRoleIds: string[]) => ({ ...resolveSettings(), blockedRoleIds });
+
+  it('blocks nobody when no role is blocked', () => {
+    expect(isMemberBlocked(settings([]), ['dj', 'member'])).toBe(false);
+  });
+
+  it('blocks members having at least one blocked role', () => {
+    expect(isMemberBlocked(settings(['muted']), ['member', 'muted'])).toBe(true);
+    expect(isMemberBlocked(settings(['muted']), ['member'])).toBe(false);
   });
 });

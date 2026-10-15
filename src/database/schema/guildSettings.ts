@@ -15,6 +15,11 @@ export const guild_settings_model = mongoose.model(
       maxQueueSize: { type: Number, default: null },
       maxSongsPerUser: { type: Number, default: 0 },
       statsEnabled: { type: Boolean, default: true },
+      // null = answer in the channel of the command
+      replyChannelId: { type: String, default: null },
+      replyMessagesEnabled: { type: Boolean, default: true },
+      commandMode: { type: String, enum: ['both', 'text', 'slash'], default: 'both' },
+      blockedRoleIds: { type: [String], default: [] },
       updatedBy: { type: String, default: null },
       // Set when the bot leaves the guild; settings and stats are purged after a grace period
       deletedAt: { type: Date, default: null },

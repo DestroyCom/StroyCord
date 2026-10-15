@@ -1,21 +1,50 @@
-import { type ChatInputCommandInteraction, type Client, Events, type Interaction, MessageFlags } from 'discord.js';
+import {
+  type ChatInputCommandInteraction,
+  type Client,
+  Events,
+  type Interaction,
+  MessageFlags,
+  PermissionFlagsBits,
+} from 'discord.js';
 import { commands } from 'src/commands/slashCommands';
 import { handleConfigInteraction } from 'src/commands/slashCommands/config';
 import { handleStatsInteraction } from 'src/commands/slashCommands/stats';
 import { runWithSettings } from 'src/config/guildContext';
 import i18n from 'src/config/i18n';
 import { captureError } from 'src/config/monitoring';
-import { type GuildSettings, isChannelAllowed } from 'src/config/settings';
+import { type GuildSettings, isChannelAllowed, isMemberBlocked, isSlashCommandEnabled } from 'src/config/settings';
 import { getGuildSettings } from 'src/core/settings';
 import { unknownError } from 'src/utils/embeds/errorsEmbed';
 
 // Commands that ignore the channel restriction: an admin must always be able to fix the config
 const UNRESTRICTED_COMMANDS = new Set(['config']);
 
+// A cached member exposes a role manager, an uncached one (raw API data) a list of role ids
+const memberRoleIds = (interaction: Interaction<'cached' | 'raw'>): string[] => {
+  const roles = interaction.member.roles;
+  return Array.isArray(roles) ? roles : [...roles.cache.keys()];
+};
+
+const isAdminConfigInteraction = (interaction: Interaction<'cached' | 'raw'>) => {
+  const isConfig = interaction.isChatInputCommand()
+    ? interaction.commandName === 'config'
+    : 'customId' in interaction && interaction.customId.startsWith('cfg:');
+  return isConfig && !!interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild);
+};
+
 const handleChatInput = async (interaction: ChatInputCommandInteraction<'cached' | 'raw'>, settings: GuildSettings) => {
   const { commandName } = interaction;
   const command = commands[commandName as keyof typeof commands];
   if (!command) return;
+
+  // Text mode removes these commands on redeploy, but a Discord client may still show them for a while
+  if (!isSlashCommandEnabled(settings, commandName)) {
+    await interaction.reply({
+      content: i18n.t('commandMode.slashDisabled', { prefix: settings.prefix }),
+      flags: MessageFlags.Ephemeral,
+    });
+    return;
+  }
 
   const parentId = interaction.channel && 'parentId' in interaction.channel ? interaction.channel.parentId : null;
   if (!UNRESTRICTED_COMMANDS.has(commandName) && !isChannelAllowed(settings, interaction.channelId, parentId)) {
@@ -56,6 +85,8 @@ export default (client: Client): void => {
 
     try {
       const settings = await getGuildSettings(interaction.guildId);
+      // Blocked members get no answer at all, except admins on /config: they must be able to undo the block
+      if (isMemberBlocked(settings, memberRoleIds(interaction)) && !isAdminConfigInteraction(interaction)) return;
       await runWithSettings(settings, async () => {
         if (interaction.isChatInputCommand()) await handleChatInput(interaction, settings);
         else if (interaction.isMessageComponent() || interaction.isModalSubmit()) {

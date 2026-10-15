@@ -10,6 +10,7 @@ import {
 import { activePlayers } from 'src/Bot';
 import i18n from 'src/config/i18n';
 import { authorNotInVoiceChannel, noMusicCurrentlyPlaying } from 'src/core/errors';
+import { sendBotMessage } from 'src/core/messages';
 import { pause, remove, resume, skipSong } from 'src/core/player';
 import { playlistHandler } from 'src/core/requestHandlers/playlistRequest';
 import { searchSong } from 'src/core/requestHandlers/searchRequest';
@@ -81,10 +82,7 @@ export const skipCommand = async (
   const nextSongs = await getNextSongs(guildId);
 
   if (nextSongs.length !== 0) {
-    if (textChannel instanceof PartialGroupDMChannel) return;
-    await textChannel.send({
-      embeds: [await skipEmbed(author, guildId)],
-    });
+    await sendBotMessage(guildId, textChannel.id, await skipEmbed(author, guildId), 'announce');
   }
 };
 
@@ -102,9 +100,7 @@ export const pauseCommand = async (
 
   if (guildPlayerState === AudioPlayerStatus.Playing || guildPlayerState === AudioPlayerStatus.Buffering) {
     await pause(guildId);
-
-    if (textChannel instanceof PartialGroupDMChannel) return;
-    textChannel.send({ embeds: [pauseEmbed(author)] });
+    await sendBotMessage(guildId, textChannel.id, pauseEmbed(author), 'announce');
   } else {
     if (textChannel instanceof PartialGroupDMChannel) return;
     textChannel.send({
@@ -127,10 +123,7 @@ export const resumeCommand = async (
 
   if (guildPlayerState === AudioPlayerStatus.Paused || guildPlayerState === AudioPlayerStatus.AutoPaused) {
     await resume(guildId);
-    if (textChannel instanceof PartialGroupDMChannel) return;
-    textChannel.send({
-      embeds: [resumeEmbed(author)],
-    });
+    await sendBotMessage(guildId, textChannel.id, resumeEmbed(author), 'announce');
   } else {
     if (textChannel instanceof PartialGroupDMChannel) return;
     textChannel.send({
@@ -150,11 +143,7 @@ export const queueCommand = async (
   if (!hasPermission(voiceChannel as VoiceChannel, textChannel)) return;
 
   const nextSongs = await getNextSongs(guildId);
-
-  if (textChannel instanceof PartialGroupDMChannel) return;
-  textChannel.send({
-    embeds: [await queueEmbed(nextSongs)],
-  });
+  await sendBotMessage(guildId, textChannel.id, await queueEmbed(nextSongs), 'info');
 };
 
 export const removeCommand = async (
@@ -169,11 +158,7 @@ export const removeCommand = async (
 
   await shiftSongs(guildId);
   await remove(guildId);
-
-  if (textChannel instanceof PartialGroupDMChannel) return;
-  textChannel.send({
-    embeds: [removeEmbed(author)],
-  });
+  await sendBotMessage(guildId, textChannel.id, removeEmbed(author), 'announce');
 };
 
 export const currentCommand = async (
@@ -186,11 +171,7 @@ export const currentCommand = async (
   if (!hasPermission(voiceChannel as VoiceChannel, textChannel)) return;
 
   const currentSong = await getFirstSong(guildId);
-
-  if (textChannel instanceof PartialGroupDMChannel) return;
-  textChannel.send({
-    embeds: [nowPlayingEmbed(currentSong)],
-  });
+  await sendBotMessage(guildId, textChannel.id, nowPlayingEmbed(currentSong), 'info');
 };
 
 export const redoCommand = async (

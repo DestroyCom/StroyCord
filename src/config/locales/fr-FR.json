@@ -149,7 +149,13 @@
       "allChannels": "Tous les salons",
       "maxQueueSize": "Taille de la file (titre en cours inclus)",
       "maxSongsPerUser": "Titres par membre (en cours inclus)",
-      "stats": "Statistiques d'écoute"
+      "stats": "Statistiques d'écoute",
+      "replyChannel": "Salon des réponses du bot",
+      "commandChannel": "Salon de la commande",
+      "replies": "Réponses du bot (lecture, ajout, skip…)",
+      "commandMode": "Commandes acceptées",
+      "blockedRoles": "Rôles bloqués",
+      "noBlockedRoles": "Aucun"
     },
     "buttons": {
       "edit": "Préfixe & limites",
@@ -158,7 +164,10 @@
       "resetSettings": "Réinitialiser les réglages",
       "resetStats": "Supprimer les statistiques",
       "confirm": "Confirmer",
-      "cancel": "Annuler"
+      "cancel": "Annuler",
+      "replies": "Réponses du bot",
+      "commandMode": "Commandes",
+      "blockedRoles": "Rôles bloqués"
     },
     "confirm": {
       "settings": {
@@ -185,6 +194,16 @@
       "saved": "Réglages enregistrés",
       "settingsReset": "Réglages réinitialisés",
       "statsReset": "Statistiques supprimées"
+    },
+    "replyChannelPlaceholder": "Salon des réponses du bot (aucun = salon de la commande)",
+    "commandModes": {
+      "both": "Préfixe & slash",
+      "text": "Préfixe uniquement",
+      "slash": "Slash uniquement"
+    },
+    "blockedRolesModal": {
+      "title": "Rôles bloqués",
+      "hint": "Les membres ayant un de ces rôles sont ignorés par le bot. Les admins gardent accès à /config."
     }
   },
   "stats": {
@@ -223,5 +242,8 @@
       "topDj": "Top DJ",
       "favoriteTracks": "Titres préférés"
     }
+  },
+  "commandMode": {
+    "slashDisabled": "Les commandes slash sont désactivées sur ce serveur, utilise les commandes texte (ex. `%{prefix}play`)."
   }
 }

@@ -1,5 +1,8 @@
 import type { EmbedBuilder, TextChannel, User } from 'discord.js';
 import { client } from 'src/Bot';
+import { captureMessage } from 'src/config/monitoring';
+import { type MessageKind, resolveMessageChannel } from 'src/config/settings';
+import { getGuildSettings } from 'src/core/settings';
 import { getFirstSong, getNextSongs } from 'src/database/queries/guilds/get';
 import { unknownError } from 'src/utils/embeds/errorsEmbed';
 import { playlistEmbed } from 'src/utils/embeds/listSongEmbed';
@@ -19,15 +22,7 @@ export const sendEmbed = async (
     if (!currentSong) return;
     if (currentSong.isComingFromPlaylist) return;
 
-    const messageChannel = await client.guilds
-      .fetch(guildId)
-      .then((guild) => guild.channels.cache.get(currentSong.requestChannel));
-
-    const embed = newSongEmbed(currentSong);
-
-    return await (messageChannel as TextChannel)?.send({
-      embeds: [embed],
-    });
+    return await sendBotMessage(guildId, currentSong.requestChannel, newSongEmbed(currentSong), 'announce');
   } else if (!isComingFromListener) {
     const currentSong: songInterface[] = await getNextSongs(guildId);
     const askedSong = currentSong[currentSong.length - 1];
@@ -35,15 +30,7 @@ export const sendEmbed = async (
     if (!askedSong) return;
     if (askedSong.isComingFromPlaylist) return;
 
-    const messageChannel = await client.guilds
-      .fetch(guildId)
-      .then((guild) => guild.channels.cache.get(askedSong.requestChannel));
-
-    const embed = addSongEmbed(askedSong);
-
-    return await (messageChannel as TextChannel)?.send({
-      embeds: [embed],
-    });
+    return await sendBotMessage(guildId, askedSong.requestChannel, addSongEmbed(askedSong), 'announce');
   }
 };
 
@@ -52,15 +39,7 @@ export const sendQueueEmbed = async (
   playlistData: PlaylistInfo,
   textChannelId: string,
   author: User
-) => {
-  const messageChannel = await client.guilds.fetch(guildId).then((guild) => guild.channels.cache.get(textChannelId));
-
-  const embed = await playlistEmbed(author, playlistData);
-
-  return await (messageChannel as TextChannel)?.send({
-    embeds: [embed],
-  });
-};
+) => sendBotMessage(guildId, textChannelId, await playlistEmbed(author, playlistData), 'announce');
 
 export const sendEmbedToChannel = async (guildId: string, textChannelId: string, embed: EmbedBuilder) => {
   let guild: Awaited<ReturnType<typeof client.guilds.fetch>>;
@@ -80,6 +59,36 @@ export const sendEmbedToChannel = async (guildId: string, textChannelId: string,
   }
 
   return await messageChannel.send({ embeds: [embed] });
+};
+
+const trySend = (guildId: string, textChannelId: string, embed: EmbedBuilder) =>
+  sendEmbedToChannel(guildId, textChannelId, embed).catch((e: unknown) => {
+    console.error(`[messages] failed to send in channel ${textChannelId} of guild ${guildId}:`, e);
+    return undefined;
+  });
+
+/**
+ * Sends a bot message where the guild settings want it (see resolveMessageChannel).
+ * When the reply channel is gone or not writable, answers in the command channel instead.
+ */
+export const sendBotMessage = async (
+  guildId: string,
+  commandChannelId: string,
+  embed: EmbedBuilder,
+  kind: MessageKind
+) => {
+  const target = resolveMessageChannel(await getGuildSettings(guildId), commandChannelId, kind);
+  if (!target) return;
+
+  const sent = await trySend(guildId, target, embed);
+  if (sent || target === commandChannelId) return sent;
+
+  captureMessage(
+    'Reply channel unavailable, answering in the command channel',
+    { guildId, replyChannelId: target },
+    'warning'
+  );
+  return trySend(guildId, commandChannelId, embed);
 };
 
 export const sendErrorEmbed = (guildId: string, textChannelId: string, errorMsg: string) =>

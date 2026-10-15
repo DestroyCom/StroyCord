@@ -11,7 +11,7 @@ import {
 } from 'src/commands/textCommands';
 import { runWithSettings } from 'src/config/guildContext';
 import { captureError } from 'src/config/monitoring';
-import { isChannelAllowed } from 'src/config/settings';
+import { acceptsTextCommands, isChannelAllowed, isMemberBlocked } from 'src/config/settings';
 import { getGuildSettings } from 'src/core/settings';
 import { fetchGuild } from 'src/database/queries/guilds/get';
 import { unknownRequestEmbed } from 'src/utils/embeds/errorsEmbed';
@@ -96,9 +96,13 @@ export default (client: Client): void => {
       const hasPrefix = message.content.startsWith(settings.prefix);
       // Without the prefix, only a bare YouTube link is a request (and only if the guild enabled it)
       const isBareLink = !hasPrefix && settings.detectFromAllMessages && isYoutubeLink(message.content);
-      if (!hasPrefix && !isBareLink) return;
+      // In slash mode, prefix commands are ignored silently (bare links keep their own toggle)
+      const isPrefixCommand = hasPrefix && acceptsTextCommands(settings);
+      if (!isPrefixCommand && !isBareLink) return;
       // Outside the allowed channels, stay silent: answering would be the flood the restriction prevents
       if (!isChannelAllowed(settings, message.channelId, message.channel.parentId)) return;
+      // Blocked members are ignored, without any answer
+      if (isMemberBlocked(settings, message.member?.roles.cache.keys() ?? [])) return;
 
       await runWithSettings(settings, () => handleTextCommand(message, settings.prefix, isBareLink));
     } catch (error) {

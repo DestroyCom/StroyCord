@@ -149,7 +149,13 @@
       "allChannels": "All channels",
       "maxQueueSize": "Queue size (current song included)",
       "maxSongsPerUser": "Songs per member (current incl.)",
-      "stats": "Listening statistics"
+      "stats": "Listening statistics",
+      "replyChannel": "Bot replies channel",
+      "commandChannel": "Channel of the command",
+      "replies": "Bot replies (now playing, added, skip…)",
+      "commandMode": "Accepted commands",
+      "blockedRoles": "Blocked roles",
+      "noBlockedRoles": "None"
     },
     "buttons": {
       "edit": "Prefix & limits",
@@ -158,7 +164,10 @@
       "resetSettings": "Reset settings",
       "resetStats": "Delete statistics",
       "confirm": "Confirm",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "replies": "Bot replies",
+      "commandMode": "Commands",
+      "blockedRoles": "Blocked roles"
     },
     "confirm": {
       "settings": {
@@ -185,6 +194,16 @@
       "saved": "Settings saved",
       "settingsReset": "Settings reset to defaults",
       "statsReset": "Statistics deleted"
+    },
+    "replyChannelPlaceholder": "Bot replies channel (none selected = channel of the command)",
+    "commandModes": {
+      "both": "Prefix & slash",
+      "text": "Prefix only",
+      "slash": "Slash only"
+    },
+    "blockedRolesModal": {
+      "title": "Blocked roles",
+      "hint": "Members with one of these roles are ignored by the bot. Admins can still use /config."
     }
   },
   "stats": {
@@ -223,5 +242,8 @@
       "topDj": "Top DJ",
       "favoriteTracks": "Favorite songs"
     }
+  },
+  "commandMode": {
+    "slashDisabled": "Slash commands are disabled on this server, use the text commands instead (e.g. `%{prefix}play`)."
   }
 }

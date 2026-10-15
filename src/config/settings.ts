@@ -3,10 +3,14 @@ import { secrets } from './secrets';
 export const SUPPORTED_LANGUAGES = ['en-US', 'fr-FR'] as const;
 export type Language = (typeof SUPPORTED_LANGUAGES)[number];
 
+export const COMMAND_MODES = ['both', 'text', 'slash'] as const;
+export type CommandMode = (typeof COMMAND_MODES)[number];
+
 // Upper bound for both queue limits, whatever the guild asks for: the queue lives in a single document
 export const QUEUE_LIMIT_CAP = 500;
-// Discord allows at most 25 values in a channel select menu
+// Discord allows at most 25 values in a select menu
 export const MAX_COMMAND_CHANNELS = 25;
+export const MAX_BLOCKED_ROLES = 25;
 
 /** Settings as stored for a guild: null means "use the instance default" (.env) */
 export interface StoredSettings {
@@ -18,6 +22,11 @@ export interface StoredSettings {
   /** 0 = unlimited */
   maxSongsPerUser: number;
   statsEnabled: boolean;
+  /** null = answer in the channel of the command */
+  replyChannelId: string | null;
+  replyMessagesEnabled: boolean;
+  commandMode: CommandMode;
+  blockedRoleIds: string[];
 }
 
 /** Settings with the instance defaults applied */
@@ -32,6 +41,14 @@ export interface GuildSettings {
   /** Includes the song currently playing, 0 = unlimited */
   maxSongsPerUser: number;
   statsEnabled: boolean;
+  /** null = answer in the channel of the command */
+  replyChannelId: string | null;
+  /** false = announcements (now playing, added, skip, pause…) are not sent */
+  replyMessagesEnabled: boolean;
+  /** Which commands the guild accepts: prefix ('text'), slash, or both */
+  commandMode: CommandMode;
+  /** Members with any of these roles are ignored by the bot */
+  blockedRoleIds: string[];
 }
 
 export const DEFAULT_STORED_SETTINGS: StoredSettings = {
@@ -42,7 +59,13 @@ export const DEFAULT_STORED_SETTINGS: StoredSettings = {
   maxQueueSize: null,
   maxSongsPerUser: 0,
   statsEnabled: true,
+  replyChannelId: null,
+  replyMessagesEnabled: true,
+  commandMode: 'both',
+  blockedRoleIds: [],
 };
+
+export const isCommandMode = (value: unknown): value is CommandMode => COMMAND_MODES.includes(value as CommandMode);
 
 export const isSupportedLanguage = (value: unknown): value is Language =>
   SUPPORTED_LANGUAGES.includes(value as Language);
@@ -57,6 +80,10 @@ export const resolveSettings = (stored: StoredSettings = DEFAULT_STORED_SETTINGS
   maxQueueSize: clampLimit(stored.maxQueueSize ?? secrets.MAX_QUEUE_SIZE),
   maxSongsPerUser: stored.maxSongsPerUser > 0 ? clampLimit(stored.maxSongsPerUser) : 0,
   statsEnabled: stored.statsEnabled,
+  replyChannelId: stored.replyChannelId,
+  replyMessagesEnabled: stored.replyMessagesEnabled,
+  commandMode: stored.commandMode,
+  blockedRoleIds: stored.blockedRoleIds,
 });
 
 type ParseResult<T> = { ok: true; value: T } | { ok: false; error: string };
@@ -88,3 +115,38 @@ export const isChannelAllowed = (settings: GuildSettings, channelId: string, par
   settings.commandChannelIds.length === 0 ||
   settings.commandChannelIds.includes(channelId) ||
   (!!parentId && settings.commandChannelIds.includes(parentId));
+
+/**
+ * - info: what the member asked to see (queue, current song)
+ * - announce: playback news and action confirmations, muted when replies are disabled
+ * - error: always in the command channel, where the member is looking
+ */
+export type MessageKind = 'info' | 'announce' | 'error';
+
+/** Channel a bot message goes to, or null when it must not be sent */
+export const resolveMessageChannel = (
+  settings: GuildSettings,
+  commandChannelId: string,
+  kind: MessageKind
+): string | null => {
+  if (kind === 'error') return commandChannelId;
+  if (kind === 'announce' && !settings.replyMessagesEnabled) return null;
+  return settings.replyChannelId ?? commandChannelId;
+};
+
+export const nextCommandMode = (mode: CommandMode): CommandMode =>
+  COMMAND_MODES[(COMMAND_MODES.indexOf(mode) + 1) % COMMAND_MODES.length];
+
+export const acceptsTextCommands = (settings: GuildSettings) => settings.commandMode !== 'slash';
+
+// Kept in text mode: /config is the only way back to slash commands, /stats has no prefix equivalent
+const ALWAYS_ENABLED_SLASH_COMMANDS = new Set(['config', 'stats']);
+
+export const isSlashCommandEnabled = (settings: GuildSettings, commandName: string) =>
+  settings.commandMode !== 'text' || ALWAYS_ENABLED_SLASH_COMMANDS.has(commandName);
+
+export const isMemberBlocked = (settings: GuildSettings, memberRoleIds: Iterable<string>) => {
+  if (settings.blockedRoleIds.length === 0) return false;
+  for (const roleId of memberRoleIds) if (settings.blockedRoleIds.includes(roleId)) return true;
+  return false;
+};
