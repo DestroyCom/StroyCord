@@ -49,6 +49,21 @@ describe('buildYtdlpArgs', () => {
 
     expect(args[args.indexOf('--cookies') + 1]).toBe('/tmp/x/cookies.txt');
   });
+
+  it('leaves the YouTube-specific options out for SoundCloud', async () => {
+    vi.stubEnv('BGUTIL_BASE_URL', 'http://bgutil-provider:4416');
+    const { buildYtdlpArgs } = await loadModule();
+    const scUrl = 'https://soundcloud.com/forss/flickermood';
+    const args = buildYtdlpArgs(scUrl, '/tmp/x/cookies.txt');
+
+    expect(args[0]).toBe(scUrl);
+    // Go+ previews are excluded: yt-dlp fails instead of playing 30 s
+    expect(args[args.indexOf('--format') + 1]).toContain('[format_id!*=preview]');
+    expect(args).toEqual(expect.arrayContaining(['--output', '-', '--no-playlist']));
+    expect(args).not.toContain('--add-header');
+    expect(args).not.toContain('--cookies');
+    expect(args).not.toContain('--extractor-args');
+  });
 });
 
 describe('createCookiesCopy', () => {
@@ -121,6 +136,35 @@ describe('extractYtdlpError', () => {
     const { extractYtdlpError } = await loadModule();
     expect(extractYtdlpError('ERROR: [youtube] 3iyrIQFKtYY: Sign in to confirm you’re not a bot')).toBe(
       'Sign in to confirm you’re not a bot'
+    );
+  });
+});
+
+describe('fetchYtdlpInfo', () => {
+  afterEach(() => {
+    vi.doUnmock('node:child_process');
+  });
+
+  const withExecFileError = async (error: Error & { killed?: boolean }, stderr = '') => {
+    vi.resetModules();
+    vi.doMock('node:child_process', async (importOriginal) => ({
+      ...(await importOriginal<typeof import('node:child_process')>()),
+      execFile: (_bin: string, _args: string[], _opts: object, callback: (...args: unknown[]) => void) =>
+        callback(error, '', stderr),
+    }));
+    const { fetchYtdlpInfo } = await import('src/core/ytdlp');
+    return fetchYtdlpInfo('https://soundcloud.com/forss/flickermood/s-SECRET');
+  };
+
+  it('never puts the command line (and the URL) in the error', async () => {
+    const error = new Error('Command failed: yt-dlp -- https://soundcloud.com/forss/flickermood/s-SECRET');
+    await expect(withExecFileError(error)).rejects.toThrow(/^yt-dlp failed$/);
+  });
+
+  it('reports a timeout and keeps the yt-dlp error message', async () => {
+    await expect(withExecFileError(Object.assign(new Error('x'), { killed: true }))).rejects.toThrow(/timed out/);
+    await expect(withExecFileError(new Error('x'), 'ERROR: [soundcloud] 123: Track not found')).rejects.toThrow(
+      'Track not found'
     );
   });
 });

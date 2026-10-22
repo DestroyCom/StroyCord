@@ -144,7 +144,7 @@
     "fields": {
       "prefix": "Préfixe des commandes texte",
       "language": "Langue",
-      "detect": "Liens YouTube sans préfixe",
+      "detect": "Liens YouTube / SoundCloud sans préfixe",
       "channels": "Salons acceptant les commandes",
       "allChannels": "Tous les salons",
       "maxQueueSize": "Taille de la file (titre en cours inclus)",
@@ -245,5 +245,8 @@
   },
   "commandMode": {
     "slashDisabled": "Les commandes slash sont désactivées sur ce serveur, utilise les commandes texte (ex. `%{prefix}play`)."
+  },
+  "soundcloud": {
+    "previewOnly": "**%{title}** est un titre SoundCloud Go+ : seul un extrait de 30 s est disponible, il n'a pas été ajouté."
   }
 }

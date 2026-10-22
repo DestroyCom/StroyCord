@@ -9,7 +9,9 @@ const {
   mockUpdateVoiceChannel,
   mockExtractSongData,
   mockExtractVoiceChannelData,
+  mockCaptureError,
 } = vi.hoisted(() => ({
+  mockCaptureError: vi.fn(),
   mockSongPlayer: vi.fn(),
   mockSendEmbed: vi.fn(),
   mockSendErrorEmbed: vi.fn(),
@@ -38,10 +40,13 @@ vi.mock('src/database/queries/guilds/update', () => ({
 vi.mock('src/utils/songUtils', () => ({
   extractSongData: mockExtractSongData,
   extractVoiceChannelData: mockExtractVoiceChannelData,
+  PreviewOnlyError: class PreviewOnlyError extends Error {},
 }));
+vi.mock('src/config/monitoring', () => ({ captureError: mockCaptureError }));
 
 import { activePlayers } from 'src/Bot';
 import { songRequest } from 'src/core/requestHandlers/songRequest';
+import { PreviewOnlyError } from 'src/utils/songUtils';
 
 describe('songRequest', () => {
   const mockUser = { id: 'u1', username: 'testuser' } as unknown as import('discord.js').User;
@@ -81,6 +86,22 @@ describe('songRequest', () => {
     await songRequest('https://youtube.com/watch?v=invalid', '42', mockUser, 'ch1', mockVoiceChannel);
     expect(mockSendErrorEmbed).toHaveBeenCalledWith('42', 'ch1', expect.stringContaining('Video not found'));
     expect(mockSongPlayer).not.toHaveBeenCalled();
+  });
+
+  it('refuses a SoundCloud Go+ preview without reporting it as a bug', async () => {
+    mockExtractSongData.mockRejectedValueOnce(new PreviewOnlyError('Go+ only'));
+    const result = await songRequest('https://soundcloud.com/a/b', '42', mockUser, 'ch1', mockVoiceChannel);
+    expect(result).toBe('error');
+    expect(mockSendErrorEmbed).toHaveBeenCalledWith('42', 'ch1', 'Go+ only');
+    expect(mockCaptureError).not.toHaveBeenCalled();
+    expect(mockSongPlayer).not.toHaveBeenCalled();
+  });
+
+  it('skips a Go+ preview of a playlist silently (counted by the playlist)', async () => {
+    mockExtractSongData.mockRejectedValueOnce(new PreviewOnlyError('Go+ only'));
+    const result = await songRequest('https://soundcloud.com/a/b', '42', mockUser, 'ch1', mockVoiceChannel, true);
+    expect(result).toBe('error');
+    expect(mockSendErrorEmbed).not.toHaveBeenCalled();
   });
 
   it('reports a full queue without starting the player', async () => {

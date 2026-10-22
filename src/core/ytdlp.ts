@@ -1,7 +1,8 @@
-import { spawn } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 import { chmodSync, constants, copyFileSync, existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
+import { isSoundcloudUrl } from 'src/utils/soundcloudUtils';
 
 // yt-dlp binary path managed by youtube-dl-exec. In Docker it is replaced at build
 // time by the pip-installed yt-dlp pinned in .ytdlp-version (see Dockerfile).
@@ -38,7 +39,7 @@ export const createCookiesCopy = (): CookiesCopy | null => {
 };
 
 /**
- * Builds yt-dlp arguments for streaming the audio of a YouTube video to stdout.
+ * Builds yt-dlp arguments for streaming the audio of a YouTube video (or a SoundCloud track) to stdout.
  * Opus audio is preferred: YouTube serves it in WebM, which the player can send
  * to Discord as-is (no ffmpeg / Opus re-encoding, see demuxProbe in player.ts).
  * Same strategy as StroyGetter / StroyGetter Native:
@@ -48,24 +49,34 @@ export const createCookiesCopy = (): CookiesCopy | null => {
  * - referer + googlebot UA headers
  * - optional cookies (YOUTUBE_COOKIES_PATH copy) for age-restricted videos
  * - optional bgutil PoToken provider (BGUTIL_BASE_URL)
+ * The YouTube-specific options are left out for SoundCloud: its client_id is scraped
+ * from the soundcloud.com page, which a googlebot user agent may not get.
  */
 export const buildYtdlpArgs = (url: string, cookiesPath?: string): string[] => {
+  const isSoundcloud = isSoundcloudUrl(url);
   const args = [
     url,
     '--output',
     '-', // pipe audio to stdout
     '--format',
-    'bestaudio[acodec=opus]/bestaudio/best',
+    // SoundCloud Go+ tracks only offer 30 s previews (format id `…_preview`): fail rather than play half a song
+    isSoundcloud
+      ? 'bestaudio[acodec=opus][format_id!*=preview]/bestaudio[format_id!*=preview]'
+      : 'bestaudio[acodec=opus]/bestaudio/best',
     '--no-playlist',
     '--quiet',
     '--no-warnings',
+  ];
+  if (isSoundcloud) return args;
+
+  args.push(
     '--js-runtimes',
     `node:${process.execPath}`,
     '--add-header',
     'referer:youtube.com',
     '--add-header',
-    'user-agent:googlebot',
-  ];
+    'user-agent:googlebot'
+  );
 
   if (cookiesPath) args.push('--cookies', cookiesPath);
 
@@ -76,7 +87,8 @@ export const buildYtdlpArgs = (url: string, cookiesPath?: string): string[] => {
 };
 
 export const createYtdlpStream = (url: string) => {
-  const cookies = createCookiesCopy();
+  // YOUTUBE_COOKIES_PATH holds YouTube cookies only
+  const cookies = isSoundcloudUrl(url) ? null : createCookiesCopy();
   // spawn is safe: arguments are passed as an array (no shell, no injection)
   const proc = spawn(YTDLP_BIN, buildYtdlpArgs(url, cookies?.path));
   if (cookies) {
@@ -102,3 +114,55 @@ export const extractYtdlpError = (stderr: string): string | undefined => {
     ?.trim()
     .replace(/^\[[\w:]+\]\s+[\w-]+:\s*/, '');
 };
+
+/** Subset of the yt-dlp JSON (`--dump-single-json`) read by the bot */
+export interface YtdlpInfo {
+  _type?: 'video' | 'playlist' | 'url';
+  id?: string;
+  title?: string;
+  uploader?: string;
+  /** Seconds, may be a float */
+  duration?: number;
+  thumbnail?: string;
+  webpage_url?: string;
+  url?: string;
+  entries?: YtdlpInfo[];
+  /** Only for a single track (not in flat playlist entries) */
+  formats?: Array<{ format_id?: string }>;
+}
+
+const INFO_TIMEOUT_MS = 60_000;
+
+/**
+ * Fetches the metadata of a URL without downloading anything. Playlists are flat:
+ * their entries only carry an url (and sometimes a title), each one is resolved on its own.
+ * Used for SoundCloud, YouTube metadata goes through youtubei.js (src/core/youtube.ts).
+ */
+export const fetchYtdlpInfo = (url: string): Promise<YtdlpInfo> =>
+  new Promise((resolve, reject) => {
+    // execFile is safe: arguments are passed as an array (no shell, no injection)
+    execFile(
+      YTDLP_BIN,
+      ['--dump-single-json', '--flat-playlist', '--no-warnings', '--', url],
+      { timeout: INFO_TIMEOUT_MS, maxBuffer: 64 * 1024 * 1024 },
+      (error, stdout, stderr) => {
+        if (error) {
+          // error.message holds the command line, so the URL (and a private link's secret token):
+          // it would end up in the channel's error embed. Keep a short reason instead.
+          console.error('[ytdlp] info lookup failed:', {
+            code: error.code,
+            signal: error.signal,
+            killed: error.killed,
+          });
+          const reason = error.killed ? `yt-dlp timed out after ${INFO_TIMEOUT_MS / 1000} s` : 'yt-dlp failed';
+          reject(new Error(extractYtdlpError(stderr) ?? reason));
+          return;
+        }
+        try {
+          resolve(JSON.parse(stdout) as YtdlpInfo);
+        } catch (e) {
+          reject(new Error(`Invalid yt-dlp output: ${String(e)}`));
+        }
+      }
+    );
+  });

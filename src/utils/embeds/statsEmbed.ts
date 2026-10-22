@@ -2,6 +2,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, escapeMarkd
 import i18n from 'src/config/i18n';
 import { secrets } from 'src/config/secrets';
 import type { StatsSummary, TopEntry, TopKind } from 'src/database/queries/plays';
+import { isSoundcloudUrl } from 'src/utils/soundcloudUtils';
 
 export const STATS_PERIODS = ['7d', '30d', 'all'] as const;
 export type StatsPeriod = (typeof STATS_PERIODS)[number];
@@ -32,14 +33,21 @@ export const formatDuration = (ms: number) => {
 
 const plays = (count: number) => `${count} ${i18n.t(count > 1 ? 'stats.units.plays' : 'stats.units.play')}`;
 
-// Titles and channel names come from YouTube: escape markdown, and brackets/parentheses
-// so a title can't close the masked link or forge another one
-const safeText = (text: string) => escapeMarkdown(text).replace(/[\\[\]()]/g, '\\$&');
+// Titles and channel names come from YouTube / SoundCloud: escape markdown, and brackets/parentheses
+// so a title can't close the masked link or forge another one. Backslashes are escaped in the same
+// pass, so escapeMarkdown must not escape them again (`escape: false`): `**` → `\*\*`, not `\\*\\*`
+const safeText = (text: string) => escapeMarkdown(text.replace(/[\\[\]()]/g, '\\$&'), { escape: false });
+
+// Track keys are YouTube video ids, or SoundCloud permalinks
+const trackUrl = (key: string) =>
+  isSoundcloudUrl(key)
+    ? encodeURI(key).replace(/\(/g, '%28').replace(/\)/g, '%29')
+    : `https://youtu.be/${encodeURIComponent(key)}`;
 
 const describeEntry = (kind: TopKind, entry: TopEntry) => {
   switch (kind) {
     case 'tracks':
-      return `[${safeText(entry.label)}](https://youtu.be/${encodeURIComponent(entry.key)})${entry.detail ? ` — ${safeText(entry.detail)}` : ''}`;
+      return `[${safeText(entry.label)}](${trackUrl(entry.key)})${entry.detail ? ` — ${safeText(entry.detail)}` : ''}`;
     case 'artists':
       return safeText(entry.label);
     case 'djs':

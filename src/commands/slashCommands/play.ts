@@ -8,7 +8,12 @@ import { playCommand } from '../textCommands';
 export const data = new SlashCommandBuilder()
   .setName('play')
   .setDescription('Request a song !')
-  .addStringOption((option) => option.setName('query').setDescription('The search or youtube url !').setRequired(true));
+  .addStringOption((option) =>
+    option
+      .setName('query')
+      .setDescription('A search, or a YouTube / SoundCloud url (song or playlist) !')
+      .setRequired(true)
+  );
 
 export async function execute(interaction: CommandInteraction) {
   await interaction.deferReply();

@@ -78,6 +78,24 @@ describe('stats embeds', () => {
     expect(description).toContain('A\\_B');
   });
 
+  it('escapes the backslashes of a title once, so it cannot cancel the escaping', () => {
+    const view = topView('tracks', 'all', 0, {
+      entries: [{ key: 'v1', label: 'a\\](https://evil.example)', plays: 1, listenedMs: 60_000 }],
+      total: 1,
+    });
+    expect(view.embeds[0].toJSON().description).toContain('[a\\\\\\]\\(https://evil.example\\)](https://youtu.be/v1)');
+  });
+
+  it('links SoundCloud tracks to their permalink', () => {
+    const view = topView('tracks', 'all', 0, {
+      entries: [
+        { key: 'https://soundcloud.com/forss/flickermood', label: 'Flickermood', plays: 1, listenedMs: 60_000 },
+      ],
+      total: 1,
+    });
+    expect(view.embeds[0].toJSON().description).toContain('[Flickermood](https://soundcloud.com/forss/flickermood)');
+  });
+
   it('builds a valid server embed', () => {
     const embed = serverStatsEmbed(
       'My server',
