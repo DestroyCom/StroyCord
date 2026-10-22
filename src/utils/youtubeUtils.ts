@@ -24,9 +24,18 @@ export function yt_validate(url: string): 'playlist' | 'video' | 'search' | fals
       else return 'search';
     }
   } else {
-    if (!url_.match(playlist_pattern)) return yt_validate(url_.replace(/(\?|&)list=[^&]*/, ''));
+    // A video opened from YouTube's home often carries its auto-generated mix (list=RD…):
+    // the user meant the video, not an endless radio
+    const isMixOnVideo = /[?&]v=/.test(url_) && /[?&]list=RD/.test(url_);
+    if (!url_.match(playlist_pattern) || isMixOnVideo) return yt_validate(url_.replace(/(\?|&)list=[^&]*/, ''));
     else return 'playlist';
   }
+}
+
+/** Playlist id of a playlist URL (`list=` parameter), or the input itself when it is already an id */
+export function extractPlaylistId(urlOrId: string): string {
+  const input = urlOrId.trim();
+  return input.match(/[?&]list=([\w-]+)/)?.[1] ?? input;
 }
 
 export function extractVideoId(urlOrId: string): string {

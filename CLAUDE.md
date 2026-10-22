@@ -42,11 +42,13 @@ Both paths ultimately call the same functions in `textCommands.ts`, which call i
 
 ### Play Request Handlers (`src/core/requestHandlers/`)
 
-Three handlers resolve the input type before calling into the player:
+Three handlers resolve the input type before calling into the player (`playCommand` routes with `parseSoundcloudUrl` first, then `yt_validate`):
 
-- `songRequest.ts` — single YouTube URL → calls `ytdl.getInfo` to extract metadata → `pushSongs` to DB → `songPlayer`
-- `playlistRequest.ts` — playlist URL → iterates via `ytpl`, calls `songRequest` per item
-- `searchRequest.ts` — text search → `ytsr` (limit 1) → calls `songRequest` with the first result
+- `songRequest.ts` — single YouTube / SoundCloud URL → `extractSongData` (youtubei.js `getBasicInfo` for YouTube, `fetchYtdlpInfo` for SoundCloud) → `pushSongIfAllowed` → `songPlayer`
+- `playlistRequest.ts` — YouTube playlist (youtubei.js `getPlaylist(<id>)` — the id, not the URL — plus continuations, capped at `QUEUE_LIMIT_CAP`) or SoundCloud set (`fetchYtdlpInfo`, flat) → calls `songRequest` per item. A SoundCloud short link (`on.soundcloud.com`) also goes there and falls back to `songRequest` when it resolves to a track
+- `searchRequest.ts` — text search → youtubei.js search → calls `songRequest` with the first result
+
+SoundCloud (`src/utils/soundcloudUtils.ts`): `parseSoundcloudUrl` accepts tracks, `/sets/` and short links (profiles and their tabs are rejected), `isSoundcloudUrl` any SoundCloud host (playlist entries can be `api.soundcloud.com/tracks/<id>`). Songs store the permalink, which is also their stats key (`videoId`). A YouTube video carrying its auto-generated mix (`watch?v=…&list=RD…`) is a single video, not a playlist.
 
 ### Player (`src/core/player.ts`)
 
@@ -60,7 +62,7 @@ Three handlers resolve the input type before calling into the player:
 
 ### yt-dlp (`src/core/ytdlp.ts`)
 
-Same setup as StroyGetter. `buildYtdlpArgs()` always passes `--js-runtimes node:<execPath>` — YouTube requires JS challenge solving, and without a runtime stream URLs return **HTTP 403**. In Docker, yt-dlp is installed from PyPI (`yt-dlp[default]`, includes the `yt-dlp-ejs` solver) at the version pinned in `.ytdlp-version` (bumped daily by `watch_ytdlp.yml`), along with the `bgutil-ytdlp-pot-provider` plugin, and copied over `node_modules/youtube-dl-exec/bin/yt-dlp`. Optional: `YOUTUBE_COOKIES_PATH` (a private 0600 copy per yt-dlp process, deleted when it exits), `BGUTIL_BASE_URL` (docker-compose runs a `bgutil-provider` service).
+Same setup as StroyGetter. For YouTube, `buildYtdlpArgs()` always passes `--js-runtimes node:<execPath>` — YouTube requires JS challenge solving, and without a runtime stream URLs return **HTTP 403**. In Docker, yt-dlp is installed from PyPI (`yt-dlp[default]`, includes the `yt-dlp-ejs` solver) at the version pinned in `.ytdlp-version` (bumped daily by `watch_ytdlp.yml`), along with the `bgutil-ytdlp-pot-provider` plugin, and copied over `node_modules/youtube-dl-exec/bin/yt-dlp`. Optional: `YOUTUBE_COOKIES_PATH` (a private 0600 copy per yt-dlp process, deleted when it exits), `BGUTIL_BASE_URL` (docker-compose runs a `bgutil-provider` service). SoundCloud URLs get none of the YouTube options (headers, cookies, PoToken). `fetchYtdlpInfo()` reads metadata (`--dump-single-json --flat-playlist`) for SoundCloud.
 
 ### Per-guild settings (`/config`)
 

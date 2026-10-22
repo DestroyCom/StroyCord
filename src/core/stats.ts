@@ -3,6 +3,7 @@ import { captureError } from 'src/config/monitoring';
 import { getGuildSettings } from 'src/core/settings';
 import { insertPlay } from 'src/database/queries/plays';
 import type { songInterface } from 'src/utils/interfaces';
+import { isSoundcloudUrl } from 'src/utils/soundcloudUtils';
 import { extractVideoId } from 'src/utils/youtubeUtils';
 
 // Shorter plays are failed starts or instant skips: they would skew "most played"
@@ -26,7 +27,8 @@ const recordPlay = async (guildId: string, resource: AudioResource<unknown>) => 
   const endedAt = new Date();
   await insertPlay({
     guildId,
-    videoId: extractVideoId(song.url),
+    // SoundCloud tracks are keyed by their permalink (no short id to link to)
+    videoId: isSoundcloudUrl(song.url) ? song.url : extractVideoId(song.url),
     title: song.title,
     videoAuthor: song.videoAuthor,
     durationSec,

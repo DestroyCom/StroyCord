@@ -144,7 +144,7 @@
     "fields": {
       "prefix": "Text command prefix",
       "language": "Language",
-      "detect": "YouTube links without prefix",
+      "detect": "YouTube / SoundCloud links without prefix",
       "channels": "Channels accepting commands",
       "allChannels": "All channels",
       "maxQueueSize": "Queue size (current song included)",

@@ -21,6 +21,7 @@ import { missingRequiredArgument, unknownError, unreconizedArgumentEmbed } from 
 import { queueEmbed } from 'src/utils/embeds/listSongEmbed';
 import { pauseEmbed, removeEmbed, resumeEmbed, skipEmbed } from 'src/utils/embeds/playerEmbeds';
 import { nowPlayingEmbed } from 'src/utils/embeds/songEmbed';
+import { parseSoundcloudUrl } from 'src/utils/soundcloudUtils';
 import { yt_validate } from 'src/utils/youtubeUtils';
 
 export const playCommand = (
@@ -44,11 +45,17 @@ export const playCommand = (
 
   const request = splittedMessage.slice(1).join(' ');
   const requestType = yt_validate(request);
+  const soundcloud = parseSoundcloudUrl(request);
 
   if (request === '' && !(textChannel instanceof PartialGroupDMChannel))
     return textChannel.send({ embeds: [missingRequiredArgument()] });
 
-  if (request.startsWith('https') && requestType === 'video') {
+  if (soundcloud?.type === 'track') {
+    songRequest(soundcloud.url, guildId, requestAuthor, textChannel.id, voiceChannel);
+  } else if (soundcloud) {
+    // A set, or a short link: the playlist handler falls back to a single track when it is one
+    playlistHandler(soundcloud.url, guildId, requestAuthor, textChannel.id, voiceChannel);
+  } else if (request.startsWith('https') && requestType === 'video') {
     songRequest(request, guildId, requestAuthor, textChannel.id, voiceChannel);
   } else if (request.startsWith('https') && requestType === 'playlist') {
     playlistHandler(request, guildId, requestAuthor, textChannel.id, voiceChannel);

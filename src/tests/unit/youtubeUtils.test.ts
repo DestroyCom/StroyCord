@@ -1,4 +1,4 @@
-import { extractVideoId, parseCookiesTxt, yt_validate } from 'src/utils/youtubeUtils';
+import { extractPlaylistId, extractVideoId, parseCookiesTxt, yt_validate } from 'src/utils/youtubeUtils';
 import { describe, expect, it } from 'vitest';
 
 describe('yt_validate', () => {
@@ -28,6 +28,34 @@ describe('yt_validate', () => {
 
   it('returns "video" for a raw video ID', () => {
     expect(yt_validate('dQw4w9WgXcQ')).toBe('video');
+  });
+
+  it('returns "playlist" for a video opened from a playlist', () => {
+    expect(yt_validate('https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLrEnWoR732-BHrPp_Pm8_VleD68f9s14-')).toBe(
+      'playlist'
+    );
+  });
+
+  it('returns "video" for a video carrying its auto-generated mix', () => {
+    expect(yt_validate('https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=RDdQw4w9WgXcQ&start_radio=1')).toBe('video');
+  });
+});
+
+describe('extractPlaylistId', () => {
+  it('extracts the id from a playlist URL', () => {
+    expect(extractPlaylistId('https://www.youtube.com/playlist?list=PLrEnWoR732-BHrPp_Pm8_VleD68f9s14-')).toBe(
+      'PLrEnWoR732-BHrPp_Pm8_VleD68f9s14-'
+    );
+  });
+
+  it('extracts the id from a watch URL', () => {
+    expect(
+      extractPlaylistId('https://music.youtube.com/watch?v=dQw4w9WgXcQ&list=PLrEnWoR732-BHrPp_Pm8_VleD68f9s14-&index=2')
+    ).toBe('PLrEnWoR732-BHrPp_Pm8_VleD68f9s14-');
+  });
+
+  it('returns a raw id as is', () => {
+    expect(extractPlaylistId('PLrEnWoR732-BHrPp_Pm8_VleD68f9s14-')).toBe('PLrEnWoR732-BHrPp_Pm8_VleD68f9s14-');
   });
 });
 

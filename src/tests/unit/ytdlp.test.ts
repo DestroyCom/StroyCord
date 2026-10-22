@@ -49,6 +49,19 @@ describe('buildYtdlpArgs', () => {
 
     expect(args[args.indexOf('--cookies') + 1]).toBe('/tmp/x/cookies.txt');
   });
+
+  it('leaves the YouTube-specific options out for SoundCloud', async () => {
+    vi.stubEnv('BGUTIL_BASE_URL', 'http://bgutil-provider:4416');
+    const { buildYtdlpArgs } = await loadModule();
+    const scUrl = 'https://soundcloud.com/forss/flickermood';
+    const args = buildYtdlpArgs(scUrl, '/tmp/x/cookies.txt');
+
+    expect(args[0]).toBe(scUrl);
+    expect(args).toEqual(expect.arrayContaining(['--output', '-', '--no-playlist']));
+    expect(args).not.toContain('--add-header');
+    expect(args).not.toContain('--cookies');
+    expect(args).not.toContain('--extractor-args');
+  });
 });
 
 describe('createCookiesCopy', () => {

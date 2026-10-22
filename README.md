@@ -1,8 +1,8 @@
 # 🎵 StroyCord
 
-A self-hosted Discord music bot that plays YouTube in your voice channels, with a queue, per-server settings and listening statistics.
+A self-hosted Discord music bot that plays YouTube and SoundCloud in your voice channels, with a queue, per-server settings and listening statistics.
 
-- ▶️ Play a YouTube link, a playlist, or just a search
+- ▶️ Play a YouTube or SoundCloud link (song or playlist), or just a search
 - ⚙️ Configure everything per server with `/config`, no restart needed
 - 📊 See who listens to what with `/stats`
 - 🌍 English and French
@@ -29,7 +29,7 @@ Two more commands are slash-only:
 - **`/stats server | top | user`**: total listening time, most played songs, artists and DJs, busiest hour, per member, over 7 days, 30 days or all time.
 - **`/config`** (members with the *Manage Server* permission only): opens the settings panel of the server.
 
-> 💡 When *YouTube links without prefix* is enabled, posting a bare YouTube link is enough to play it.
+> 💡 When *YouTube / SoundCloud links without prefix* is enabled, posting a bare YouTube or SoundCloud link is enough to play it.
 
 ### ⚙️ What `/config` can change
 
@@ -41,7 +41,7 @@ Two more commands are slash-only:
 | Channels accepting commands | all channels |
 | Bot replies channel | the channel of the command |
 | Bot replies (now playing, added, skip…). Queue, current song and errors are always shown | on |
-| Play bare YouTube links without prefix | `DETECT_FROM_ALL_MESSAGES` from `.env` |
+| Play bare YouTube / SoundCloud links without prefix | `DETECT_FROM_ALL_MESSAGES` from `.env` |
 | Queue size, current song included (max 500) | `MAX_QUEUE_SIZE` from `.env` |
 | Songs per member, current song included | unlimited |
 | Listening statistics | on |
@@ -114,7 +114,7 @@ For production: `npm run build`, then `npm run start`.
 | --- | --- | --- |
 | `PREFIX` | `&` | Text command prefix |
 | `LANGUAGE` | `en-US` | `en-US` or `fr-FR` |
-| `DETECT_FROM_ALL_MESSAGES` | `false` | Play bare YouTube links posted without prefix |
+| `DETECT_FROM_ALL_MESSAGES` | `false` | Play bare YouTube / SoundCloud links posted without prefix |
 | `MAX_QUEUE_SIZE` | `100` | Queue size, current song included (max 500) |
 
 ### Optional

@@ -16,11 +16,13 @@ import { getGuildSettings } from 'src/core/settings';
 import { fetchGuild } from 'src/database/queries/guilds/get';
 import { unknownRequestEmbed } from 'src/utils/embeds/errorsEmbed';
 import { messageFormater } from 'src/utils/messageUtils';
+import { parseSoundcloudUrl } from 'src/utils/soundcloudUtils';
 import { yt_validate } from 'src/utils/youtubeUtils';
 
-const isYoutubeLink = (content: string) => {
+const isMusicLink = (content: string) => {
   const trimmed = content.trim();
   if (!/^https?:\/\//.test(trimmed)) return false;
+  if (parseSoundcloudUrl(trimmed)) return true;
   const type = yt_validate(trimmed);
   return type === 'video' || type === 'playlist';
 };
@@ -94,8 +96,8 @@ export default (client: Client): void => {
     try {
       const settings = await getGuildSettings(message.guildId);
       const hasPrefix = message.content.startsWith(settings.prefix);
-      // Without the prefix, only a bare YouTube link is a request (and only if the guild enabled it)
-      const isBareLink = !hasPrefix && settings.detectFromAllMessages && isYoutubeLink(message.content);
+      // Without the prefix, only a bare YouTube / SoundCloud link is a request (and only if the guild enabled it)
+      const isBareLink = !hasPrefix && settings.detectFromAllMessages && isMusicLink(message.content);
       // In slash mode, prefix commands are ignored silently (bare links keep their own toggle)
       const isPrefixCommand = hasPrefix && acceptsTextCommands(settings);
       if (!isPrefixCommand && !isBareLink) return;
