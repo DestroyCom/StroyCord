@@ -27,6 +27,15 @@ describe('parseSoundcloudUrl', () => {
     expect(parseSoundcloudUrl('https://soundcloud.com/forss/sets/soulhack/s-AbC12')?.type).toBe('playlist');
   });
 
+  it('keeps slugs that look like a secret token', () => {
+    expect(parseSoundcloudUrl('https://soundcloud.com/forss/s-curve')).toEqual({
+      type: 'track',
+      url: 'https://soundcloud.com/forss/s-curve',
+    });
+    expect(parseSoundcloudUrl('https://soundcloud.com/forss/sets/s-sides')?.type).toBe('playlist');
+    expect(parseSoundcloudUrl('https://soundcloud.com/forss/s-curve/s-AbC12')?.type).toBe('track');
+  });
+
   it('recognizes a playlist / album (set)', () => {
     expect(parseSoundcloudUrl('https://soundcloud.com/forss/sets/soulhack')).toEqual({
       type: 'playlist',

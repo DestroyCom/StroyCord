@@ -26,9 +26,13 @@ export function yt_validate(url: string): 'playlist' | 'video' | 'search' | fals
   } else {
     // A video opened from YouTube's home often carries its auto-generated mix (list=RD…):
     // the user meant the video, not an endless radio
-    const isMixOnVideo = /[?&]v=/.test(url_) && /[?&]list=RD/.test(url_);
-    if (!url_.match(playlist_pattern) || isMixOnVideo) return yt_validate(url_.replace(/(\?|&)list=[^&]*/, ''));
-    else return 'playlist';
+    const hasVideo = /[?&]v=/.test(url_) || /youtu\.be\/[\w-]{11}/.test(url_);
+    const isMixOnVideo = hasVideo && /[?&]list=RD/.test(url_);
+    if (!url_.match(playlist_pattern) || isMixOnVideo) {
+      // `?list=…&v=…` keeps its `?`: `watch&v=…` would no longer be a valid URL
+      return yt_validate(url_.replace(/\?list=[^&]*&/, '?').replace(/[?&]list=[^&]*/, ''));
+    }
+    return 'playlist';
   }
 }
 
@@ -41,7 +45,8 @@ export function extractPlaylistId(urlOrId: string): string {
 export function extractVideoId(urlOrId: string): string {
   const url = urlOrId.trim();
   if (url.includes('youtu.be/')) return url.split('youtu.be/')[1].split(/[?&/]/)[0];
-  if (url.includes('watch?v=')) return url.split('watch?v=')[1].split(/[?&]/)[0];
+  const videoParam = url.match(/[?&]v=([\w-]+)/);
+  if (videoParam) return videoParam[1];
   const pathMatch = url.match(/(?:shorts|embed|live)\/([a-zA-Z\d_-]{11,12})/);
   if (pathMatch) return pathMatch[1];
   return url;
