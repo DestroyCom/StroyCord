@@ -1,5 +1,12 @@
 # stroycord
 
+## 1.8.0
+
+### Minor Changes
+
+- ad8f3b8: Queue editing: `/priority` (`&pr <n>`) plays a waiting song right after the current one, `/clearplaylist` (`&cp [n]`) removes the waiting songs of one playlist without stopping the current song. Both slash commands autocomplete from the queue, and `/queue` shows which playlist each song comes from.
+- 2169857: SoundCloud support (tracks, sets / albums, private and short links; Go+ tracks, only available as 30 s previews, are refused instead of played cut) and working YouTube playlists: the playlist id is now passed to YouTube (the full URL made every playlist fail), every page is read (not only the first 100 videos) and a playlist that can't be loaded is reported. A video carrying its auto-generated mix (`list=RD…`) plays alone instead of queueing the radio.
+
 ## 1.7.0
 
 ### Minor Changes
