@@ -34,8 +34,9 @@ export const formatDuration = (ms: number) => {
 const plays = (count: number) => `${count} ${i18n.t(count > 1 ? 'stats.units.plays' : 'stats.units.play')}`;
 
 // Titles and channel names come from YouTube / SoundCloud: escape markdown, and brackets/parentheses
-// so a title can't close the masked link or forge another one
-const safeText = (text: string) => escapeMarkdown(text).replace(/[\\[\]()]/g, '\\$&');
+// so a title can't close the masked link or forge another one. escapeMarkdown already escapes the
+// title's backslashes: escaping them again here would also escape its own (`\*` → `\\*`)
+const safeText = (text: string) => escapeMarkdown(text).replace(/[[\]()]/g, '\\$&');
 
 // Track keys are YouTube video ids, or SoundCloud permalinks
 const trackUrl = (key: string) =>

@@ -6,6 +6,9 @@ const { mockGetGuildSettings, mockCaptureMessage, channels } = vi.hoisted(() => 
   channels: new Map<string, { send: ReturnType<typeof vi.fn> }>(),
 }));
 
+vi.mock('src/config/secrets', () => ({
+  secrets: { PREFIX: '&', LANGUAGE: 'en-US', DETECT_FROM_ALL_MESSAGES: false, MAX_QUEUE_SIZE: 100 },
+}));
 vi.mock('src/Bot', () => ({
   client: {
     guilds: {
