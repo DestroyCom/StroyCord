@@ -147,7 +147,15 @@ export const fetchYtdlpInfo = (url: string): Promise<YtdlpInfo> =>
       { timeout: INFO_TIMEOUT_MS, maxBuffer: 64 * 1024 * 1024 },
       (error, stdout, stderr) => {
         if (error) {
-          reject(new Error(extractYtdlpError(stderr) ?? error.message));
+          // error.message holds the command line, so the URL (and a private link's secret token):
+          // it would end up in the channel's error embed. Keep a short reason instead.
+          console.error('[ytdlp] info lookup failed:', {
+            code: error.code,
+            signal: error.signal,
+            killed: error.killed,
+          });
+          const reason = error.killed ? `yt-dlp timed out after ${INFO_TIMEOUT_MS / 1000} s` : 'yt-dlp failed';
+          reject(new Error(extractYtdlpError(stderr) ?? reason));
           return;
         }
         try {

@@ -139,3 +139,32 @@ describe('extractYtdlpError', () => {
     );
   });
 });
+
+describe('fetchYtdlpInfo', () => {
+  afterEach(() => {
+    vi.doUnmock('node:child_process');
+  });
+
+  const withExecFileError = async (error: Error & { killed?: boolean }, stderr = '') => {
+    vi.resetModules();
+    vi.doMock('node:child_process', async (importOriginal) => ({
+      ...(await importOriginal<typeof import('node:child_process')>()),
+      execFile: (_bin: string, _args: string[], _opts: object, callback: (...args: unknown[]) => void) =>
+        callback(error, '', stderr),
+    }));
+    const { fetchYtdlpInfo } = await import('src/core/ytdlp');
+    return fetchYtdlpInfo('https://soundcloud.com/forss/flickermood/s-SECRET');
+  };
+
+  it('never puts the command line (and the URL) in the error', async () => {
+    const error = new Error('Command failed: yt-dlp -- https://soundcloud.com/forss/flickermood/s-SECRET');
+    await expect(withExecFileError(error)).rejects.toThrow(/^yt-dlp failed$/);
+  });
+
+  it('reports a timeout and keeps the yt-dlp error message', async () => {
+    await expect(withExecFileError(Object.assign(new Error('x'), { killed: true }))).rejects.toThrow(/timed out/);
+    await expect(withExecFileError(new Error('x'), 'ERROR: [soundcloud] 123: Track not found')).rejects.toThrow(
+      'Track not found'
+    );
+  });
+});
