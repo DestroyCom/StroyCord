@@ -16,7 +16,8 @@
     "clearAPlay": "stop the session",
     "unableToSkip": "There is no music to skip",
     "unableToPause": "The music is already paused",
-    "unableToResume": "The music is not paused"
+    "unableToResume": "The music is not paused",
+    "editQueue": "edit the queue"
   },
   "embedsText": {
     "global": {
@@ -248,5 +249,25 @@
   },
   "soundcloud": {
     "previewOnly": "**%{title}** is a SoundCloud Go+ track: only a 30 s preview is available, so it was not added."
+  },
+  "queueTools": {
+    "noPlaylist": "No playlist is waiting in the queue",
+    "choosePlaylist": {
+      "title": "Several playlists are waiting",
+      "description": "Choose the one to remove with %{command}"
+    },
+    "playlistLine": "%{count} songs, added by %{username}",
+    "playlistCleared": {
+      "title": "%{username} removed a playlist from the queue",
+      "description": "**%{title}**: %{count} songs removed. The song playing keeps playing."
+    },
+    "emptyQueue": "No song is waiting in the queue",
+    "invalidPosition": "Invalid position: choose a number between 1 and %{max} (see %{command})",
+    "prioritized": {
+      "title": "%{username} moved a song up",
+      "description": "**%{title}** will play next"
+    },
+    "notWaiting": "This song is no longer waiting in the queue",
+    "hint": "%{priority} to play a song next, %{clear} to remove a playlist"
   }
 }

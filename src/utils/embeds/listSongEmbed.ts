@@ -1,4 +1,4 @@
-import { EmbedBuilder, type User } from 'discord.js';
+import { EmbedBuilder, escapeMarkdown, type User } from 'discord.js';
 import { getPrefix } from 'src/config/guildContext';
 import i18n from 'src/config/i18n';
 import { secrets } from 'src/config/secrets';
@@ -34,13 +34,21 @@ export const queueEmbed = async (nextSongs: songInterface[]): Promise<EmbedBuild
     } else {
       tabEmbeds.push({
         name: `${index + 1} - ${song.title}`,
-        value: `${song.videoAuthor}, ${song.videoLength} minutes.`,
+        value:
+          `${song.videoAuthor}, ${song.videoLength} minutes.` +
+          (song.playlist ? ` 📃 ${escapeMarkdown(song.playlist.title)}` : ''),
       });
     }
   });
 
   return new EmbedBuilder()
     .setTitle(`${i18n.t('embedsText.global.youHave')} ${nextSongs.length} ${i18n.t('embedsText.lists.queue.title')} !`)
+    .setDescription(
+      i18n.t('queueTools.hint', {
+        priority: `\`${getPrefix()}pr <n>\` (\`/priority\`)`,
+        clear: `\`${getPrefix()}cp\` (\`/clearplaylist\`)`,
+      })
+    )
     .setAuthor({
       name: 'Stroycord',
       iconURL: secrets.STROYCORD_LOGO,

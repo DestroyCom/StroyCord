@@ -1,8 +1,10 @@
 import { type Client, DiscordAPIError, Events, type Message } from 'discord.js';
 import {
+  clearPlaylistCommand,
   currentCommand,
   pauseCommand,
   playCommand,
+  priorityCommand,
   queueCommand,
   redoCommand,
   removeCommand,
@@ -70,6 +72,14 @@ const handleTextCommand = async (message: Message<true>, prefix: string, isBareL
       break;
     case 'redo':
       redoCommand(guild.guildId, textChannel, message.author, voiceChannel);
+      break;
+    case 'clearplaylist':
+    case 'cp':
+      clearPlaylistCommand(guild.guildId, textChannel, message.author, voiceChannel, splittedMessage[1]);
+      break;
+    case 'priority':
+    case 'pr':
+      priorityCommand(guild.guildId, textChannel, message.author, voiceChannel, splittedMessage[1]);
       break;
     default:
       handled = false;

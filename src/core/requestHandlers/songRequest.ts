@@ -1,9 +1,11 @@
+import { randomUUID } from 'node:crypto';
 import type { User, VoiceBasedChannel } from 'discord.js';
 import { activePlayers } from 'src/Bot';
 import { captureError } from 'src/config/monitoring';
 import { getGuildSettings } from 'src/core/settings';
 import { pushSongIfAllowed, type QueueLimitReason, updateVoiceChannel } from 'src/database/queries/guilds/update';
 import { queueLimitEmbed } from 'src/utils/embeds/errorsEmbed';
+import type { QueuedPlaylist } from 'src/utils/interfaces';
 import { extractSongData, extractVoiceChannelData, PreviewOnlyError } from 'src/utils/songUtils';
 
 import { sendEmbed, sendEmbedToChannel, sendErrorEmbed } from '../messages';
@@ -15,7 +17,8 @@ export const songRequest = async (
   requestAuthor: User,
   textChannelId: string,
   voiceChannel?: VoiceBasedChannel | null,
-  isComingFromPlaylist: boolean = false
+  isComingFromPlaylist: boolean = false,
+  playlist?: QueuedPlaylist
 ): Promise<'queued' | QueueLimitReason | 'error'> => {
   const activePlayerGuild = activePlayers[guildId];
 
@@ -27,6 +30,8 @@ export const songRequest = async (
       !activePlayerGuild,
       isComingFromPlaylist
     );
+    parsedSong.queueId = randomUUID();
+    if (playlist) parsedSong.playlist = playlist;
     if (!voiceChannel) {
       throw new Error('No voice channel provided');
     }

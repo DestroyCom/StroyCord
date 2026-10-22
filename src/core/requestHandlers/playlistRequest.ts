@@ -1,10 +1,11 @@
+import { randomUUID } from 'node:crypto';
 import type { User, VoiceBasedChannel } from 'discord.js';
 import { captureError } from 'src/config/monitoring';
 import { QUEUE_LIMIT_CAP } from 'src/config/settings';
 import { youtubeClient } from 'src/core/youtube';
 import { fetchYtdlpInfo } from 'src/core/ytdlp';
 import type { QueueLimitReason } from 'src/database/queries/guilds/update';
-import type { PlaylistInfo } from 'src/utils/interfaces';
+import type { PlaylistInfo, QueuedPlaylist } from 'src/utils/interfaces';
 import { isSoundcloudUrl } from 'src/utils/soundcloudUtils';
 import { extractPlaylistId } from 'src/utils/youtubeUtils';
 
@@ -91,11 +92,21 @@ export const playlistHandler = async (
     return;
   }
 
+  // Tags its songs, so /clearplaylist can remove the ones still waiting
+  const queuedPlaylist: QueuedPlaylist = { id: randomUUID(), title: playlist.title || url };
   let addedCount = 0;
   let limitReached: QueueLimitReason | undefined;
   for (const item of playlist.items) {
     try {
-      const result = await songRequest(item.url, guildId, requestAuthor, textChannelId, voiceChannel, true);
+      const result = await songRequest(
+        item.url,
+        guildId,
+        requestAuthor,
+        textChannelId,
+        voiceChannel,
+        true,
+        queuedPlaylist
+      );
       if (result === 'queued') addedCount++;
       // Stop at the first limit: the remaining songs would be rejected too (and cost a request each)
       if (result === 'queueFull' || result === 'userLimit') {

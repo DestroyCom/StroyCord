@@ -16,7 +16,8 @@
     "clearAPlay": "stopper la lecture",
     "unableToSkip": "Aucune musique n'est en cours de lecture",
     "unableToPause": "La musique est deja pausé",
-    "unableToResume": "La musique n'est pas en pause"
+    "unableToResume": "La musique n'est pas en pause",
+    "editQueue": "modifier la file"
   },
   "embedsText": {
     "global": {
@@ -248,5 +249,25 @@
   },
   "soundcloud": {
     "previewOnly": "**%{title}** est un titre SoundCloud Go+ : seul un extrait de 30 s est disponible, il n'a pas été ajouté."
+  },
+  "queueTools": {
+    "noPlaylist": "Aucune playlist n'est en attente dans la file",
+    "choosePlaylist": {
+      "title": "Plusieurs playlists sont en attente",
+      "description": "Choisissez celle à retirer avec %{command}"
+    },
+    "playlistLine": "%{count} titres, ajoutée par %{username}",
+    "playlistCleared": {
+      "title": "%{username} a retiré une playlist de la file",
+      "description": "**%{title}** : %{count} titres retirés. Le titre en cours continue."
+    },
+    "emptyQueue": "Aucun titre n'est en attente dans la file",
+    "invalidPosition": "Position invalide : choisissez un nombre entre 1 et %{max} (voir %{command})",
+    "prioritized": {
+      "title": "%{username} a passé un titre en priorité",
+      "description": "**%{title}** sera joué juste après"
+    },
+    "notWaiting": "Ce titre n'est plus en attente dans la file",
+    "hint": "%{priority} pour jouer un titre juste après, %{clear} pour retirer une playlist"
   }
 }

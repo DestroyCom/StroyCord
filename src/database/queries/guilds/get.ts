@@ -1,4 +1,5 @@
 import { guild_model } from 'src/database/schema/guild';
+import type { songInterface } from 'src/utils/interfaces';
 
 export const fetchGuild = async (guildId: string) => {
   if (!guildId) throw new Error('GuildID not specified !');
@@ -33,6 +34,31 @@ export const getNextSongs = async (guildId: string) => {
   const guild = await fetchGuild(guildId);
   if (!guild.nextSongs) return [];
   return guild.nextSongs.slice(1);
+};
+
+export interface QueuedPlaylistSummary {
+  id: string;
+  title: string;
+  /** Songs of the playlist still waiting (the one playing excluded) */
+  count: number;
+  requestedBy: string;
+}
+
+/** Playlists with songs waiting in the queue, in queue order */
+export const getQueuedPlaylists = async (guildId: string): Promise<QueuedPlaylistSummary[]> => {
+  const playlists = new Map<string, QueuedPlaylistSummary>();
+  for (const song of (await getNextSongs(guildId)) as songInterface[]) {
+    if (!song.playlist) continue;
+    const entry = playlists.get(song.playlist.id);
+    if (entry) entry.count++;
+    else
+      playlists.set(song.playlist.id, {
+        ...song.playlist,
+        count: 1,
+        requestedBy: song.requestAuthor.username,
+      });
+  }
+  return [...playlists.values()];
 };
 
 export const getLastPlayedSong = async (guildId: string) => {
