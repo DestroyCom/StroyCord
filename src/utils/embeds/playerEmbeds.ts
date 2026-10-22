@@ -1,8 +1,8 @@
-import { EmbedBuilder, type User } from 'discord.js';
+import { EmbedBuilder, escapeMarkdown, type User } from 'discord.js';
 import { getPrefix } from 'src/config/guildContext';
 import i18n from 'src/config/i18n';
 import { secrets } from 'src/config/secrets';
-import { getFirstSong, getLastPlayedSong } from 'src/database/queries/guilds/get';
+import { getFirstSong, getLastPlayedSong, type QueuedPlaylistSummary } from 'src/database/queries/guilds/get';
 
 import type { songInterface } from '../interfaces';
 
@@ -90,3 +90,40 @@ export const removeEmbed = (author: User) => {
     .setColor('#37123C')
     .setTimestamp();
 };
+
+const queueToolEmbed = (title: string, description: string) =>
+  new EmbedBuilder()
+    .setTitle(title)
+    .setDescription(description)
+    .setAuthor({
+      name: 'Stroycord',
+      iconURL: stroyCordLogo,
+    })
+    .setColor('#37123C')
+    .setTimestamp();
+
+export const playlistClearedEmbed = (author: User, playlist: QueuedPlaylistSummary, removed: number) =>
+  queueToolEmbed(
+    `🧹 ${i18n.t('queueTools.playlistCleared.title', { username: author.username })} !`,
+    i18n.t('queueTools.playlistCleared.description', { title: escapeMarkdown(playlist.title), count: removed })
+  );
+
+export const choosePlaylistEmbed = (playlists: QueuedPlaylistSummary[]) =>
+  queueToolEmbed(
+    `📃 ${i18n.t('queueTools.choosePlaylist.title')}`,
+    `${i18n.t('queueTools.choosePlaylist.description', { command: `\`${getPrefix()}cp <n>\`` })} :\n\n${playlists
+      .map(
+        (playlist, index) =>
+          `**${index + 1}.** ${escapeMarkdown(playlist.title)} — ${i18n.t('queueTools.playlistLine', {
+            count: playlist.count,
+            username: escapeMarkdown(playlist.requestedBy),
+          })}`
+      )
+      .join('\n')}`
+  );
+
+export const prioritizedEmbed = (author: User, song: songInterface) =>
+  queueToolEmbed(
+    `⏫ ${i18n.t('queueTools.prioritized.title', { username: author.username })} !`,
+    i18n.t('queueTools.prioritized.description', { title: escapeMarkdown(song.title) })
+  );

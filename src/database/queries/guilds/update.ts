@@ -63,6 +63,46 @@ export const shiftSongs = async (guildId: string) => {
   );
 };
 
+// nextSongs[0] is the song playing: queue edits only reorder or remove the songs waiting after it.
+// Each edit is a single pipeline update, so a song ending meanwhile (shiftSongs) can't interleave with it.
+const queue = { $ifNull: ['$nextSongs', []] };
+const playingSong = { $slice: [queue, 1] };
+// $slice needs a positive count, even on an empty queue
+const waitingSongs = { $slice: [queue, 1, { $max: [1, { $size: queue }] }] };
+
+const rewriteQueue = (guildId: string, nextSongs: object) =>
+  guild_model.findOneAndUpdate({ guildId }, [{ $set: { nextSongs } }], {
+    updatePipeline: true,
+    returnDocument: 'before',
+  });
+
+const waitingBefore = (guild: { nextSongs?: unknown[] | null } | null) =>
+  (guild?.nextSongs ?? []).slice(1) as songInterface[];
+
+/** Removes the waiting songs of a playlist (the song playing keeps playing). Returns how many were removed. */
+export const removePlaylistSongs = async (guildId: string, playlistId: string): Promise<number> => {
+  const before = await rewriteQueue(guildId, {
+    $concatArrays: [
+      playingSong,
+      { $filter: { input: waitingSongs, cond: { $ne: ['$$this.playlist.id', playlistId] } } },
+    ],
+  });
+  return waitingBefore(before).filter((song) => song.playlist?.id === playlistId).length;
+};
+
+/** Moves a waiting song right after the one playing. Returns it, or null when it is no longer waiting. */
+export const prioritizeSong = async (guildId: string, queueId: string): Promise<songInterface | null> => {
+  const isTarget = { $eq: ['$$this.queueId', queueId] };
+  const before = await rewriteQueue(guildId, {
+    $concatArrays: [
+      playingSong,
+      { $filter: { input: waitingSongs, cond: isTarget } },
+      { $filter: { input: waitingSongs, cond: { $not: [isTarget] } } },
+    ],
+  });
+  return waitingBefore(before).find((song) => song.queueId === queueId) ?? null;
+};
+
 export const updateVoiceChannel = async (guildId: string, data: object) => {
   return await guild_model.updateOne({ guildId }, { currentVoiceChannel: data });
 };

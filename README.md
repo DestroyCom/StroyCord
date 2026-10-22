@@ -22,6 +22,8 @@ Every command works as a **slash command** (`/play`) and as a **text command** w
 | `queue` | `q` | Show the queue |
 | `current` | `c` | Show the song currently playing |
 | `redo` | | Replay the last song played |
+| `priority <n>` | `pr` | Play song `n` of the queue right after the current one |
+| `clearplaylist [n]` | `cp` | Remove the waiting songs of a playlist (the current song keeps playing) |
 | `fuckoff` | `fo` | Stop the music and leave the voice channel |
 
 Two more commands are slash-only:

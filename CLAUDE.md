@@ -78,6 +78,10 @@ Same setup as StroyGetter. For YouTube, `buildYtdlpArgs()` always passes `--js-r
 
 `pushSongIfAllowed` (`src/database/queries/guilds/update.ts`) pushes with an atomic `$expr`/`$size` condition, returning `'queued' | 'queueFull' | 'userLimit'`. `songRequest` returns that result; `playlistHandler` stops at the first limit.
 
+### Queue editing (`/priority`, `/clearplaylist`)
+
+Each queued song gets a `queueId` (uuid, in `songRequest`) and songs from a playlist a `playlist: { id, title }` tag (one id per `playlistHandler` call). `prioritizeSong` / `removePlaylistSongs` (`update.ts`) are single pipeline updates (`updatePipeline: true`) that never touch `nextSongs[0]`, the song playing. `&pr <n>` takes the position `/queue` shows (`getNextSongs`, 1-based); `/priority`'s autocomplete passes the song's `queueId` (string option), so the picked song moves even if the queue shifted. Both slash commands use autocomplete, routed in `interactionListener` to the command's `autocomplete` export, and `deferReply` before editing the queue. Open to every member, like `/skip`.
+
 ### Statistics (`/stats`)
 
 `Play` collection, one document per listened song (`src/core/stats.ts`). `createAudioResource` carries the song as `metadata`; `trackPlay` runs when the player's resource changes (song ended → Idle, skipped → Buffering of the next one) and in `remove()` before `stop()` (listeners are already detached there). Duration = `resource.playbackDuration` (pauses excluded); plays < 5 s are ignored. Aggregations in `src/database/queries/plays.ts`.

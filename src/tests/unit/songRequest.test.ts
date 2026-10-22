@@ -18,7 +18,7 @@ const {
   mockPushSongIfAllowed: vi.fn().mockResolvedValue('queued'),
   mockSendEmbedToChannel: vi.fn(),
   mockUpdateVoiceChannel: vi.fn(),
-  mockExtractSongData: vi.fn().mockResolvedValue({ title: 'Test Song', url: 'https://youtube.com/watch?v=test' }),
+  mockExtractSongData: vi.fn(async () => ({ title: 'Test Song', url: 'https://youtube.com/watch?v=test' })),
   mockExtractVoiceChannelData: vi.fn().mockResolvedValue({ channelId: '1', guildId: '42' }),
 }));
 
@@ -102,6 +102,14 @@ describe('songRequest', () => {
     const result = await songRequest('https://soundcloud.com/a/b', '42', mockUser, 'ch1', mockVoiceChannel, true);
     expect(result).toBe('error');
     expect(mockSendErrorEmbed).not.toHaveBeenCalled();
+  });
+
+  it('gives each queued song a queue id, and its playlist tag', async () => {
+    const playlist = { id: 'p1', title: 'Mix' };
+    await songRequest('https://youtube.com/watch?v=test', '42', mockUser, 'ch1', mockVoiceChannel, true, playlist);
+    const pushed = mockPushSongIfAllowed.mock.calls[0][1];
+    expect(pushed.queueId).toEqual(expect.any(String));
+    expect(pushed.playlist).toEqual(playlist);
   });
 
   it('reports a full queue without starting the player', async () => {

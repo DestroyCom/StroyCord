@@ -7,7 +7,16 @@ export interface activePlayersInterface {
   };
 }
 
+/** The playlist a queued song comes from: one id per request, so the same playlist queued twice is two entries */
+export interface QueuedPlaylist {
+  id: string;
+  title: string;
+}
+
 export interface songInterface {
+  /** Unique per queued song: targets it in the queue whatever its position (see prioritizeSong) */
+  queueId?: string;
+  playlist?: QueuedPlaylist;
   title: string;
   url: string;
   thumbnail: string;

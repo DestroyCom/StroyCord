@@ -60,7 +60,8 @@ describe('playlistHandler', () => {
       user,
       'ch',
       undefined,
-      true
+      true,
+      { id: expect.any(String), title: 'My playlist' }
     );
   });
 
@@ -80,6 +81,10 @@ describe('playlistHandler', () => {
     await playlistHandler('https://soundcloud.com/forss/sets/soulhack', 'g', user, 'ch');
 
     expect(mockSongRequest).toHaveBeenCalledTimes(2);
+    // Every song of one request carries the same playlist tag (used by /clearplaylist)
+    const tags = mockSongRequest.mock.calls.map((call) => call[6]);
+    expect(tags[0]).toEqual({ id: expect.any(String), title: 'Soulhack' });
+    expect(tags[1]).toBe(tags[0]);
     expect(mockSongRequest.mock.calls[1][0]).toBe('https://api.soundcloud.com/tracks/2');
     expect(mockSendQueueEmbed.mock.calls[0][1]).toMatchObject({
       title: 'Soulhack',

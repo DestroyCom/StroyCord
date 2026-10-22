@@ -6,8 +6,20 @@ import {
   removeCurrentPlayingSong,
   removeDuplicateGuilds,
 } from 'src/database/queries/guilds/delete';
-import { fetchGuild, getFirstSong, getLastPlayedSong, getNextSongs } from 'src/database/queries/guilds/get';
-import { pushSongIfAllowed, pushSongs, shiftSongs } from 'src/database/queries/guilds/update';
+import {
+  fetchGuild,
+  getFirstSong,
+  getLastPlayedSong,
+  getNextSongs,
+  getQueuedPlaylists,
+} from 'src/database/queries/guilds/get';
+import {
+  prioritizeSong,
+  pushSongIfAllowed,
+  pushSongs,
+  removePlaylistSongs,
+  shiftSongs,
+} from 'src/database/queries/guilds/update';
 import { guild_model, HISTORY_SIZE } from 'src/database/schema/guild';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
@@ -276,5 +288,77 @@ describe('emptyAllGuild', () => {
     const guildB = await fetchGuild('guild-B');
     expect(guildA.nextSongs).toEqual([]);
     expect(guildB.nextSongs).toEqual([]);
+  });
+});
+
+// Queue: [playing, then waiting songs]. `playlist` tags a song as coming from that playlist
+const queued = (title: string, playlist?: string) => ({
+  ...mockSong(title),
+  queueId: `id-${title}`,
+  ...(playlist ? { playlist: { id: playlist, title: `Playlist ${playlist}` } } : {}),
+});
+const titles = async () => ((await fetchGuild(GUILD_ID)).nextSongs ?? []).map((song) => song.title);
+
+describe('getQueuedPlaylists', () => {
+  it('lists the playlists with waiting songs, in queue order, without the song playing', async () => {
+    await fetchGuild(GUILD_ID);
+    await pushSongs(GUILD_ID, [
+      queued('playing', 'A'),
+      queued('b1', 'B'),
+      queued('solo'),
+      queued('a1', 'A'),
+      queued('b2', 'B'),
+    ]);
+
+    expect(await getQueuedPlaylists(GUILD_ID)).toEqual([
+      { id: 'B', title: 'Playlist B', count: 2, requestedBy: 'test' },
+      { id: 'A', title: 'Playlist A', count: 1, requestedBy: 'test' },
+    ]);
+  });
+});
+
+describe('removePlaylistSongs', () => {
+  it('removes the waiting songs of the playlist and keeps the song playing', async () => {
+    await fetchGuild(GUILD_ID);
+    await pushSongs(GUILD_ID, [
+      queued('playing', 'A'),
+      queued('a1', 'A'),
+      queued('solo'),
+      queued('b1', 'B'),
+      queued('a2', 'A'),
+    ]);
+
+    expect(await removePlaylistSongs(GUILD_ID, 'A')).toBe(2);
+    expect(await titles()).toEqual(['playing', 'solo', 'b1']);
+  });
+
+  it('does nothing on an empty queue or an unknown playlist', async () => {
+    await fetchGuild(GUILD_ID);
+    expect(await removePlaylistSongs(GUILD_ID, 'A')).toBe(0);
+    expect(await titles()).toEqual([]);
+
+    await pushSongs(GUILD_ID, [queued('playing'), queued('solo')]);
+    expect(await removePlaylistSongs(GUILD_ID, 'Z')).toBe(0);
+    expect(await titles()).toEqual(['playing', 'solo']);
+  });
+});
+
+describe('prioritizeSong', () => {
+  it('moves a waiting song right after the song playing', async () => {
+    await fetchGuild(GUILD_ID);
+    await pushSongs(GUILD_ID, [queued('playing'), queued('s1'), queued('s2'), queued('s3')]);
+
+    const moved = await prioritizeSong(GUILD_ID, 'id-s3');
+    expect(moved?.title).toBe('s3');
+    expect(await titles()).toEqual(['playing', 's3', 's1', 's2']);
+  });
+
+  it('never moves the song playing, nor a song that is no longer queued', async () => {
+    await fetchGuild(GUILD_ID);
+    await pushSongs(GUILD_ID, [queued('playing'), queued('s1'), queued('s2')]);
+
+    expect(await prioritizeSong(GUILD_ID, 'id-playing')).toBeNull();
+    expect(await prioritizeSong(GUILD_ID, 'id-gone')).toBeNull();
+    expect(await titles()).toEqual(['playing', 's1', 's2']);
   });
 });

@@ -1,4 +1,5 @@
 import {
+  type AutocompleteInteraction,
   type ChatInputCommandInteraction,
   type Client,
   Events,
@@ -59,6 +60,11 @@ const handleChatInput = async (interaction: ChatInputCommandInteraction<'cached'
   await command.execute(interaction);
 };
 
+const handleAutocomplete = async (interaction: AutocompleteInteraction) => {
+  const command = commands[interaction.commandName as keyof typeof commands];
+  if (command && 'autocomplete' in command) await command.autocomplete(interaction);
+};
+
 const replyWithError = async (interaction: Interaction, label: string, error: unknown) => {
   if (!interaction.isRepliable()) return;
   // Tell the user instead of leaving the interaction unanswered ("The application did not respond")
@@ -89,6 +95,7 @@ export default (client: Client): void => {
       if (isMemberBlocked(settings, memberRoleIds(interaction)) && !isAdminConfigInteraction(interaction)) return;
       await runWithSettings(settings, async () => {
         if (interaction.isChatInputCommand()) await handleChatInput(interaction, settings);
+        else if (interaction.isAutocomplete()) await handleAutocomplete(interaction);
         else if (interaction.isMessageComponent() || interaction.isModalSubmit()) {
           // Components are routed by customId prefix, without collectors: panels keep working after a restart
           if (interaction.customId.startsWith('cfg:')) await handleConfigInteraction(interaction);
