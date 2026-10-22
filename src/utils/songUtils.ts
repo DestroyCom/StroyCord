@@ -1,10 +1,23 @@
 import type { Guild, InternalDiscordGatewayAdapterCreator, User, VoiceBasedChannel } from 'discord.js';
+import i18n from 'src/config/i18n';
 import { youtubeClient } from 'src/core/youtube';
 import { fetchYtdlpInfo } from 'src/core/ytdlp';
 import { isSoundcloudUrl } from 'src/utils/soundcloudUtils';
 import { extractVideoId } from 'src/utils/youtubeUtils';
 
 import type { songInterface } from './interfaces';
+
+/** A SoundCloud Go+ track: without a subscription, SoundCloud only serves a 30 s preview */
+export class PreviewOnlyError extends Error {
+  constructor(title: string) {
+    super(i18n.t('soundcloud.previewOnly', { title }));
+    this.name = 'PreviewOnlyError';
+  }
+}
+
+// yt-dlp suffixes the format id of SoundCloud previews with `_preview`
+const isPreviewOnly = (formats: Array<{ format_id?: string }> | undefined) =>
+  !!formats?.length && formats.every((format) => format.format_id?.endsWith('_preview'));
 
 type SongMetadata = Pick<songInterface, 'title' | 'url' | 'thumbnail' | 'videoAuthor'> & { duration: number };
 
@@ -36,6 +49,7 @@ const fetchSoundcloudMetadata = async (url: string): Promise<SongMetadata> => {
     throw new Error(`Failed to fetch SoundCloud track info: ${String(e)}`);
   }
   if (info._type === 'playlist') throw new Error('This SoundCloud link is a playlist, not a track');
+  if (isPreviewOnly(info.formats)) throw new PreviewOnlyError(info.title ?? url);
 
   return {
     title: info.title ?? '',

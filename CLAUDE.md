@@ -48,7 +48,7 @@ Three handlers resolve the input type before calling into the player (`playComma
 - `playlistRequest.ts` — YouTube playlist (youtubei.js `getPlaylist(<id>)` — the id, not the URL — plus continuations, capped at `QUEUE_LIMIT_CAP`) or SoundCloud set (`fetchYtdlpInfo`, flat) → calls `songRequest` per item. A SoundCloud short link (`on.soundcloud.com`) also goes there and falls back to `songRequest` when it resolves to a track
 - `searchRequest.ts` — text search → youtubei.js search → calls `songRequest` with the first result
 
-SoundCloud (`src/utils/soundcloudUtils.ts`): `parseSoundcloudUrl` accepts tracks, `/sets/` and short links (profiles and their tabs are rejected), `isSoundcloudUrl` any SoundCloud host (playlist entries can be `api.soundcloud.com/tracks/<id>`). Songs store the permalink, which is also their stats key (`videoId`). A YouTube video carrying its auto-generated mix (`watch?v=…&list=RD…`) is a single video, not a playlist.
+SoundCloud (`src/utils/soundcloudUtils.ts`): `parseSoundcloudUrl` accepts tracks, `/sets/` and short links (profiles and their tabs are rejected), `isSoundcloudUrl` any SoundCloud host (playlist entries can be `api.soundcloud.com/tracks/<id>`). Songs store the permalink, which is also their stats key (`videoId`). Go+ tracks (only `…_preview` formats) are refused: `PreviewOnlyError` at request time (silent in a playlist, counted as skipped), and the streaming format excludes previews (`[format_id!*=preview]`). A YouTube video carrying its auto-generated mix (`watch?v=…&list=RD…`) is a single video, not a playlist.
 
 ### Player (`src/core/player.ts`)
 

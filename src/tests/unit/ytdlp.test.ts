@@ -57,6 +57,8 @@ describe('buildYtdlpArgs', () => {
     const args = buildYtdlpArgs(scUrl, '/tmp/x/cookies.txt');
 
     expect(args[0]).toBe(scUrl);
+    // Go+ previews are excluded: yt-dlp fails instead of playing 30 s
+    expect(args[args.indexOf('--format') + 1]).toContain('[format_id!*=preview]');
     expect(args).toEqual(expect.arrayContaining(['--output', '-', '--no-playlist']));
     expect(args).not.toContain('--add-header');
     expect(args).not.toContain('--cookies');

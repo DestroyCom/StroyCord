@@ -53,17 +53,21 @@ export const createCookiesCopy = (): CookiesCopy | null => {
  * from the soundcloud.com page, which a googlebot user agent may not get.
  */
 export const buildYtdlpArgs = (url: string, cookiesPath?: string): string[] => {
+  const isSoundcloud = isSoundcloudUrl(url);
   const args = [
     url,
     '--output',
     '-', // pipe audio to stdout
     '--format',
-    'bestaudio[acodec=opus]/bestaudio/best',
+    // SoundCloud Go+ tracks only offer 30 s previews (format id `…_preview`): fail rather than play half a song
+    isSoundcloud
+      ? 'bestaudio[acodec=opus][format_id!*=preview]/bestaudio[format_id!*=preview]'
+      : 'bestaudio[acodec=opus]/bestaudio/best',
     '--no-playlist',
     '--quiet',
     '--no-warnings',
   ];
-  if (isSoundcloudUrl(url)) return args;
+  if (isSoundcloud) return args;
 
   args.push(
     '--js-runtimes',
@@ -123,6 +127,8 @@ export interface YtdlpInfo {
   webpage_url?: string;
   url?: string;
   entries?: YtdlpInfo[];
+  /** Only for a single track (not in flat playlist entries) */
+  formats?: Array<{ format_id?: string }>;
 }
 
 const INFO_TIMEOUT_MS = 60_000;

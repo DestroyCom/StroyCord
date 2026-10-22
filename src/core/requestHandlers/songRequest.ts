@@ -4,7 +4,7 @@ import { captureError } from 'src/config/monitoring';
 import { getGuildSettings } from 'src/core/settings';
 import { pushSongIfAllowed, type QueueLimitReason, updateVoiceChannel } from 'src/database/queries/guilds/update';
 import { queueLimitEmbed } from 'src/utils/embeds/errorsEmbed';
-import { extractSongData, extractVoiceChannelData } from 'src/utils/songUtils';
+import { extractSongData, extractVoiceChannelData, PreviewOnlyError } from 'src/utils/songUtils';
 
 import { sendEmbed, sendEmbedToChannel, sendErrorEmbed } from '../messages';
 import { songPlayer } from '../player';
@@ -48,6 +48,11 @@ export const songRequest = async (
     }
     return 'queued';
   } catch (error) {
+    if (error instanceof PreviewOnlyError) {
+      // Expected, not a bug. A playlist counts it in its skipped songs instead of one message per track
+      if (!isComingFromPlaylist) await sendErrorEmbed(guildId, textChannelId, error.message);
+      return 'error';
+    }
     captureError(error, { guildId, url, step: 'songRequest' });
     await sendErrorEmbed(guildId, textChannelId, String(error));
     return 'error';

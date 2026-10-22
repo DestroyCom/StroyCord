@@ -245,5 +245,8 @@
   },
   "commandMode": {
     "slashDisabled": "Slash commands are disabled on this server, use the text commands instead (e.g. `%{prefix}play`)."
+  },
+  "soundcloud": {
+    "previewOnly": "**%{title}** is a SoundCloud Go+ track: only a 30 s preview is available, so it was not added."
   }
 }
