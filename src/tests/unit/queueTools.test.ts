@@ -84,9 +84,11 @@ describe('clearPlaylistCommand', () => {
 });
 
 describe('priorityCommand', () => {
+  const q1 = '11111111-1111-4111-8111-111111111111';
+  const q2 = '22222222-2222-4222-8222-222222222222';
   const waiting = [
-    { title: 's1', queueId: 'q1' },
-    { title: 's2', queueId: 'q2' },
+    { title: 's1', queueId: q1 },
+    { title: 's2', queueId: q2 },
   ];
 
   beforeEach(() => {
@@ -97,8 +99,20 @@ describe('priorityCommand', () => {
   it('moves the song at the given queue position', async () => {
     mockPrioritizeSong.mockResolvedValue(waiting[1]);
     await priorityCommand('g', textChannel, author, voiceChannel, '2');
-    expect(mockPrioritizeSong).toHaveBeenCalledWith('g', 'q2');
+    expect(mockPrioritizeSong).toHaveBeenCalledWith('g', q2);
     expect(sent()).toEqual([[{ prioritized: 's2' }, 'announce']]);
+  });
+
+  it('moves the song picked in the autocomplete by its id, wherever it is now', async () => {
+    mockPrioritizeSong.mockResolvedValue(waiting[0]);
+    await priorityCommand('g', textChannel, author, voiceChannel, q1);
+    expect(mockPrioritizeSong).toHaveBeenCalledWith('g', q1);
+  });
+
+  it('reports a picked song that is no longer waiting, instead of moving another one', async () => {
+    await priorityCommand('g', textChannel, author, voiceChannel, '33333333-3333-4333-8333-333333333333');
+    expect(mockPrioritizeSong).not.toHaveBeenCalled();
+    expect(sent()).toEqual([[{ error: 'queueTools.notWaiting' }, 'error']]);
   });
 
   it.each([undefined, '0', '3', 'abc'])('rejects the position %s', async (position) => {

@@ -80,7 +80,7 @@ Same setup as StroyGetter. For YouTube, `buildYtdlpArgs()` always passes `--js-r
 
 ### Queue editing (`/priority`, `/clearplaylist`)
 
-Each queued song gets a `queueId` (uuid, in `songRequest`) and songs from a playlist a `playlist: { id, title }` tag (one id per `playlistHandler` call). `prioritizeSong` / `removePlaylistSongs` (`update.ts`) are single pipeline updates (`updatePipeline: true`) that never touch `nextSongs[0]`, the song playing. Positions are the ones `/queue` shows (`getNextSongs`, 1-based); the move targets the `queueId` read at that position. Both slash commands use autocomplete, routed in `interactionListener` to the command's `autocomplete` export. Open to every member, like `/skip`.
+Each queued song gets a `queueId` (uuid, in `songRequest`) and songs from a playlist a `playlist: { id, title }` tag (one id per `playlistHandler` call). `prioritizeSong` / `removePlaylistSongs` (`update.ts`) are single pipeline updates (`updatePipeline: true`) that never touch `nextSongs[0]`, the song playing. `&pr <n>` takes the position `/queue` shows (`getNextSongs`, 1-based); `/priority`'s autocomplete passes the song's `queueId` (string option), so the picked song moves even if the queue shifted. Both slash commands use autocomplete, routed in `interactionListener` to the command's `autocomplete` export, and `deferReply` before editing the queue. Open to every member, like `/skip`.
 
 ### Statistics (`/stats`)
 

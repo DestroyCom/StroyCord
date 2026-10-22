@@ -248,13 +248,18 @@ export const clearPlaylistCommand = async (
   await sendBotMessage(guildId, textChannel.id, playlistClearedEmbed(author, playlist, removed), 'announce');
 };
 
-/** Moves the song at `position` (as numbered by the queue command) right after the one playing */
+const QUEUE_ID = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/;
+
+/**
+ * Moves a waiting song right after the one playing.
+ * `selector`: its queueId (slash autocomplete) or its position as numbered by the queue command (text).
+ */
 export const priorityCommand = async (
   guildId: string,
   textChannel: TextBasedChannel,
   author: User,
   voiceChannel: VoiceBasedChannel | null | undefined,
-  position: string | undefined
+  selector: string | undefined
 ) => {
   if (!checkCommandUsability(guildId, textChannel, voiceChannel as VoiceChannel, i18n.t('commandContext.editQueue')))
     return;
@@ -265,7 +270,14 @@ export const priorityCommand = async (
     return;
   }
 
-  const song = position && /^\d+$/.test(position) ? waiting[Number(position) - 1] : undefined;
+  // A song picked from the autocomplete keeps its identity, even if songs ended since
+  if (selector && QUEUE_ID.test(selector) && !waiting.some((song) => song.queueId === selector)) {
+    await sendBotMessage(guildId, textChannel.id, unknownError(i18n.t('queueTools.notWaiting')), 'error');
+    return;
+  }
+  const song =
+    waiting.find((waitingSong) => selector && waitingSong.queueId === selector) ??
+    (selector && /^\d+$/.test(selector) ? waiting[Number(selector) - 1] : undefined);
   if (!song?.queueId) {
     const error = i18n.t('queueTools.invalidPosition', { max: waiting.length, command: `\`${getPrefix()}q\`` });
     await sendBotMessage(guildId, textChannel.id, unknownError(error), 'error');
