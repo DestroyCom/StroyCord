@@ -39,6 +39,11 @@ describe('yt_validate', () => {
   it('returns "video" for a video carrying its auto-generated mix', () => {
     expect(yt_validate('https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=RDdQw4w9WgXcQ&start_radio=1')).toBe('video');
   });
+
+  it('returns "video" for a share link carrying its mix', () => {
+    expect(yt_validate('https://youtu.be/dQw4w9WgXcQ?list=RDdQw4w9WgXcQ&si=abc')).toBe('video');
+    expect(yt_validate('https://www.youtube.com/watch?list=RDdQw4w9WgXcQ&v=dQw4w9WgXcQ')).toBe('video');
+  });
 });
 
 describe('extractPlaylistId', () => {
@@ -60,6 +65,10 @@ describe('extractPlaylistId', () => {
 });
 
 describe('extractVideoId', () => {
+  it('extracts ID when v= is not the first parameter', () => {
+    expect(extractVideoId('https://www.youtube.com/watch?list=RDdQw4w9WgXcQ&v=dQw4w9WgXcQ')).toBe('dQw4w9WgXcQ');
+  });
+
   it('extracts ID from full watch URL', () => {
     expect(extractVideoId('https://www.youtube.com/watch?v=dQw4w9WgXcQ')).toBe('dQw4w9WgXcQ');
   });

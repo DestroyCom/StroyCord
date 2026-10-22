@@ -72,7 +72,9 @@ export function parseSoundcloudUrl(input: string): SoundcloudLink | null {
 
   const [user, ...rest] = segments;
   if (!user || RESERVED_ROOTS.has(user)) return null;
-  if (rest.length > 0 && SECRET_TOKEN.test(rest[rest.length - 1])) rest.pop();
+  // The token can only follow the slug (<track>/s-xxx, sets/<name>/s-xxx): a slug like `s-curve` is not one
+  const tokenIndex = rest[0] === 'sets' ? 2 : 1;
+  if (rest.length === tokenIndex + 1 && SECRET_TOKEN.test(rest[tokenIndex])) rest.pop();
   const canonical = `https://soundcloud.com/${segments.join('/')}`;
 
   if (rest.length === 1 && !USER_TABS.has(rest[0])) return { type: 'track', url: canonical };
