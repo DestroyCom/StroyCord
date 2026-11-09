@@ -55,6 +55,6 @@
     "vitest": "5.0.5"
   },
   "optionalDependencies": {
-    "@discordjs/opus": "0.10.0"
+    "@discordjs/opus": "0.11.0"
   }
 }
